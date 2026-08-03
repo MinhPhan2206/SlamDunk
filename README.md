@@ -21,5 +21,16 @@ SlamDunk uses a Modular Monolith architecture. See the
 ## Local Development
 
 Install the Node.js dependencies with `npm install`, then copy `.env.example` to
-`.env` and provide local environment values. Application run commands will be
-added when the first executable entry point is introduced.
+`.env` and provide `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, and `DISCORD_GUILD_ID`.
+
+Register the development guild commands explicitly:
+
+```text
+npm run register:commands
+```
+
+Start the bot:
+
+```text
+npm start
+```
