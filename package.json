@@ -1,0 +1,12 @@
+{
+  "name": "slamdunk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SlamDunk Discord Bot",
+  "type": "module",
+  "dependencies": {
+    "discord.js": "^14.27.0",
+    "dotenv": "^17.4.2",
+    "pg": "^8.22.0"
+  }
+}
