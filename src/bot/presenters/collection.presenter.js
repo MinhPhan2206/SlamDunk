@@ -9,7 +9,7 @@ function formatCard(card) {
 
   return [
     `**${card.playerName} - ${card.edition}**`,
-    `Tier ${card.rarityTier} | OVR ${card.overall} | ${positions} | Level ${card.cardLevel} | #${card.serialNumber}`,
+    `Tier ${card.rarityTier} | OVR ${card.overall} | ${positions} | Level ${card.cardLevel} | #${card.serialNumber} | ID ${card.cardInstanceId}`,
   ].join("\n");
 }
 

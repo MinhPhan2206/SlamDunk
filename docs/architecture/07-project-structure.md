@@ -294,7 +294,8 @@ migrations/
 ├── 004_create_player_cooldowns.sql
 ├── 005_create_card_templates_and_traits.sql
 ├── 006_create_card_instances.sql
-└── 007_create_pack_sessions.sql
+├── 007_create_pack_sessions.sql
+└── 008_create_lineups.sql
 ```
 
 Future migrations are added only when their implementation milestone begins.

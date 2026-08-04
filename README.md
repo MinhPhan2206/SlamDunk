@@ -59,5 +59,6 @@ npm test
 - `/claim` — receive 300–500 Gold every 30 minutes.
 - `/pack` — open a Free Drop and choose one of three Card Templates.
 - `/collection` — view owned active cards with tier filtering and pagination.
+- `/lineup view|set|remove` — manage the active five-position lineup.
 - `/cooldowns` — view the current Claim and Free Drop cooldown status.
 - `/rarity tier:<1-7>` — list Card Templates in a rarity tier.
