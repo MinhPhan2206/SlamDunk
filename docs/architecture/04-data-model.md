@@ -424,7 +424,35 @@ milestones.
 
 ---
 
-# 13. Fusion
+# 13. PackSession
+
+M9 implements persisted Free Drop offers with:
+
+```text
+pack_session_id
+player_id
+pack_type
+status
+created_interaction_id
+selected_template_id
+result_card_instance_id
+completed_at
+created_at
+updated_at
+```
+
+`pack_session_candidates` stores each candidate position, Card Template, and
+rolled rarity tier. Candidates are unique within a session, and a partial
+unique index permits only one open Free Drop per Player.
+
+An open session has no selected Template or result Card Instance. A completed
+session must reference both. This state consistency is enforced by PostgreSQL.
+M9 intentionally has no expiration column because Pack timeout behavior remains
+TBD; calling `/pack` again reuses the existing open session.
+
+---
+
+# 14. Fusion
 
 Suggested fields:
 
@@ -438,7 +466,7 @@ created_at
 
 ---
 
-# 14. FusionSource
+# 15. FusionSource
 
 Suggested fields:
 

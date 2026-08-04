@@ -26,7 +26,7 @@ function createInteraction({ rarityTier = 5 } = {}) {
   };
 }
 
-test("cooldowns command reports the implemented Claim cooldown", async () => {
+test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
   const interaction = createInteraction();
   const availableAt = new Date("2030-01-01T00:30:00.000Z");
   const services = {
@@ -49,6 +49,16 @@ test("cooldowns command reports the implemented Claim cooldown", async () => {
         };
       },
     },
+    pack: {
+      async getFreeDropCooldown(playerId) {
+        assert.equal(playerId, "1");
+        return {
+          cooldownType: "FREE_PACK",
+          available: true,
+          availableAt: null,
+        };
+      },
+    },
   };
 
   await cooldownsCommand.execute(interaction, { services });
@@ -56,6 +66,7 @@ test("cooldowns command reports the implemented Claim cooldown", async () => {
   assert.equal(interaction.replies[0].type, "defer");
   assert.match(interaction.replies[1].payload.content, /Cooldowns/);
   assert.match(interaction.replies[1].payload.content, /Claim/);
+  assert.match(interaction.replies[1].payload.content, /Free Drop/);
   assert.match(
     interaction.replies[1].payload.content,
     new RegExp(`<t:${Math.floor(availableAt.getTime() / 1_000)}:R>`),

@@ -57,6 +57,19 @@ function mapCardTemplate(row) {
 }
 
 export const cardTemplateRepository = Object.freeze({
+  async findPackable(database) {
+    const result = await database.query(
+      `
+        SELECT ${CARD_TEMPLATE_COLUMNS}
+        FROM card_templates
+        WHERE packable = TRUE AND retired_at IS NULL
+        ORDER BY rarity_tier, card_template_id
+      `,
+    );
+
+    return result.rows.map(mapCardTemplate);
+  },
+
   async findByRarityTier(database, rarityTier, limit) {
     const result = await database.query(
       `

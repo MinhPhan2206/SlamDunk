@@ -115,13 +115,11 @@ export function createRewardService({
       { database = databasePool } = {},
     ) {
       const normalizedPlayerId = normalizePlayerId(playerId);
-      const [currentTime, cooldown] = await Promise.all([
-        cooldownRepository.getDatabaseTime(database),
-        cooldownRepository.find(database, {
-          playerId: normalizedPlayerId,
-          cooldownType: CLAIM_COOLDOWN_TYPE,
-        }),
-      ]);
+      const currentTime = await cooldownRepository.getDatabaseTime(database);
+      const cooldown = await cooldownRepository.find(database, {
+        playerId: normalizedPlayerId,
+        cooldownType: CLAIM_COOLDOWN_TYPE,
+      });
 
       return Object.freeze({
         cooldownType: CLAIM_COOLDOWN_TYPE,

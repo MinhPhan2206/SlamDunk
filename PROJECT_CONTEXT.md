@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M8 completed.
-> **Next milestone:** M9 — /pack.
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M9 completed.
+> **Next milestone:** M10 — /collection.
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -2312,6 +2312,34 @@ M8 intentionally did not implement Pack sessions, Pack odds, `/pack`,
 or Battle. Pack request idempotency will be introduced with the Pack operation
 in M9.
 
+## M9 — /pack
+
+Completed.
+
+Implemented concepts:
+
+```text
+007_create_pack_sessions.sql
+persisted PackSession and PackSessionCandidate records
+one open Free Drop per Player
+three distinct packable Card Template candidates
+button-based Discord selection
+only the selected candidate is minted
+random initial Card Level from 1 through 5
+atomic Card Instance, mint counter, ownership history, session, and cooldown
+idempotent selection replay protection
+FREE_PACK cooldown shown by /cooldowns
+PostgreSQL integration and Discord command/component tests using node:test
+```
+
+M9 uses the documented provisional playtest baseline: 15-minute Free Drop
+cooldown, three candidates, and the Tier 1–7 simulation weights. These remain
+centralized, adjustable configuration rather than final production balance.
+Pack timeout remains TBD, so an open session is reused until the Player selects
+a candidate. M9 did not seed a fictional Card Template catalog and did not
+implement paid Packs, `/collection`, Lineup, Battle, Quicksell, Fusion, Market,
+or Trade.
+
 ---
 
 # 44. Current Next Milestone
@@ -2319,20 +2347,20 @@ in M9.
 Current next milestone:
 
 ```text
-M9 — /pack
+M10 — /collection
 ```
 
-Codex should wait for an explicit M9 task/prompt before implementation.
+Codex should wait for an explicit M10 task/prompt before implementation.
 
 ---
 
-# 45. M9 Scope Guardrail
+# 45. M10 Scope Guardrail
 
-The next milestone is `/pack`, but its exact acceptance criteria must come
+The next milestone is `/collection`, but its exact acceptance criteria must come
 from the explicit milestone prompt.
 
-Do not automatically implement `/collection`, Lineup, Battle, Quicksell,
-Fusion, Market, or Trade as part of M9.
+Do not automatically implement Lineup, Battle, Quicksell, Fusion, Market, or
+Trade as part of M10.
 
 ---
 
@@ -2350,6 +2378,7 @@ explicit migration runner
 004_create_player_cooldowns.sql
 005_create_card_templates_and_traits.sql
 006_create_card_instances.sql
+007_create_pack_sessions.sql
 Player repository/service
 Wallet repository/service
 immutable EconomyTransaction repository
@@ -2359,9 +2388,11 @@ Card Template repository/service
 Trait Definition and Card Template Trait repository/service
 Card Instance, mint-counter, and ownership-history repositories
 transactional Card Instance mint service
+Pack Session/Candidate repository and transactional Free Drop service
 /profile command and profile embed presenter
 /claim command and cooldown presenter
-/cooldowns command for CLAIM cooldown status
+/pack command and button selection handler
+/cooldowns command for CLAIM and FREE_PACK cooldown status
 /rarity command for Card Template discovery by tier
 ```
 
@@ -2647,16 +2678,17 @@ M5 Economy Ledger → DONE
 M6 /claim        → DONE
 M7 Card Template + Traits → DONE
 M8 Card Instance → DONE
-M9 /pack         → NEXT
+M9 /pack         → DONE
+M10 /collection  → NEXT
 ```
 
-Before doing M9:
+Before doing M10:
 
 ```text
 inspect the real repository
 ```
 
-Do not rewrite valid M1–M8 code merely to match an example file structure.
+Do not rewrite valid M1–M9 code merely to match an example file structure.
 
 ---
 

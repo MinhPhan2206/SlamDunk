@@ -9,6 +9,11 @@ async function sendErrorResponse(interaction) {
     content: "Something went wrong while executing this command.",
   };
 
+  if (interaction.deferred && interaction.isButton()) {
+    await interaction.followUp({ ...message, flags: MessageFlags.Ephemeral });
+    return;
+  }
+
   if (interaction.deferred) {
     await interaction.editReply({ ...message, embeds: [], components: [] });
     return;
@@ -22,24 +27,36 @@ async function sendErrorResponse(interaction) {
   await interaction.reply({ ...message, flags: MessageFlags.Ephemeral });
 }
 
-export function createInteractionCreateHandler(commands, context = {}) {
+export function createInteractionCreateHandler(
+  commands,
+  context = {},
+  componentHandlers = new Map(),
+) {
   return async function handleInteractionCreate(interaction) {
-    if (!interaction.isChatInputCommand()) {
+    let handler;
+    let interactionLabel;
+
+    if (interaction.isChatInputCommand()) {
+      handler = commands.get(interaction.commandName);
+      interactionLabel = `command /${interaction.commandName}`;
+    } else if (interaction.isButton()) {
+      const namespace = interaction.customId.split(":", 1)[0];
+      handler = componentHandlers.get(namespace);
+      interactionLabel = `component ${namespace}`;
+    } else {
       return;
     }
 
-    const command = commands.get(interaction.commandName);
-
-    if (!command) {
-      console.warn(`Unknown command received: /${interaction.commandName}`);
+    if (!handler) {
+      console.warn(`Unknown Discord interaction received: ${interactionLabel}`);
       return;
     }
 
     try {
-      await command.execute(interaction, context);
+      await handler.execute(interaction, context);
     } catch (error) {
       console.error(
-        `Command /${interaction.commandName} failed: ${getErrorMessage(error)}`,
+        `Discord ${interactionLabel} failed: ${getErrorMessage(error)}`,
       );
 
       try {

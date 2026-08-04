@@ -18,12 +18,29 @@
 ## Supporting Commands
 
 - `/cooldowns` reports cooldown availability using PostgreSQL time as the source
-  of truth. Its initial implementation reports only `CLAIM`; Drop, Daily, and
-  Weekly can be added when those reward systems exist.
+  of truth. It currently reports `CLAIM` and `FREE_PACK`; Daily and Weekly can
+  be added when those reward systems exist.
 - `/rarity` accepts a numeric rarity tier from 1 through 7 and lists Card
   Templates in that tier. Tier 7 is Hall of Fame. Names for Tiers 1 through 6
   remain TBD.
 - `/rarity` lists template definitions, not Card Instances owned by a Player.
+
+## M9 Free Drop Behavior
+
+- `/pack` creates a persisted Free Drop offer containing three distinct,
+  packable, non-retired Card Templates.
+- The Player chooses one candidate; only that candidate becomes a Card Instance.
+- The new Card Instance receives a random initial Card Level from 1 through 5.
+- Candidate selection, Card Instance minting, ownership history, mint counters,
+  PackSession completion, and cooldown update are atomic in PostgreSQL.
+- Replaying the same selection must return the existing result and must not mint
+  another Card Instance.
+- An open offer is reused when `/pack` is called again. M9 does not expire or
+  reroll an abandoned offer because timeout behavior remains TBD.
+- The current playtest configuration uses a 15-minute Free Drop cooldown, three
+  candidates, and the provisional Tier 1–7 weights in
+  `economy-pack-baseline.md`. These remain adjustable simulation values rather
+  than finalized production balance.
 
 Tài liệu yêu cầu trò chơi cho dự án SlamDunk Discord Bot.
 

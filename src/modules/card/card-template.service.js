@@ -142,6 +142,10 @@ function normalizeTemplateInput(input) {
 
 export function createCardTemplateService({ databasePool }) {
   return Object.freeze({
+    async listPackableTemplates({ database = databasePool } = {}) {
+      return cardTemplateRepository.findPackable(database);
+    },
+
     async createTemplate(input, { database = databasePool } = {}) {
       return cardTemplateRepository.create(
         database,

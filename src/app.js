@@ -2,6 +2,7 @@ import { Events } from "discord.js";
 
 import { createDiscordClient } from "./bot/client/discord-client.js";
 import { commands } from "./bot/commands/index.js";
+import { components } from "./bot/components/index.js";
 import { createInteractionCreateHandler } from "./bot/events/interaction-create.event.js";
 import { gameConfig } from "./config/game-config.js";
 import {
@@ -14,6 +15,7 @@ import {
 } from "./modules/card/index.js";
 import { createEconomyService } from "./modules/economy/index.js";
 import { createPlayerService } from "./modules/player/index.js";
+import { createPackService } from "./modules/pack/index.js";
 import { createRewardService } from "./modules/reward/index.js";
 import { createTraitService } from "./modules/trait/index.js";
 
@@ -40,16 +42,26 @@ export function createApplication({ discordToken, databaseUrl }) {
     cardTemplateService,
     playerService,
   });
+  const packService = createPackService({
+    databasePool,
+    cardInstanceService,
+    cardTemplateService,
+    freeDropConfig: gameConfig.freeDrop,
+  });
   const services = Object.freeze({
     cardInstance: cardInstanceService,
     cardTemplate: cardTemplateService,
     economy: economyService,
+    pack: packService,
     player: playerService,
     reward: rewardService,
     trait: traitService,
   });
   const commandRegistry = new Map(
     commands.map((command) => [command.data.name, command]),
+  );
+  const componentRegistry = new Map(
+    components.map((component) => [component.namespace, component]),
   );
   let isStopped = false;
 
@@ -59,7 +71,11 @@ export function createApplication({ discordToken, databaseUrl }) {
 
   client.on(
     Events.InteractionCreate,
-    createInteractionCreateHandler(commandRegistry, { services }),
+    createInteractionCreateHandler(
+      commandRegistry,
+      { services },
+      componentRegistry,
+    ),
   );
 
   return Object.freeze({

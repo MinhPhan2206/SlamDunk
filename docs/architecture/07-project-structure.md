@@ -293,7 +293,8 @@ migrations/
 ├── 003_create_economy_transactions.sql
 ├── 004_create_player_cooldowns.sql
 ├── 005_create_card_templates_and_traits.sql
-└── 006_create_card_instances.sql
+├── 006_create_card_instances.sql
+└── 007_create_pack_sessions.sql
 ```
 
 Future migrations are added only when their implementation milestone begins.

@@ -378,6 +378,18 @@ COMMIT
 
 This prevents duplicate button clicks from minting multiple cards.
 
+### M9 Implementation Note
+
+M9 persists the Free Drop offer before rendering Discord buttons. Selection
+locks the Player's `FREE_PACK` cooldown row and PackSession in a consistent
+order, validates ownership and candidate membership, then mints through the Card
+module. Mint counters, Card Instance, ownership history, completed PackSession,
+and cooldown commit together. Replaying the selected button returns the stored
+Card Instance.
+
+Cooldown begins on successful selection. Open sessions are reused and do not
+expire until a timeout rule is explicitly approved.
+
 ---
 
 # 12. Claim / Daily Reward
