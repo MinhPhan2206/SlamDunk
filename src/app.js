@@ -1,7 +1,7 @@
 import { Events } from "discord.js";
 
 import { createDiscordClient } from "./bot/client/discord-client.js";
-import { pingCommand } from "./bot/commands/ping.command.js";
+import { commands } from "./bot/commands/index.js";
 import { createInteractionCreateHandler } from "./bot/events/interaction-create.event.js";
 import {
   checkPostgresConnection,
@@ -18,7 +18,13 @@ export function createApplication({ discordToken, databaseUrl }) {
     databasePool,
     economyService,
   });
-  const commands = new Map([[pingCommand.data.name, pingCommand]]);
+  const services = Object.freeze({
+    economy: economyService,
+    player: playerService,
+  });
+  const commandRegistry = new Map(
+    commands.map((command) => [command.data.name, command]),
+  );
   let isStopped = false;
 
   client.once(Events.ClientReady, (readyClient) => {
@@ -27,14 +33,11 @@ export function createApplication({ discordToken, databaseUrl }) {
 
   client.on(
     Events.InteractionCreate,
-    createInteractionCreateHandler(commands),
+    createInteractionCreateHandler(commandRegistry, { services }),
   );
 
   return Object.freeze({
-    services: Object.freeze({
-      economy: economyService,
-      player: playerService,
-    }),
+    services,
 
     async start() {
       await checkPostgresConnection(databasePool);

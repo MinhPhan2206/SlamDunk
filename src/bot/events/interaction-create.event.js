@@ -5,20 +5,24 @@ function getErrorMessage(error) {
 }
 
 async function sendErrorResponse(interaction) {
-  const response = {
+  const message = {
     content: "Something went wrong while executing this command.",
-    flags: MessageFlags.Ephemeral,
   };
 
-  if (interaction.replied || interaction.deferred) {
-    await interaction.followUp(response);
+  if (interaction.deferred) {
+    await interaction.editReply({ ...message, embeds: [], components: [] });
     return;
   }
 
-  await interaction.reply(response);
+  if (interaction.replied) {
+    await interaction.followUp({ ...message, flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  await interaction.reply({ ...message, flags: MessageFlags.Ephemeral });
 }
 
-export function createInteractionCreateHandler(commands) {
+export function createInteractionCreateHandler(commands, context = {}) {
   return async function handleInteractionCreate(interaction) {
     if (!interaction.isChatInputCommand()) {
       return;
@@ -32,7 +36,7 @@ export function createInteractionCreateHandler(commands) {
     }
 
     try {
-      await command.execute(interaction);
+      await command.execute(interaction, context);
     } catch (error) {
       console.error(
         `Command /${interaction.commandName} failed: ${getErrorMessage(error)}`,

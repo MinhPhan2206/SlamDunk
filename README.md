@@ -44,3 +44,8 @@ Start the bot:
 ```text
 npm start
 ```
+
+## Current Commands
+
+- `/ping` — check whether the bot is online.
+- `/profile` — create or view your Player and Wallet profile.

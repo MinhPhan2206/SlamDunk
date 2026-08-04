@@ -1,6 +1,6 @@
 import { REST, Routes } from "discord.js";
 
-import { pingCommand } from "../src/bot/commands/ping.command.js";
+import { commands } from "../src/bot/commands/index.js";
 import { getDiscordCommandRegistrationConfig } from "../src/config/env.js";
 
 function getErrorMessage(error) {
@@ -9,14 +9,14 @@ function getErrorMessage(error) {
 
 async function registerCommands() {
   const config = getDiscordCommandRegistrationConfig();
-  const commands = [pingCommand.data.toJSON()];
+  const commandPayload = commands.map((command) => command.data.toJSON());
   const rest = new REST({ version: "10" }).setToken(config.token);
 
-  console.log(`Registering ${commands.length} guild command(s).`);
+  console.log(`Registering ${commandPayload.length} guild command(s).`);
 
   await rest.put(
     Routes.applicationGuildCommands(config.clientId, config.guildId),
-    { body: commands },
+    { body: commandPayload },
   );
 
   console.log("Guild commands registered successfully.");

@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M3 completed.  
-> **Next milestone:** M4 — /profile.  
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M4 completed.
+> **Next milestone:** M5 — Economy Ledger.
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -2116,6 +2116,24 @@ database constraints for identity, progression, and non-negative balances
 M3 intentionally did not add a Discord command, Economy Ledger, currency
 mutation, or later gameplay features.
 
+## M4 — /profile
+
+Completed.
+
+Implemented concepts:
+
+```text
+/profile guild slash command
+shared runtime/registration command catalog
+interaction context with Player and Economy services
+Player + Wallet lookup/creation through M3 services
+Discord profile embed presenter
+safe deferred-interaction error handling
+```
+
+M4 intentionally did not add migrations, Economy Ledger, currency mutation,
+or later gameplay features.
+
 ---
 
 # 44. Current Next Milestone
@@ -2123,20 +2141,20 @@ mutation, or later gameplay features.
 Current next milestone:
 
 ```text
-M4 — /profile
+M5 — Economy Ledger
 ```
 
-Codex should wait for an explicit M4 task/prompt before implementation.
+Codex should wait for an explicit M5 task/prompt before implementation.
 
 ---
 
-# 45. M4 Scope Guardrail
+# 45. M5 Scope Guardrail
 
-The next milestone is `/profile`, but its exact acceptance criteria must come
+The next milestone is Economy Ledger, but its exact acceptance criteria must come
 from the explicit milestone prompt.
 
-Do not automatically implement Economy Ledger, `/claim`, Cards, Pack, Battle,
-Market, Trade, or Fusion as part of M4.
+Do not automatically implement `/claim`, Cards, Pack, Battle, Market, Trade,
+or Fusion as part of M5.
 
 ---
 
@@ -2152,6 +2170,7 @@ explicit migration runner
 002_create_wallets.sql
 Player repository/service
 Wallet repository/service
+/profile command and profile embed presenter
 ```
 
 Inspect the real repository and migration history before changing this
@@ -2428,16 +2447,17 @@ M0 Bootstrap     → DONE
 M1 Discord       → DONE
 M2 PostgreSQL    → DONE
 M3 Player/Wallet → DONE
-M4 /profile      → NEXT
+M4 /profile      → DONE
+M5 Economy Ledger → NEXT
 ```
 
-Before doing M4:
+Before doing M5:
 
 ```text
 inspect the real repository
 ```
 
-Do not rewrite valid M1–M3 code merely to match an example file structure.
+Do not rewrite valid M1–M4 code merely to match an example file structure.
 
 ---
 
