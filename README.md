@@ -63,3 +63,12 @@ npm test
 - `/battle` — simulate a persisted PvE match with the active lineup.
 - `/cooldowns` — view the current Claim and Free Drop cooldown status.
 - `/rarity tier:<1-7>` — list Card Templates in a rarity tier.
+- `/quicksell card_id:<id>` — destroy an unwanted card for Shards.
+- `/upgrade fusion card_a:<id> card_b:<id>` — fuse matching Card Templates.
+- `/upgrade item card_id:<id>` — consume one Level Up item for +1 Level.
+
+Grant Level Up items locally as an administrator:
+
+```text
+npm run admin:grant-level-up -- <discord_user_id> <quantity>
+```

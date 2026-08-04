@@ -76,3 +76,12 @@ Level 5 + Level 1 → Level 5
 
 Hai Card Instance nguồn được giữ lại trong lịch sử với trạng thái
 `DESTROYED_FUSION`. Fusion tạo một Card Instance mới có ID và serial mới.
+
+## M14 Upgrade Item Behavior
+
+- Upgrade Item có tên hiển thị `Level Up` và mã nội bộ `LEVEL_UP`.
+- Mỗi lần sử dụng tăng Card Level thêm 1, giữ nguyên Card Instance ID và serial.
+- Card Level tối đa là 5; thẻ Level 5 bị từ chối trước khi tiêu hao item.
+- Không có Gold fee.
+- Trong M14, Level Up chỉ được cấp bằng công cụ admin cục bộ; nguồn gameplay
+  hoặc shop vẫn chưa được triển khai.

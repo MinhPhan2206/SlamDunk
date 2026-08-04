@@ -37,4 +37,9 @@ export const gameConfig = Object.freeze({
       7: 10_000,
     }),
   }),
+  upgrade: Object.freeze({
+    maximumCardLevel: 5,
+    levelUpItemType: "LEVEL_UP",
+    levelUpItemName: "Level Up",
+  }),
 });
