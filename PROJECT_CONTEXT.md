@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M9 completed.
-> **Next milestone:** M10 — /collection.
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M10 completed.
+> **Next milestone:** M11 — Lineup.
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -2340,6 +2340,25 @@ a candidate. M9 did not seed a fictional Card Template catalog and did not
 implement paid Packs, `/collection`, Lineup, Battle, Quicksell, Fusion, Market,
 or Trade.
 
+## M10 — /collection
+
+Completed.
+
+Implemented concepts:
+
+```text
+read-only Collection module
+active Card Instance queries scoped to the owning Player
+Card Template details joined for display
+optional numeric rarity-tier filter
+10-card pagination
+/collection guild slash command and embed presenter
+integration and command tests using node:test
+```
+
+M10 did not add a migration or implement Lineup, Battle, Quicksell, Fusion,
+Market, or Trade.
+
 ---
 
 # 44. Current Next Milestone
@@ -2347,20 +2366,20 @@ or Trade.
 Current next milestone:
 
 ```text
-M10 — /collection
+M11 — Lineup
 ```
 
-Codex should wait for an explicit M10 task/prompt before implementation.
+Codex should wait for an explicit M11 task/prompt before implementation.
 
 ---
 
-# 45. M10 Scope Guardrail
+# 45. M11 Scope Guardrail
 
-The next milestone is `/collection`, but its exact acceptance criteria must come
+The next milestone is Lineup, but its exact acceptance criteria must come
 from the explicit milestone prompt.
 
-Do not automatically implement Lineup, Battle, Quicksell, Fusion, Market, or
-Trade as part of M10.
+Do not automatically implement Battle, Quicksell, Fusion, Market, or Trade as
+part of M11.
 
 ---
 
@@ -2389,9 +2408,11 @@ Trait Definition and Card Template Trait repository/service
 Card Instance, mint-counter, and ownership-history repositories
 transactional Card Instance mint service
 Pack Session/Candidate repository and transactional Free Drop service
+read-only Collection repository/service
 /profile command and profile embed presenter
 /claim command and cooldown presenter
 /pack command and button selection handler
+/collection command and embed presenter
 /cooldowns command for CLAIM and FREE_PACK cooldown status
 /rarity command for Card Template discovery by tier
 ```
@@ -2679,16 +2700,17 @@ M6 /claim        → DONE
 M7 Card Template + Traits → DONE
 M8 Card Instance → DONE
 M9 /pack         → DONE
-M10 /collection  → NEXT
+M10 /collection  → DONE
+M11 Lineup       → NEXT
 ```
 
-Before doing M10:
+Before doing M11:
 
 ```text
 inspect the real repository
 ```
 
-Do not rewrite valid M1–M9 code merely to match an example file structure.
+Do not rewrite valid M1–M10 code merely to match an example file structure.
 
 ---
 

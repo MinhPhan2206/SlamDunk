@@ -58,5 +58,6 @@ npm test
 - `/profile` — create or view your Player and Wallet profile.
 - `/claim` — receive 300–500 Gold every 30 minutes.
 - `/pack` — open a Free Drop and choose one of three Card Templates.
+- `/collection` — view owned active cards with tier filtering and pagination.
 - `/cooldowns` — view the current Claim and Free Drop cooldown status.
 - `/rarity tier:<1-7>` — list Card Templates in a rarity tier.

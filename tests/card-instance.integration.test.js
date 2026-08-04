@@ -9,6 +9,7 @@ import {
   createCardTemplateService,
 } from "../src/modules/card/index.js";
 import { createPlayerService } from "../src/modules/player/index.js";
+import { createCollectionService } from "../src/modules/collection/index.js";
 
 function createTemplateInput(edition) {
   return {
@@ -46,6 +47,7 @@ test("Card Instances receive per-template serials and ownership history", async 
     cardTemplateService,
     playerService,
   });
+  const collectionService = createCollectionService({ databasePool: pool });
   const testRunId = Date.now().toString();
 
   try {
@@ -95,6 +97,22 @@ test("Card Instances receive per-template serials and ownership history", async 
     assert.equal(firstMint.ownershipHistory.toPlayerId, playerId);
     assert.equal(firstMint.ownershipHistory.reason, "ADMIN_TRANSFER");
     assert.equal(secondMint.ownershipHistory.reason, "EVENT_REWARD");
+
+    const collection = await collectionService.listOwnedCards(
+      { playerId, rarityTier: 6 },
+      { database },
+    );
+    assert.equal(collection.total, "2");
+    assert.equal(collection.cards.length, 2);
+    assert.equal(collection.cards[0].cardInstanceId, secondMint.instance.cardInstanceId);
+    assert.equal(collection.cards[0].playerName, "M8 Test Player");
+    assert.equal(collection.cards[0].rarityTier, 6);
+
+    const emptyTier = await collectionService.listOwnedCards(
+      { playerId, rarityTier: 5 },
+      { database },
+    );
+    assert.equal(emptyTier.total, "0");
 
     const counter = await cardInstanceService.getMintCounter(
       template.cardTemplateId,

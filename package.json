@@ -8,6 +8,7 @@
     "start": "node src/index.js",
     "register:commands": "node scripts/register-commands.js",
     "db:migrate": "node scripts/migrate.js",
+    "db:seed:cards": "node scripts/seed-card-catalog.js",
     "test": "node --test"
   },
   "dependencies": {

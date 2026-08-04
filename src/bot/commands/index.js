@@ -1,5 +1,6 @@
 import { claimCommand } from "./claim.command.js";
 import { cooldownsCommand } from "./cooldowns.command.js";
+import { collectionCommand } from "./collection.command.js";
 import { pingCommand } from "./ping.command.js";
 import { packCommand } from "./pack.command.js";
 import { profileCommand } from "./profile.command.js";
@@ -10,6 +11,7 @@ export const commands = Object.freeze([
   profileCommand,
   claimCommand,
   packCommand,
+  collectionCommand,
   cooldownsCommand,
   rarityCommand,
 ]);

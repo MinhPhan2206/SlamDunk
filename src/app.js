@@ -14,6 +14,7 @@ import {
   createCardTemplateService,
 } from "./modules/card/index.js";
 import { createEconomyService } from "./modules/economy/index.js";
+import { createCollectionService } from "./modules/collection/index.js";
 import { createPlayerService } from "./modules/player/index.js";
 import { createPackService } from "./modules/pack/index.js";
 import { createRewardService } from "./modules/reward/index.js";
@@ -48,9 +49,11 @@ export function createApplication({ discordToken, databaseUrl }) {
     cardTemplateService,
     freeDropConfig: gameConfig.freeDrop,
   });
+  const collectionService = createCollectionService({ databasePool });
   const services = Object.freeze({
     cardInstance: cardInstanceService,
     cardTemplate: cardTemplateService,
+    collection: collectionService,
     economy: economyService,
     pack: packService,
     player: playerService,
