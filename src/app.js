@@ -3,12 +3,14 @@ import { Events } from "discord.js";
 import { createDiscordClient } from "./bot/client/discord-client.js";
 import { commands } from "./bot/commands/index.js";
 import { createInteractionCreateHandler } from "./bot/events/interaction-create.event.js";
+import { gameConfig } from "./config/game-config.js";
 import {
   checkPostgresConnection,
   createPostgresPool,
 } from "./database/connection/postgres.js";
 import { createEconomyService } from "./modules/economy/index.js";
 import { createPlayerService } from "./modules/player/index.js";
+import { createRewardService } from "./modules/reward/index.js";
 
 export function createApplication({ discordToken, databaseUrl }) {
   const client = createDiscordClient();
@@ -18,9 +20,15 @@ export function createApplication({ discordToken, databaseUrl }) {
     databasePool,
     economyService,
   });
+  const rewardService = createRewardService({
+    databasePool,
+    economyService,
+    claimConfig: gameConfig.claim,
+  });
   const services = Object.freeze({
     economy: economyService,
     player: playerService,
+    reward: rewardService,
   });
   const commandRegistry = new Map(
     commands.map((command) => [command.data.name, command]),

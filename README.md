@@ -56,3 +56,4 @@ npm test
 
 - `/ping` — check whether the bot is online.
 - `/profile` — create or view your Player and Wallet profile.
+- `/claim` — receive 300–500 Gold every 30 minutes.

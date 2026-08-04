@@ -740,6 +740,10 @@ Initial implementation may use version-controlled config files.
 
 Move to database-managed configuration only if runtime administration is needed.
 
+The current provisional economy and pack values are documented in
+[`docs/requirements/economy-pack-baseline.md`](../requirements/economy-pack-baseline.md).
+The data model must keep these values configurable because they are not final.
+
 ---
 
 # 27. Key Database Constraints
@@ -781,3 +785,6 @@ Multiple saved lineups
 ```
 
 These should be added only after product decisions are finalized.
+
+The simulation baseline does not resolve these items unless a later product
+decision explicitly promotes a provisional value to a final requirement.

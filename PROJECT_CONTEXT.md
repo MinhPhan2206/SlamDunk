@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M5 completed.
-> **Next milestone:** M6 — /claim.
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M6 completed.
+> **Next milestone:** M7 — Card Template + Traits.
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -362,6 +362,23 @@ Upgrade Gold fee = 0
 
 This means future Gold sinks are important for inflation control.
 
+Provisional simulation baseline:
+
+```text
+/claim: random integer 300–500 Gold every 30 minutes (400 Gold EV)
+/daily: 300 Gold + 5 Shards
+/challenge: point margin × 50 Gold, 60-minute cooldown
+Challenge streak: +5% per win, capped at ×1.5
+
+Standard Pack: 2,000 Gold
+Premium Pack: 6,000 Gold
+Promo/Event Pack: 10,000–12,000 Gold
+```
+
+These are simulation inputs, not final production requirements. Market sales
+and Direct Trade remain player-to-player transfers rather than Gold creation or
+Gold sinks.
+
 ## Shards
 
 Primary intended source:
@@ -378,6 +395,10 @@ upgrade items
 special packs
 event items
 ```
+
+Provisional quicksell and Shard-exchange values are documented in
+`docs/requirements/economy-pack-baseline.md`. Quicksell should primarily return
+Shards so Free Drop does not become another major Gold faucet.
 
 ---
 
@@ -648,6 +669,21 @@ Only `Hall of Fame` is explicitly confirmed as the renamed top rarity.
 Final rarity probabilities are TBD.
 
 The intended curve is very steep, inspired by the provided Basketbot rarity reference.
+
+Provisional Free Drop simulation distribution:
+
+```text
+Tier 1                    50.0000%
+Tier 2                    32.0000%
+Tier 3                    16.0000%
+Tier 4                     1.8000%
+Tier 5                     0.1900%
+Tier 6                     0.0095%
+Tier 7 — Hall of Fame      0.0005%
+```
+
+This distribution totals 100% but remains a card-supply simulation baseline.
+Tier numbering does not finalize the names of Tier 1–6.
 
 Do not silently finalize draft probabilities.
 
@@ -1288,11 +1324,33 @@ final rarity probabilities
 
 Previous numbers such as 15 minutes / 3 candidates were draft only unless later approved.
 
+The economy simulation baseline currently uses:
+
+```text
+Free Drop cooldown: 15 minutes
+Cards shown: 3
+Choose: 1
+Cost: FREE
+```
+
+This is now the provisional baseline for simulation and playtesting, but it is
+not a final production rule. Increasing candidate count is an economy/card-
+supply buff because `P(at least one target) = 1 - (1 - p)^n`.
+
+The provisional product ladder is:
+
+```text
+Free Drop
+→ Standard Gold Pack
+→ Premium / Promo Pack
+→ Shard Key / Special Source
+```
+
 ---
 
 # 21. Reward Commands
 
-Conceptually planned:
+Reward commands:
 
 ```text
 /claim
@@ -1300,17 +1358,30 @@ Conceptually planned:
 /pack
 ```
 
+Confirmed for `/claim`:
+
+```text
+Cooldown: 30 minutes
+Reward: uniformly random integer from 300 through 500 Gold, inclusive
+Database cooldown type: CLAIM
+Economy transaction type: CLAIM
+Discord interaction ID provides idempotency
+```
+
 Still TBD:
 
 ```text
-Claim cooldown
-Claim reward
 Daily cooldown
 Daily reward
 Pack cooldown
 ```
 
 Database must eventually be the source of truth for cooldown state.
+
+The provisional `/daily` simulation baseline remains 300 Gold + 5 Shards.
+
+Possible future Daily milestones are 3, 7, 14, and 21 claims. Exact milestone
+behavior and rewards remain TBD.
 
 ---
 
@@ -1335,6 +1406,21 @@ Shards credited
 Destroyed card remains in database history.
 
 Final Shard values are TBD.
+
+Provisional simulation values:
+
+```text
+Tier 1       1 Shard
+Tier 2       2 Shards
+Tier 3       5 Shards
+Tier 4      30 Shards
+Tier 5     200 Shards
+Tier 6   1,500 Shards
+Tier 7  10,000 Shards
+```
+
+For every Shard Key, expected quicksell value of the result must remain below
+the key cost. A provisional returned-value target is 10%–30% of key cost.
 
 ---
 
@@ -1859,6 +1945,8 @@ Requirements live under:
 
 ```text
 docs/requirements/
+├── game-requirements.md
+└── economy-pack-baseline.md
 ```
 
 ---
@@ -2155,6 +2243,28 @@ PostgreSQL integration coverage using node:test
 M5 intentionally did not add `/claim`, cooldowns, rewards, or later gameplay
 features.
 
+## M6 — /claim
+
+Completed.
+
+Implemented concepts:
+
+```text
+004_create_player_cooldowns.sql
+generic PlayerCooldown persistence keyed by player and cooldown type
+Reward module with atomic claimReward operation
+PostgreSQL-authoritative cooldown time
+30-minute CLAIM cooldown
+uniform random integer reward from 300 through 500 Gold
+atomic cooldown + Wallet + EconomyTransaction update
+Discord interaction idempotency
+/claim guild slash command and cooldown presenter
+integration and command tests using node:test
+```
+
+M6 intentionally did not add `/daily`, Cards, Pack, Battle, Market, Trade, or
+Fusion.
+
 ---
 
 # 44. Current Next Milestone
@@ -2162,20 +2272,20 @@ features.
 Current next milestone:
 
 ```text
-M6 — /claim
+M7 — Card Template + Traits
 ```
 
-Codex should wait for an explicit M6 task/prompt before implementation.
+Codex should wait for an explicit M7 task/prompt before implementation.
 
 ---
 
-# 45. M6 Scope Guardrail
+# 45. M7 Scope Guardrail
 
-The next milestone is `/claim`, but its exact acceptance criteria must come
+The next milestone is Card Template + Traits, but its exact acceptance criteria must come
 from the explicit milestone prompt.
 
-Do not automatically implement `/daily`, Cards, Pack, Battle, Market, Trade,
-or Fusion as part of M6.
+Do not automatically implement Card Instance, `/pack`, Collection, Battle,
+Market, Trade, or Fusion as part of M7.
 
 ---
 
@@ -2190,11 +2300,14 @@ explicit migration runner
 001_create_players.sql
 002_create_wallets.sql
 003_create_economy_transactions.sql
+004_create_player_cooldowns.sql
 Player repository/service
 Wallet repository/service
 immutable EconomyTransaction repository
 atomic credit, debit, and transfer Economy service operations
+Reward service with atomic `/claim` cooldown and Gold credit
 /profile command and profile embed presenter
+/claim command and cooldown presenter
 ```
 
 Inspect the real repository and migration history before changing this
@@ -2365,7 +2478,6 @@ final candidate count
 pack timeout behavior
 paid pack structure/prices
 
-Claim cooldown/reward
 Daily cooldown/reward
 Quicksell values
 
@@ -2390,6 +2502,10 @@ coach
 chemistry
 duo/synergy
 ```
+
+The current economy and pack simulation baselines for these unresolved values
+are recorded in `docs/requirements/economy-pack-baseline.md`. They remain
+provisional until explicitly approved as production balance.
 
 If implementation requires one of these and no later decision exists, surface it as TBD instead of inventing a permanent rule.
 
@@ -2473,16 +2589,17 @@ M2 PostgreSQL    → DONE
 M3 Player/Wallet → DONE
 M4 /profile      → DONE
 M5 Economy Ledger → DONE
-M6 /claim        → NEXT
+M6 /claim        → DONE
+M7 Card Template + Traits → NEXT
 ```
 
-Before doing M6:
+Before doing M7:
 
 ```text
 inspect the real repository
 ```
 
-Do not rewrite valid M1–M5 code merely to match an example file structure.
+Do not rewrite valid M1–M6 code merely to match an example file structure.
 
 ---
 

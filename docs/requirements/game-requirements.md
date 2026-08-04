@@ -1,5 +1,20 @@
 # Game Requirements
 
+## Supporting Balance Documents
+
+- [Economy, Pack Odds, and Progression Baseline](economy-pack-baseline.md) —
+  provisional values for simulation and playtesting; not final production
+  requirements.
+
+## Confirmed Claim Rules
+
+- `/claim` has a 30-minute cooldown.
+- Each successful claim awards a uniformly random integer from 300 through 500
+  Gold, inclusive.
+- Cooldown state, Wallet credit, and EconomyTransaction history must be updated
+  atomically in PostgreSQL.
+- Retrying the same Discord interaction must not award Gold twice.
+
 Tài liệu yêu cầu trò chơi cho dự án SlamDunk Discord Bot.
 
 ## Confirmed Card Level and Fusion Rules

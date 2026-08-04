@@ -279,6 +279,16 @@ export function createEconomyService({ databasePool }) {
       return wallet;
     },
 
+    async getTransactionByIdempotencyKey(
+      idempotencyKey,
+      { database = databasePool } = {},
+    ) {
+      return economyTransactionRepository.findByIdempotencyKey(
+        database,
+        normalizeRequiredText(idempotencyKey, "idempotencyKey"),
+      );
+    },
+
     async assertSufficientBalance(
       playerId,
       currency,

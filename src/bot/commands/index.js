@@ -1,4 +1,9 @@
+import { claimCommand } from "./claim.command.js";
 import { pingCommand } from "./ping.command.js";
 import { profileCommand } from "./profile.command.js";
 
-export const commands = Object.freeze([pingCommand, profileCommand]);
+export const commands = Object.freeze([
+  pingCommand,
+  profileCommand,
+  claimCommand,
+]);

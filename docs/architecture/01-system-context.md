@@ -340,7 +340,7 @@ Pack cooldown
 Pack reveal rules
 Pack timeout behavior
 Paid pack structure
-Claim / Daily rewards
+Daily rewards
 Quicksell values
 Additional Gold sinks
 Listed-card battle eligibility
@@ -353,6 +353,10 @@ Battle rewards
 ```
 
 These are product/balance decisions and should not require a major architectural redesign.
+
+Provisional inputs for simulation and playtesting are recorded in
+[`docs/requirements/economy-pack-baseline.md`](../requirements/economy-pack-baseline.md).
+They do not convert these TBD items into final architecture requirements.
 
 ---
 
