@@ -223,6 +223,14 @@ HALL_OF_FAME
 
 Final names for all lower tiers should be treated as configuration/product data until finalized.
 
+### M7 Implementation Note
+
+The initial schema stores rarity as numeric `rarity_tier` from 1 through 7 so
+Tier 1–6 names can remain configurable. Tier 7 represents `HALL_OF_FAME`.
+
+Height and weight are stored explicitly as `height_cm` and `weight_kg`. Base
+stats must be non-negative, but no final game-balance maximum is enforced yet.
+
 ---
 
 # 8. TraitDefinition
@@ -263,6 +271,11 @@ Composite primary key:
 ```
 
 Traits and tiers are fixed at Card Template level.
+
+The M7 schema stores `trait_tier` as the numeric value 1, 2, or 3 and maps those
+values to the labels I, II, and III. This allows Total Trait Level to be computed
+as a direct sum. Provisional rarity Trait Level budgets are not database
+constraints because they still require battle simulation and balancing.
 
 ---
 

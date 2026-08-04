@@ -8,9 +8,11 @@ import {
   checkPostgresConnection,
   createPostgresPool,
 } from "./database/connection/postgres.js";
+import { createCardTemplateService } from "./modules/card/index.js";
 import { createEconomyService } from "./modules/economy/index.js";
 import { createPlayerService } from "./modules/player/index.js";
 import { createRewardService } from "./modules/reward/index.js";
+import { createTraitService } from "./modules/trait/index.js";
 
 export function createApplication({ discordToken, databaseUrl }) {
   const client = createDiscordClient();
@@ -25,10 +27,17 @@ export function createApplication({ discordToken, databaseUrl }) {
     economyService,
     claimConfig: gameConfig.claim,
   });
+  const cardTemplateService = createCardTemplateService({ databasePool });
+  const traitService = createTraitService({
+    databasePool,
+    cardTemplateService,
+  });
   const services = Object.freeze({
+    cardTemplate: cardTemplateService,
     economy: economyService,
     player: playerService,
     reward: rewardService,
+    trait: traitService,
   });
   const commandRegistry = new Map(
     commands.map((command) => [command.data.name, command]),

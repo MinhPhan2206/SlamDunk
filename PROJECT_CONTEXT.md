@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M6 completed.
-> **Next milestone:** M7 — Card Template + Traits.
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M7 completed.
+> **Next milestone:** M8 — Card Instance.
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -2265,6 +2265,30 @@ integration and command tests using node:test
 M6 intentionally did not add `/daily`, Cards, Pack, Battle, Market, Trade, or
 Fusion.
 
+## M7 — Card Template + Traits
+
+Completed.
+
+Implemented concepts:
+
+```text
+005_create_card_templates_and_traits.sql
+card_templates table with identity, positions, rarity tier, OVR, and 8 base stats
+trait_definitions catalog table
+card_template_traits fixed many-to-many assignments
+Trait Tier stored as 1 / 2 / 3 and exposed as I / II / III
+Total Trait Level calculated as the sum of assigned Trait Tiers
+Card Template and Trait repositories/services
+inactive Trait assignment protection
+PostgreSQL constraints for positions, rarity tier, OVR, and Trait Tier
+PostgreSQL integration coverage using node:test
+```
+
+M7 intentionally did not seed a final Trait catalog or finalize Tier 1–6 names,
+base-stat maximums, Trait battle coefficients, or rarity Trait Level budgets.
+It did not add Card Instance, serial/mint state, ownership, `/pack`, or later
+gameplay features.
+
 ---
 
 # 44. Current Next Milestone
@@ -2272,20 +2296,20 @@ Fusion.
 Current next milestone:
 
 ```text
-M7 — Card Template + Traits
+M8 — Card Instance
 ```
 
-Codex should wait for an explicit M7 task/prompt before implementation.
+Codex should wait for an explicit M8 task/prompt before implementation.
 
 ---
 
-# 45. M7 Scope Guardrail
+# 45. M8 Scope Guardrail
 
-The next milestone is Card Template + Traits, but its exact acceptance criteria must come
+The next milestone is Card Instance, but its exact acceptance criteria must come
 from the explicit milestone prompt.
 
-Do not automatically implement Card Instance, `/pack`, Collection, Battle,
-Market, Trade, or Fusion as part of M7.
+Do not automatically implement `/pack`, Collection, Lineup, Battle, Quicksell,
+Fusion, Market, or Trade as part of M8.
 
 ---
 
@@ -2301,11 +2325,14 @@ explicit migration runner
 002_create_wallets.sql
 003_create_economy_transactions.sql
 004_create_player_cooldowns.sql
+005_create_card_templates_and_traits.sql
 Player repository/service
 Wallet repository/service
 immutable EconomyTransaction repository
 atomic credit, debit, and transfer Economy service operations
 Reward service with atomic `/claim` cooldown and Gold credit
+Card Template repository/service
+Trait Definition and Card Template Trait repository/service
 /profile command and profile embed presenter
 /claim command and cooldown presenter
 ```
@@ -2590,16 +2617,17 @@ M3 Player/Wallet → DONE
 M4 /profile      → DONE
 M5 Economy Ledger → DONE
 M6 /claim        → DONE
-M7 Card Template + Traits → NEXT
+M7 Card Template + Traits → DONE
+M8 Card Instance → NEXT
 ```
 
-Before doing M7:
+Before doing M8:
 
 ```text
 inspect the real repository
 ```
 
-Do not rewrite valid M1–M6 code merely to match an example file structure.
+Do not rewrite valid M1–M7 code merely to match an example file structure.
 
 ---
 
