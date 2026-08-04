@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M14 completed.
-> **Next milestone:** M15 — Market.
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M15 completed.
+> **Next milestone:** M16 — Direct Trade.
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -2446,7 +2446,27 @@ atomic PostgreSQL transactions
 integration and command tests using node:test
 ```
 
-Current next milestone is M15 — Market. Do not implement it automatically.
+## M15 — Market
+
+Completed.
+
+Implemented concepts:
+
+```text
+011_create_market_listings.sql
+/market browse, sell, buy, and cancel subcommands
+fixed positive Gold price
+0% listing and sale fee; seller receives full price
+one ACTIVE listing per Card Instance
+market lock lifecycle and duplicate-listing protection
+atomic listing purchase with sorted Wallet locks
+MARKET_PURCHASE and MARKET_SALE ledger entries
+Card ownership transfer and ownership history
+integration and command tests using node:test
+```
+
+Battle eligibility for listed cards remains TBD. M15 did not implement Direct
+Trade. Current next milestone is M16 — Direct Trade.
 
 ---
 
@@ -2468,6 +2488,7 @@ explicit migration runner
 008_create_lineups.sql
 009_create_battle_matches.sql
 010_create_fusions_and_upgrade_items.sql
+011_create_market_listings.sql
 Player repository/service
 Wallet repository/service
 immutable EconomyTransaction repository
@@ -2482,6 +2503,7 @@ read-only Collection repository/service
 Lineup repository/service with five position slots
 Battle repository/service with persisted PvE snapshots
 Fusion and Upgrade Item repository/service with audit history
+Market repository/service with atomic Gold and Card transfer
 /profile command and profile embed presenter
 /claim command and cooldown presenter
 /pack command and button selection handler
@@ -2489,6 +2511,7 @@ Fusion and Upgrade Item repository/service with audit history
 /lineup view, set, and remove subcommands
 /battle command and result presenter
 /upgrade fusion and item subcommands
+/market browse, sell, buy, and cancel subcommands
 /cooldowns command for CLAIM and FREE_PACK cooldown status
 /rarity command for Card Template discovery by tier
 ```
@@ -2781,16 +2804,17 @@ M11 Lineup       → DONE
 M12 Battle MVP   → DONE
 M13 Quicksell    → DONE
 M14 Fusion / Upgrade → DONE
-M15 Market        → NEXT
+M15 Market        → DONE
+M16 Direct Trade  → NEXT
 ```
 
-Before doing M15:
+Before doing M16:
 
 ```text
 inspect the real repository
 ```
 
-Do not rewrite valid M1–M14 code merely to match an example file structure.
+Do not rewrite valid M1–M15 code merely to match an example file structure.
 
 ---
 

@@ -67,6 +67,59 @@ export const cardInstanceRepository = Object.freeze({
     return mapCardInstance(result.rows[0]);
   },
 
+  async findByIdForUpdate(database, cardInstanceId) {
+    const result = await database.query(
+      `
+        SELECT ${CARD_INSTANCE_COLUMNS}
+        FROM card_instances
+        WHERE card_instance_id = $1
+        FOR UPDATE
+      `,
+      [cardInstanceId],
+    );
+
+    return mapCardInstance(result.rows[0]);
+  },
+
+  async setMarketLock(database, { cardInstanceId, marketLock }) {
+    const result = await database.query(
+      `
+        UPDATE card_instances
+        SET market_lock = $2, updated_at = CURRENT_TIMESTAMP
+        WHERE card_instance_id = $1
+        RETURNING ${CARD_INSTANCE_COLUMNS}
+      `,
+      [cardInstanceId, marketLock],
+    );
+
+    return mapCardInstance(result.rows[0]);
+  },
+
+  async transferMarketOwnership(
+    database,
+    { cardInstanceId, fromPlayerId, toPlayerId },
+  ) {
+    const result = await database.query(
+      `
+        UPDATE card_instances
+        SET
+          owner_player_id = $3,
+          ownership_cycles = ownership_cycles + 1,
+          market_lock = FALSE,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE card_instance_id = $1
+          AND owner_player_id = $2
+          AND status = 'ACTIVE'
+          AND market_lock = TRUE
+          AND trade_lock = FALSE
+        RETURNING ${CARD_INSTANCE_COLUMNS}
+      `,
+      [cardInstanceId, fromPlayerId, toPlayerId],
+    );
+
+    return mapCardInstance(result.rows[0]);
+  },
+
   async create(
     database,
     {

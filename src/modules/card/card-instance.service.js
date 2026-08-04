@@ -109,6 +109,146 @@ export function createCardInstanceService({
   }
 
   return Object.freeze({
+    async getInstanceForUpdate(
+      cardInstanceId,
+      { database = databasePool } = {},
+    ) {
+      const instance = await cardInstanceRepository.findByIdForUpdate(
+        database,
+        normalizeId(cardInstanceId, "cardInstanceId"),
+      );
+      if (!instance) {
+        throw new CardError(
+          "CARD_INSTANCE_NOT_FOUND",
+          "Card Instance was not found.",
+        );
+      }
+      return instance;
+    },
+
+    async lockForMarket(
+      { cardInstanceId, ownerPlayerId },
+      { database } = {},
+    ) {
+      const normalizedCardInstanceId = normalizeId(
+        cardInstanceId,
+        "cardInstanceId",
+      );
+      const normalizedOwnerPlayerId = normalizeId(
+        ownerPlayerId,
+        "ownerPlayerId",
+      );
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const instance = await cardInstanceRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedCardInstanceId,
+        );
+        if (!instance || instance.ownerPlayerId !== normalizedOwnerPlayerId) {
+          throw new CardError("CARD_NOT_OWNED", "You do not own this card.");
+        }
+        if (
+          instance.status !== "ACTIVE" ||
+          instance.marketLock ||
+          instance.tradeLock
+        ) {
+          throw new CardError(
+            "CARD_NOT_MARKET_AVAILABLE",
+            "This card is not available for a Market listing.",
+          );
+        }
+        return cardInstanceRepository.setMarketLock(transactionDatabase, {
+          cardInstanceId: normalizedCardInstanceId,
+          marketLock: true,
+        });
+      });
+    },
+
+    async unlockFromMarket(
+      { cardInstanceId, ownerPlayerId },
+      { database } = {},
+    ) {
+      const normalizedCardInstanceId = normalizeId(
+        cardInstanceId,
+        "cardInstanceId",
+      );
+      const normalizedOwnerPlayerId = normalizeId(
+        ownerPlayerId,
+        "ownerPlayerId",
+      );
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const instance = await cardInstanceRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedCardInstanceId,
+        );
+        if (
+          !instance ||
+          instance.ownerPlayerId !== normalizedOwnerPlayerId ||
+          instance.status !== "ACTIVE" ||
+          !instance.marketLock
+        ) {
+          throw new CardError(
+            "CARD_MARKET_LOCK_INVALID",
+            "The card Market lock is invalid.",
+          );
+        }
+        return cardInstanceRepository.setMarketLock(transactionDatabase, {
+          cardInstanceId: normalizedCardInstanceId,
+          marketLock: false,
+        });
+      });
+    },
+
+    async transferMarketOwnership(
+      { cardInstanceId, fromPlayerId, toPlayerId, listingId },
+      { database } = {},
+    ) {
+      const normalizedCardInstanceId = normalizeId(
+        cardInstanceId,
+        "cardInstanceId",
+      );
+      const normalizedFromPlayerId = normalizeId(fromPlayerId, "fromPlayerId");
+      const normalizedToPlayerId = normalizeId(toPlayerId, "toPlayerId");
+      const normalizedListingId = normalizeId(listingId, "listingId");
+
+      if (normalizedFromPlayerId === normalizedToPlayerId) {
+        throw new CardError(
+          "CARD_TRANSFER_SAME_OWNER",
+          "Card transfer requires a different owner.",
+        );
+      }
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const updated = await cardInstanceRepository.transferMarketOwnership(
+          transactionDatabase,
+          {
+            cardInstanceId: normalizedCardInstanceId,
+            fromPlayerId: normalizedFromPlayerId,
+            toPlayerId: normalizedToPlayerId,
+          },
+        );
+        if (!updated) {
+          throw new CardError(
+            "CARD_MARKET_TRANSFER_INVALID",
+            "The listed card is no longer available for transfer.",
+          );
+        }
+        const ownershipHistory = await cardOwnershipRepository.create(
+          transactionDatabase,
+          {
+            cardInstanceId: normalizedCardInstanceId,
+            fromPlayerId: normalizedFromPlayerId,
+            toPlayerId: normalizedToPlayerId,
+            reason: "MARKET",
+            referenceType: "MARKET_LISTING",
+            referenceId: normalizedListingId,
+          },
+        );
+        return Object.freeze({ instance: updated, ownershipHistory });
+      });
+    },
+
     async recordGamesPlayed(
       { ownerPlayerId, cardInstanceIds },
       { database = databasePool } = {},

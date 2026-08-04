@@ -85,3 +85,12 @@ Hai Card Instance nguồn được giữ lại trong lịch sử với trạng t
 - Không có Gold fee.
 - Trong M14, Level Up chỉ được cấp bằng công cụ admin cục bộ; nguồn gameplay
   hoặc shop vẫn chưa được triển khai.
+
+## M15 Market Behavior
+
+- Market dùng fixed Gold price; listing fee và Market fee đều bằng 0.
+- Seller nhận toàn bộ giá bán.
+- Mỗi Card Instance chỉ có tối đa một listing `ACTIVE`.
+- Listing khoá thẻ khỏi Quicksell, Fusion, Direct Trade và listing trùng.
+- Mua listing chuyển Gold, ownership và trạng thái listing trong một transaction.
+- Battle eligibility của thẻ đang được listing vẫn là TBD.

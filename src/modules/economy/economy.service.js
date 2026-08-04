@@ -227,12 +227,19 @@ function normalizeTransferInput(input) {
     throw new TypeError("A transfer requires two different players.");
   }
 
+  const fallbackTransactionType = input.transactionType;
+  const debitTransactionType =
+    input.debitTransactionType ?? fallbackTransactionType;
+  const creditTransactionType =
+    input.creditTransactionType ?? fallbackTransactionType;
+
   return Object.freeze({
     fromPlayerId,
     toPlayerId,
     currency: normalizeCurrency(input.currency),
     amount: normalizePositiveAmount(input.amount),
-    transactionType: normalizeTransactionType(input.transactionType),
+    debitTransactionType: normalizeTransactionType(debitTransactionType),
+    creditTransactionType: normalizeTransactionType(creditTransactionType),
     idempotencyKey: normalizeRequiredText(
       input.idempotencyKey,
       "idempotencyKey",
@@ -359,7 +366,7 @@ export function createEconomyService({ databasePool }) {
           playerId: normalizedInput.fromPlayerId,
           currency: normalizedInput.currency,
           amount: -normalizedInput.amount,
-          transactionType: normalizedInput.transactionType,
+          transactionType: normalizedInput.debitTransactionType,
           referenceType: normalizedInput.referenceType,
           referenceId: normalizedInput.referenceId,
         };
@@ -367,7 +374,7 @@ export function createEconomyService({ databasePool }) {
           playerId: normalizedInput.toPlayerId,
           currency: normalizedInput.currency,
           amount: normalizedInput.amount,
-          transactionType: normalizedInput.transactionType,
+          transactionType: normalizedInput.creditTransactionType,
           referenceType: normalizedInput.referenceType,
           referenceId: normalizedInput.referenceId,
         };
@@ -439,7 +446,7 @@ export function createEconomyService({ databasePool }) {
             playerId: normalizedInput.fromPlayerId,
             currency: normalizedInput.currency,
             amount: (-normalizedInput.amount).toString(),
-            transactionType: normalizedInput.transactionType,
+            transactionType: normalizedInput.debitTransactionType,
             referenceType: normalizedInput.referenceType,
             referenceId: normalizedInput.referenceId,
             idempotencyKey: debitKey,
@@ -452,7 +459,7 @@ export function createEconomyService({ databasePool }) {
             playerId: normalizedInput.toPlayerId,
             currency: normalizedInput.currency,
             amount: normalizedInput.amount.toString(),
-            transactionType: normalizedInput.transactionType,
+            transactionType: normalizedInput.creditTransactionType,
             referenceType: normalizedInput.referenceType,
             referenceId: normalizedInput.referenceId,
             idempotencyKey: creditKey,
