@@ -12,9 +12,16 @@ function requireEnvironmentVariable(name) {
   return value;
 }
 
-export function getDiscordRuntimeConfig() {
+export function getApplicationRuntimeConfig() {
   return Object.freeze({
-    token: requireEnvironmentVariable("DISCORD_TOKEN"),
+    discordToken: requireEnvironmentVariable("DISCORD_TOKEN"),
+    ...getDatabaseConfig(),
+  });
+}
+
+export function getDatabaseConfig() {
+  return Object.freeze({
+    databaseUrl: requireEnvironmentVariable("DATABASE_URL"),
   });
 }
 

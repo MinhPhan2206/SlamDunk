@@ -588,7 +588,7 @@ Avoid global mutable singletons where practical.
 ```text
 M0  — Project Bootstrap
 M1  — Discord Foundation (/ping)
-M2  — PostgreSQL Connection
+M2  — PostgreSQL Foundation
 M3  — Player + Wallet
 M4  — /profile
 M5  — Economy Ledger

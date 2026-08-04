@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "register:commands": "node scripts/register-commands.js"
+    "register:commands": "node scripts/register-commands.js",
+    "db:migrate": "node scripts/migrate.js"
   },
   "dependencies": {
     "discord.js": "^14.27.0",

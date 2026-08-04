@@ -1,33 +1,43 @@
 import { createApplication } from "./app.js";
-import { getDiscordRuntimeConfig } from "./config/env.js";
+import { getApplicationRuntimeConfig } from "./config/env.js";
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
 
 async function main() {
-  const config = getDiscordRuntimeConfig();
-  const application = createApplication({ discordToken: config.token });
+  const config = getApplicationRuntimeConfig();
+  const application = createApplication(config);
   let isShuttingDown = false;
 
-  const shutdown = (signal) => {
+  const shutdown = async (signal) => {
     if (isShuttingDown) {
       return;
     }
 
     isShuttingDown = true;
     console.log(`Received ${signal}. Shutting down SlamDunk.`);
-    application.stop();
-    process.exitCode = 0;
+
+    try {
+      await application.stop();
+      process.exitCode = 0;
+    } catch (error) {
+      console.error(`SlamDunk shutdown failed: ${getErrorMessage(error)}`);
+      process.exitCode = 1;
+    }
   };
 
-  process.once("SIGINT", () => shutdown("SIGINT"));
-  process.once("SIGTERM", () => shutdown("SIGTERM"));
+  process.once("SIGINT", () => {
+    void shutdown("SIGINT");
+  });
+  process.once("SIGTERM", () => {
+    void shutdown("SIGTERM");
+  });
 
   try {
     await application.start();
   } catch (error) {
-    application.stop();
+    await application.stop();
     throw error;
   }
 }

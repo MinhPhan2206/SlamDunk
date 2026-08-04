@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0 completed, M1 completed.  
-> **Next milestone:** M2 — PostgreSQL Foundation.  
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M3 completed.  
+> **Next milestone:** M4 — /profile.  
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -2078,6 +2078,44 @@ However:
 
 M1 should not have introduced PostgreSQL connection or gameplay features.
 
+## M2 — PostgreSQL Foundation
+
+Completed.
+
+Implemented concepts:
+
+```text
+pg Pool
+DATABASE_URL configuration
+startup connectivity check with SELECT 1
+database-before-Discord startup order
+graceful pool shutdown
+safe connection error handling
+```
+
+Successful `/ping` execution after the PostgreSQL startup check confirmed the
+M2 end-to-end application flow.
+
+## M3 — Player + Wallet
+
+Completed.
+
+Implemented concepts:
+
+```text
+explicit SQL migration runner
+schema_migrations history
+players table
+wallets table
+Player module
+Economy/Wallet module
+atomic Player + Wallet creation
+database constraints for identity, progression, and non-negative balances
+```
+
+M3 intentionally did not add a Discord command, Economy Ledger, currency
+mutation, or later gameplay features.
+
 ---
 
 # 44. Current Next Milestone
@@ -2085,71 +2123,39 @@ M1 should not have introduced PostgreSQL connection or gameplay features.
 Current next milestone:
 
 ```text
-M2 — PostgreSQL Foundation
+M4 — /profile
 ```
 
-The user has NOT asked this context document itself to implement M2.
-
-Codex should wait for the explicit M2 task/prompt.
+Codex should wait for an explicit M4 task/prompt before implementation.
 
 ---
 
-# 45. Expected M2 Goal
+# 45. M4 Scope Guardrail
 
-When M2 is explicitly requested, its purpose is to prove:
+The next milestone is `/profile`, but its exact acceptance criteria must come
+from the explicit milestone prompt.
 
-```text
-SlamDunk Node.js Application
-        ↓
-PostgreSQL connection pool
-        ↓
-Successful DB connectivity
-        ↓
-Clean application startup/shutdown
-```
-
-M2 should focus on infrastructure only.
-
-It should not yet implement:
-
-```text
-Player
-Wallet
-/profile
-Economy Ledger
-Cards
-Pack
-Battle
-Market
-Trade
-Fusion
-```
-
-Those belong to later milestones.
+Do not automatically implement Economy Ledger, `/claim`, Cards, Pack, Battle,
+Market, Trade, or Fusion as part of M4.
 
 ---
 
-# 46. Likely M2 Concerns
+# 46. Current Database Foundation
 
-When implementation begins, expect discussion around:
+The repository now contains:
 
 ```text
 pg Pool
-DATABASE_URL
-database connection module
-startup health/connection check
-transaction helper foundation
-graceful pool shutdown
-migration strategy
-development DB configuration
-error handling
+transaction helper
+explicit migration runner
+001_create_players.sql
+002_create_wallets.sql
+Player repository/service
+Wallet repository/service
 ```
 
-Do not introduce ORM unless explicitly approved.
-
-Do not create gameplay schema prematurely.
-
-Exact M2 acceptance criteria should come from the explicit milestone prompt.
+Inspect the real repository and migration history before changing this
+foundation.
 
 ---
 
@@ -2420,18 +2426,18 @@ Requirements     → DONE enough to implement
 Architecture     → DONE
 M0 Bootstrap     → DONE
 M1 Discord       → DONE
-M2 PostgreSQL    → NEXT
+M2 PostgreSQL    → DONE
+M3 Player/Wallet → DONE
+M4 /profile      → NEXT
 ```
 
-Before doing M2:
+Before doing M4:
 
 ```text
 inspect the real repository
 ```
 
-because M1 was implemented by another agent and this document does not claim knowledge of its exact code.
-
-Do not rewrite valid M1 code merely to match an example file structure.
+Do not rewrite valid M1–M3 code merely to match an example file structure.
 
 ---
 

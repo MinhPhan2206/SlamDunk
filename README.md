@@ -21,7 +21,17 @@ SlamDunk uses a Modular Monolith architecture. See the
 ## Local Development
 
 Install the Node.js dependencies with `npm install`, then copy `.env.example` to
-`.env` and provide `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, and `DISCORD_GUILD_ID`.
+`.env` and provide `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, `DISCORD_GUILD_ID`, and
+`DATABASE_URL`.
+
+PostgreSQL must be running and reachable through `DATABASE_URL`. At startup,
+SlamDunk verifies the database connection before logging into Discord.
+
+Apply pending database migrations explicitly:
+
+```text
+npm run db:migrate
+```
 
 Register the development guild commands explicitly:
 
