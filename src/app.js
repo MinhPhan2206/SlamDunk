@@ -8,7 +8,10 @@ import {
   checkPostgresConnection,
   createPostgresPool,
 } from "./database/connection/postgres.js";
-import { createCardTemplateService } from "./modules/card/index.js";
+import {
+  createCardInstanceService,
+  createCardTemplateService,
+} from "./modules/card/index.js";
 import { createEconomyService } from "./modules/economy/index.js";
 import { createPlayerService } from "./modules/player/index.js";
 import { createRewardService } from "./modules/reward/index.js";
@@ -32,7 +35,13 @@ export function createApplication({ discordToken, databaseUrl }) {
     databasePool,
     cardTemplateService,
   });
+  const cardInstanceService = createCardInstanceService({
+    databasePool,
+    cardTemplateService,
+    playerService,
+  });
   const services = Object.freeze({
+    cardInstance: cardInstanceService,
     cardTemplate: cardTemplateService,
     economy: economyService,
     player: playerService,

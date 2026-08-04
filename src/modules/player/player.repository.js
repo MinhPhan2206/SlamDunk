@@ -35,6 +35,15 @@ function mapPlayer(row) {
 }
 
 export const playerRepository = Object.freeze({
+  async findById(database, playerId) {
+    const result = await database.query(
+      `SELECT ${PLAYER_COLUMNS} FROM players WHERE player_id = $1`,
+      [playerId],
+    );
+
+    return mapPlayer(result.rows[0]);
+  },
+
   async findByDiscordUserId(database, discordUserId) {
     const result = await database.query(
       `SELECT ${PLAYER_COLUMNS} FROM players WHERE discord_user_id = $1`,

@@ -16,8 +16,22 @@ function validateUsernameSnapshot(usernameSnapshot) {
   }
 }
 
+function validatePlayerId(playerId) {
+  const value = String(playerId);
+
+  if (!/^\d+$/.test(value) || BigInt(value) <= 0n) {
+    throw new TypeError("playerId must be a positive integer.");
+  }
+
+  return value;
+}
+
 export function createPlayerService({ databasePool, economyService }) {
   return Object.freeze({
+    async getPlayerById(playerId, { database = databasePool } = {}) {
+      return playerRepository.findById(database, validatePlayerId(playerId));
+    },
+
     async getPlayer(discordUserId) {
       validateDiscordUserId(discordUserId);
       return playerRepository.findByDiscordUserId(databasePool, discordUserId);

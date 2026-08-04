@@ -334,6 +334,13 @@ UNIQUE(card_template_id, serial_number)
 
 Serial numbers are never reused.
 
+### M8 Implementation Note
+
+Migration `006_create_card_instances.sql` implements `card_instances` with a
+unique serial per Card Template, Card Level 1–5, lifecycle status, ownership,
+obtain method, and Market/Trade lock flags. Active instances must have an owner.
+Destroyed-card and lock state constraints are enforced by PostgreSQL.
+
 ---
 
 # 11. CardMintCounter
@@ -374,6 +381,11 @@ net       → -1
 
 All counter changes must occur transactionally.
 
+M8 allocates the next serial through an atomic row update in
+`card_mint_counters`. Mint counter allocation, Card Instance insertion, and the
+initial ownership-history record share one PostgreSQL transaction. Pack-level
+idempotency belongs to M9 because a Pack session will own that operation.
+
 ---
 
 # 12. CardOwnershipHistory
@@ -405,6 +417,10 @@ ADMIN_TRANSFER
 ```
 
 Destroyed cards are represented by lifecycle status rather than a fake owner.
+
+The M8 mint service writes the initial ownership event for every new Card
+Instance. Transfer and destruction operations remain deferred to their own
+milestones.
 
 ---
 

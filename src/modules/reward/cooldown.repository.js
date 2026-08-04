@@ -43,6 +43,19 @@ export const cooldownRepository = Object.freeze({
     return mapCooldown(result.rows[0]);
   },
 
+  async find(database, { playerId, cooldownType }) {
+    const result = await database.query(
+      `
+        SELECT player_id, cooldown_type, available_at, updated_at
+        FROM player_cooldowns
+        WHERE player_id = $1 AND cooldown_type = $2
+      `,
+      [playerId, cooldownType],
+    );
+
+    return mapCooldown(result.rows[0]);
+  },
+
   async setAvailableAt(database, { playerId, cooldownType, availableAt }) {
     const result = await database.query(
       `

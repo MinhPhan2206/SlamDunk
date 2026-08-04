@@ -57,6 +57,24 @@ function mapCardTemplate(row) {
 }
 
 export const cardTemplateRepository = Object.freeze({
+  async findByRarityTier(database, rarityTier, limit) {
+    const result = await database.query(
+      `
+        SELECT ${CARD_TEMPLATE_COLUMNS}, COUNT(*) OVER() AS total_count
+        FROM card_templates
+        WHERE rarity_tier = $1
+        ORDER BY overall DESC, player_name, edition, card_template_id
+        LIMIT $2
+      `,
+      [rarityTier, limit],
+    );
+
+    return Object.freeze({
+      templates: result.rows.map(mapCardTemplate),
+      total: result.rows[0]?.total_count ?? "0",
+    });
+  },
+
   async findById(database, cardTemplateId) {
     const result = await database.query(
       `

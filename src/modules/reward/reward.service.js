@@ -110,6 +110,27 @@ export function createRewardService({
   const config = validateClaimConfig(claimConfig);
 
   return Object.freeze({
+    async getClaimCooldown(
+      playerId,
+      { database = databasePool } = {},
+    ) {
+      const normalizedPlayerId = normalizePlayerId(playerId);
+      const [currentTime, cooldown] = await Promise.all([
+        cooldownRepository.getDatabaseTime(database),
+        cooldownRepository.find(database, {
+          playerId: normalizedPlayerId,
+          cooldownType: CLAIM_COOLDOWN_TYPE,
+        }),
+      ]);
+
+      return Object.freeze({
+        cooldownType: CLAIM_COOLDOWN_TYPE,
+        available: !cooldown || cooldown.availableAt <= currentTime,
+        availableAt: cooldown?.availableAt ?? null,
+        checkedAt: currentTime,
+      });
+    },
+
     async claimReward({ playerId, interactionId }, { database } = {}) {
       const normalizedPlayerId = normalizePlayerId(playerId);
       const normalizedInteractionId = normalizeInteractionId(interactionId);

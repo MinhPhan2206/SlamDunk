@@ -278,9 +278,7 @@ database/
 └── migrations/
 ```
 
-If ORM/query builder is selected later, adapt this area.
-
-Repository modules should use the database adapter.
+Repository modules use the database adapter and direct `pg` queries.
 
 Domain services should not import raw PostgreSQL clients directly.
 
@@ -292,17 +290,14 @@ Domain services should not import raw PostgreSQL clients directly.
 migrations/
 ├── 001_create_players.sql
 ├── 002_create_wallets.sql
-├── 003_create_card_templates.sql
-├── 004_create_traits.sql
-├── 005_create_card_instances.sql
-├── 006_create_economy_transactions.sql
-├── 007_create_market.sql
-├── 008_create_trades.sql
-├── 009_create_lineups.sql
-└── 010_create_matches.sql
+├── 003_create_economy_transactions.sql
+├── 004_create_player_cooldowns.sql
+├── 005_create_card_templates_and_traits.sql
+└── 006_create_card_instances.sql
 ```
 
-Exact migration technology depends on the selected ORM/query builder.
+Future migrations are added only when their implementation milestone begins.
+The project uses its explicit SQL migration runner and does not use an ORM.
 
 Never manually edit production schema without migration history.
 

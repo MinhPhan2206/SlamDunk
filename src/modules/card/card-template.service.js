@@ -164,5 +164,29 @@ export function createCardTemplateService({ databasePool }) {
 
       return template;
     },
+
+    async listTemplatesByRarity(
+      rarityTier,
+      { database = databasePool, limit = 20 } = {},
+    ) {
+      const normalizedRarityTier = normalizeInteger(
+        rarityTier,
+        "rarityTier",
+        1,
+        7,
+      );
+      const normalizedLimit = normalizeInteger(limit, "limit", 1, 20);
+      const result = await cardTemplateRepository.findByRarityTier(
+        database,
+        normalizedRarityTier,
+        normalizedLimit,
+      );
+
+      return Object.freeze({
+        rarityTier: normalizedRarityTier,
+        templates: result.templates,
+        total: result.total,
+      });
+    },
   });
 }

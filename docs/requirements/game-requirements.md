@@ -15,6 +15,16 @@
   atomically in PostgreSQL.
 - Retrying the same Discord interaction must not award Gold twice.
 
+## Supporting Commands
+
+- `/cooldowns` reports cooldown availability using PostgreSQL time as the source
+  of truth. Its initial implementation reports only `CLAIM`; Drop, Daily, and
+  Weekly can be added when those reward systems exist.
+- `/rarity` accepts a numeric rarity tier from 1 through 7 and lists Card
+  Templates in that tier. Tier 7 is Hall of Fame. Names for Tiers 1 through 6
+  remain TBD.
+- `/rarity` lists template definitions, not Card Instances owned by a Player.
+
 Tài liệu yêu cầu trò chơi cho dự án SlamDunk Discord Bot.
 
 ## Confirmed Card Level and Fusion Rules
