@@ -17,4 +17,24 @@ export const gameConfig = Object.freeze({
       Object.freeze({ rarityTier: 7, weight: 5 }),
     ]),
   }),
+  battle: Object.freeze({
+    aiCardLevel: 3,
+    levelRatingBonus: 1,
+    baseTeamScore: 90,
+    matchupScale: 0.35,
+    randomScoreRange: 7,
+    minimumScore: 60,
+    maximumScore: 130,
+  }),
+  quicksell: Object.freeze({
+    shardRewards: Object.freeze({
+      1: 1,
+      2: 2,
+      3: 5,
+      4: 30,
+      5: 200,
+      6: 1_500,
+      7: 10_000,
+    }),
+  }),
 });

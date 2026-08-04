@@ -13,12 +13,14 @@ import {
   createCardInstanceService,
   createCardTemplateService,
 } from "./modules/card/index.js";
+import { createBattleService } from "./modules/battle/index.js";
 import { createEconomyService } from "./modules/economy/index.js";
 import { createCollectionService } from "./modules/collection/index.js";
 import { createLineupService } from "./modules/lineup/index.js";
 import { createPlayerService } from "./modules/player/index.js";
 import { createPackService } from "./modules/pack/index.js";
 import { createRewardService } from "./modules/reward/index.js";
+import { createQuicksellService } from "./modules/quicksell/index.js";
 import { createTraitService } from "./modules/trait/index.js";
 
 export function createApplication({ discordToken, databaseUrl }) {
@@ -52,7 +54,22 @@ export function createApplication({ discordToken, databaseUrl }) {
   });
   const collectionService = createCollectionService({ databasePool });
   const lineupService = createLineupService({ databasePool });
+  const battleService = createBattleService({
+    databasePool,
+    lineupService,
+    cardInstanceService,
+    cardTemplateService,
+    traitService,
+    playerService,
+    battleConfig: gameConfig.battle,
+  });
+  const quicksellService = createQuicksellService({
+    databasePool,
+    economyService,
+    quicksellConfig: gameConfig.quicksell,
+  });
   const services = Object.freeze({
+    battle: battleService,
     cardInstance: cardInstanceService,
     cardTemplate: cardTemplateService,
     collection: collectionService,
@@ -61,6 +78,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     pack: packService,
     player: playerService,
     reward: rewardService,
+    quicksell: quicksellService,
     trait: traitService,
   });
   const commandRegistry = new Map(

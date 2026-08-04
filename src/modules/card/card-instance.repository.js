@@ -39,6 +39,21 @@ function mapCardInstance(row) {
 }
 
 export const cardInstanceRepository = Object.freeze({
+  async incrementGamesPlayed(database, { ownerPlayerId, cardInstanceIds }) {
+    const result = await database.query(
+      `
+        UPDATE card_instances
+        SET games_played = games_played + 1, updated_at = CURRENT_TIMESTAMP
+        WHERE owner_player_id = $1
+          AND status = 'ACTIVE'
+          AND card_instance_id = ANY($2::bigint[])
+        RETURNING card_instance_id
+      `,
+      [ownerPlayerId, cardInstanceIds],
+    );
+    return result.rows.map((row) => row.card_instance_id);
+  },
+
   async findById(database, cardInstanceId) {
     const result = await database.query(
       `

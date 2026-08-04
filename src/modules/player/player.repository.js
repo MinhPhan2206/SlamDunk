@@ -35,6 +35,32 @@ function mapPlayer(row) {
 }
 
 export const playerRepository = Object.freeze({
+  async recordBattleResult(database, { playerId, won }) {
+    const result = await database.query(
+      `
+        UPDATE players
+        SET
+          games_played = games_played + 1,
+          games_won = games_won + CASE WHEN $2 THEN 1 ELSE 0 END,
+          games_lost = games_lost + CASE WHEN $2 THEN 0 ELSE 1 END,
+          current_win_streak = CASE
+            WHEN $2 THEN current_win_streak + 1
+            ELSE 0
+          END,
+          highest_win_streak = CASE
+            WHEN $2 THEN GREATEST(highest_win_streak, current_win_streak + 1)
+            ELSE highest_win_streak
+          END,
+          last_active_at = CURRENT_TIMESTAMP
+        WHERE player_id = $1
+        RETURNING ${PLAYER_COLUMNS}
+      `,
+      [playerId, won],
+    );
+
+    return mapPlayer(result.rows[0]);
+  },
+
   async findById(database, playerId) {
     const result = await database.query(
       `SELECT ${PLAYER_COLUMNS} FROM players WHERE player_id = $1`,

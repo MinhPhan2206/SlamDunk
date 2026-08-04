@@ -109,6 +109,36 @@ export function createCardInstanceService({
   }
 
   return Object.freeze({
+    async recordGamesPlayed(
+      { ownerPlayerId, cardInstanceIds },
+      { database = databasePool } = {},
+    ) {
+      const normalizedOwnerPlayerId = normalizeId(
+        ownerPlayerId,
+        "ownerPlayerId",
+      );
+      if (!Array.isArray(cardInstanceIds) || cardInstanceIds.length === 0) {
+        throw new TypeError("cardInstanceIds must be a non-empty array.");
+      }
+      const normalizedIds = cardInstanceIds.map((cardInstanceId) =>
+        normalizeId(cardInstanceId, "cardInstanceId"),
+      );
+      const updatedIds = await cardInstanceRepository.incrementGamesPlayed(
+        database,
+        {
+          ownerPlayerId: normalizedOwnerPlayerId,
+          cardInstanceIds: normalizedIds,
+        },
+      );
+      if (updatedIds.length !== normalizedIds.length) {
+        throw new CardError(
+          "BATTLE_CARD_INVALID",
+          "Every battle card must be active and owned by the Player.",
+        );
+      }
+      return Object.freeze(updatedIds);
+    },
+
     async mintCard(input, { database } = {}) {
       const mint = normalizeMintInput(input);
 

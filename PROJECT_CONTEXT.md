@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M11 completed.
-> **Next milestone:** M12 — Battle MVP.
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M13 completed.
+> **Next milestone:** M14 — Fusion / Upgrade.
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -2379,27 +2379,63 @@ integration and command tests using node:test
 
 M11 did not implement Battle, Quicksell, Fusion, Market, or Trade.
 
+## M12 — Battle MVP
+
+Completed.
+
+Implemented concepts:
+
+```text
+009_create_battle_matches.sql
+persisted PVE_5V5 Match, MatchTeam, and MatchPlayer snapshots
+complete active Lineup requirement
+deterministic seeded simulation
+provisional offense, defense, Card Level, matchup, and score configuration
+AI lineup selected from eligible Card Templates
+final score and PTS box score
+idempotent Discord interaction handling
+Player and participating Card Instance game counters
+/battle guild slash command and result embed
+integration and command tests using node:test
+```
+
+Trait data is snapshotted but Trait effects are not applied because coefficients
+remain TBD. M12 has no rewards, cooldown, play-by-play, fatigue, substitutions,
+PvP, Quicksell, Fusion, Market, or Trade. Battle formulas remain playtest
+configuration rather than final production balance.
+
 ---
 
-# 44. Current Next Milestone
+# 44. M13 — Quicksell
+
+Completed.
+
+Implemented concepts:
+
+```text
+/quicksell card_id guild slash command
+rarity-based Shard reward configuration
+ACTIVE ownership and availability validation
+lineup, market-lock, and trade-lock protection
+DESTROYED_QUICKSELL lifecycle state with ownership audit
+mint circulation decrement
+atomic Shard credit and immutable EconomyTransaction
+integration and command tests using node:test
+```
+
+M13 did not implement Fusion, Market, Trade, or Shard exchange.
+
+---
+
+# 45. Current Next Milestone
 
 Current next milestone:
 
 ```text
-M12 — Battle MVP
+M14 — Fusion / Upgrade
 ```
 
-Codex should wait for an explicit M12 task/prompt before implementation.
-
----
-
-# 45. M12 Scope Guardrail
-
-The next milestone is Battle MVP, but its exact acceptance criteria must come
-from the explicit milestone prompt.
-
-Do not automatically implement Quicksell, Fusion, Market, or Trade as part of
-M12.
+Do not automatically implement M14 without an explicit task.
 
 ---
 
@@ -2419,6 +2455,7 @@ explicit migration runner
 006_create_card_instances.sql
 007_create_pack_sessions.sql
 008_create_lineups.sql
+009_create_battle_matches.sql
 Player repository/service
 Wallet repository/service
 immutable EconomyTransaction repository
@@ -2431,11 +2468,13 @@ transactional Card Instance mint service
 Pack Session/Candidate repository and transactional Free Drop service
 read-only Collection repository/service
 Lineup repository/service with five position slots
+Battle repository/service with persisted PvE snapshots
 /profile command and profile embed presenter
 /claim command and cooldown presenter
 /pack command and button selection handler
 /collection command and embed presenter
 /lineup view, set, and remove subcommands
+/battle command and result presenter
 /cooldowns command for CLAIM and FREE_PACK cooldown status
 /rarity command for Card Template discovery by tier
 ```
@@ -2725,16 +2764,18 @@ M8 Card Instance → DONE
 M9 /pack         → DONE
 M10 /collection  → DONE
 M11 Lineup       → DONE
-M12 Battle MVP   → NEXT
+M12 Battle MVP   → DONE
+M13 Quicksell    → DONE
+M14 Fusion / Upgrade → NEXT
 ```
 
-Before doing M12:
+Before doing M14:
 
 ```text
 inspect the real repository
 ```
 
-Do not rewrite valid M1–M11 code merely to match an example file structure.
+Do not rewrite valid M1–M12 code merely to match an example file structure.
 
 ---
 

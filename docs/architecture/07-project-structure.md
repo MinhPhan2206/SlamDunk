@@ -295,7 +295,8 @@ migrations/
 ├── 005_create_card_templates_and_traits.sql
 ├── 006_create_card_instances.sql
 ├── 007_create_pack_sessions.sql
-└── 008_create_lineups.sql
+├── 008_create_lineups.sql
+└── 009_create_battle_matches.sql
 ```
 
 Future migrations are added only when their implementation milestone begins.

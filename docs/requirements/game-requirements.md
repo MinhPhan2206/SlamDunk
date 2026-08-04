@@ -42,6 +42,17 @@
   `economy-pack-baseline.md`. These remain adjustable simulation values rather
   than finalized production balance.
 
+## M12 Battle MVP Behavior
+
+- `/battle` runs a persisted `PVE_5V5` simulation using the Player's complete
+  active lineup against an AI lineup selected from the Card catalog.
+- Match and player snapshots preserve historical results, and the Discord
+  interaction ID prevents duplicate matches and counter updates.
+- The current offense/defense rating formula, AI Card Level 3, Level bonus, and
+  score variance are centralized playtest configuration, not final balance.
+- M12 stores Trait snapshots but does not apply Trait effects. It has no reward,
+  cooldown, play-by-play, fatigue, substitutions, or PvP.
+
 Tài liệu yêu cầu trò chơi cho dự án SlamDunk Discord Bot.
 
 ## Confirmed Card Level and Fusion Rules

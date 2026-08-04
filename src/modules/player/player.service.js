@@ -28,6 +28,19 @@ function validatePlayerId(playerId) {
 
 export function createPlayerService({ databasePool, economyService }) {
   return Object.freeze({
+    async recordBattleResult(
+      { playerId, won },
+      { database = databasePool } = {},
+    ) {
+      if (typeof won !== "boolean") {
+        throw new TypeError("won must be a boolean.");
+      }
+      return playerRepository.recordBattleResult(database, {
+        playerId: validatePlayerId(playerId),
+        won,
+      });
+    },
+
     async getPlayerById(playerId, { database = databasePool } = {}) {
       return playerRepository.findById(database, validatePlayerId(playerId));
     },
