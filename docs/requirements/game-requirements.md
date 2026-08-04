@@ -94,3 +94,14 @@ Hai Card Instance nguồn được giữ lại trong lịch sử với trạng t
 - Listing khoá thẻ khỏi Quicksell, Fusion, Direct Trade và listing trùng.
 - Mua listing chuyển Gold, ownership và trạng thái listing trong một transaction.
 - Battle eligibility của thẻ đang được listing vẫn là TBD.
+
+## M16 Direct Trade Behavior
+
+- Direct Trade có đúng hai Player và có thể chứa Card cùng Gold tuỳ chọn.
+- Trade fee bằng 0.
+- Card được thêm vào offer sẽ bị trade-lock cho đến khi remove, cancel hoặc
+  Trade hoàn tất.
+- Mọi thay đổi Card hoặc Gold offer đều xoá confirmation của cả hai bên.
+- Khi cả hai xác nhận final offer, Gold và Card ownership được chuyển trong
+  cùng một PostgreSQL transaction.
+- Giới hạn số Card, giới hạn Gold/Card cuối cùng và trade expiry vẫn là TBD.

@@ -24,6 +24,7 @@ import { createQuicksellService } from "./modules/quicksell/index.js";
 import { createTraitService } from "./modules/trait/index.js";
 import { createUpgradeService } from "./modules/upgrade/index.js";
 import { createMarketService } from "./modules/market/index.js";
+import { createTradeService } from "./modules/trade/index.js";
 
 export function createApplication({ discordToken, databaseUrl }) {
   const client = createDiscordClient();
@@ -80,6 +81,12 @@ export function createApplication({ discordToken, databaseUrl }) {
     cardInstanceService,
     economyService,
   });
+  const tradeService = createTradeService({
+    databasePool,
+    cardInstanceService,
+    economyService,
+    playerService,
+  });
   const services = Object.freeze({
     battle: battleService,
     cardInstance: cardInstanceService,
@@ -93,6 +100,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     quicksell: quicksellService,
     upgrade: upgradeService,
     market: marketService,
+    trade: tradeService,
     trait: traitService,
   });
   const commandRegistry = new Map(

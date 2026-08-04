@@ -81,6 +81,21 @@ export const cardInstanceRepository = Object.freeze({
     return mapCardInstance(result.rows[0]);
   },
 
+  async findByIdsForUpdate(database, cardInstanceIds) {
+    const result = await database.query(
+      `
+        SELECT ${CARD_INSTANCE_COLUMNS}
+        FROM card_instances
+        WHERE card_instance_id = ANY($1::BIGINT[])
+        ORDER BY card_instance_id
+        FOR UPDATE
+      `,
+      [cardInstanceIds],
+    );
+
+    return result.rows.map(mapCardInstance);
+  },
+
   async setMarketLock(database, { cardInstanceId, marketLock }) {
     const result = await database.query(
       `
@@ -93,6 +108,27 @@ export const cardInstanceRepository = Object.freeze({
     );
 
     return mapCardInstance(result.rows[0]);
+  },
+
+  async setTradeLock(database, { cardInstanceId, tradeLock }) {
+    const result = await database.query(
+      `
+        UPDATE card_instances
+        SET trade_lock = $2, updated_at = CURRENT_TIMESTAMP
+        WHERE card_instance_id = $1
+        RETURNING ${CARD_INSTANCE_COLUMNS}
+      `,
+      [cardInstanceId, tradeLock],
+    );
+
+    return mapCardInstance(result.rows[0]);
+  },
+
+  async removeFromLineups(database, cardInstanceId) {
+    await database.query(
+      `DELETE FROM lineup_slots WHERE card_instance_id = $1`,
+      [cardInstanceId],
+    );
   },
 
   async transferMarketOwnership(
@@ -112,6 +148,31 @@ export const cardInstanceRepository = Object.freeze({
           AND status = 'ACTIVE'
           AND market_lock = TRUE
           AND trade_lock = FALSE
+        RETURNING ${CARD_INSTANCE_COLUMNS}
+      `,
+      [cardInstanceId, fromPlayerId, toPlayerId],
+    );
+
+    return mapCardInstance(result.rows[0]);
+  },
+
+  async transferTradeOwnership(
+    database,
+    { cardInstanceId, fromPlayerId, toPlayerId },
+  ) {
+    const result = await database.query(
+      `
+        UPDATE card_instances
+        SET
+          owner_player_id = $3,
+          ownership_cycles = ownership_cycles + 1,
+          trade_lock = FALSE,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE card_instance_id = $1
+          AND owner_player_id = $2
+          AND status = 'ACTIVE'
+          AND market_lock = FALSE
+          AND trade_lock = TRUE
         RETURNING ${CARD_INSTANCE_COLUMNS}
       `,
       [cardInstanceId, fromPlayerId, toPlayerId],

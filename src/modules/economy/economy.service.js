@@ -60,6 +60,20 @@ function normalizePositiveAmount(amount) {
   return value;
 }
 
+function normalizeNonNegativeAmount(amount, fieldName) {
+  const isIntegerString = typeof amount === "string" && /^\d+$/.test(amount);
+  const isSafeInteger = typeof amount === "number" && Number.isSafeInteger(amount);
+
+  if (typeof amount !== "bigint" && !isIntegerString && !isSafeInteger) {
+    throw new TypeError(`${fieldName} must be a non-negative integer.`);
+  }
+  const value = BigInt(amount);
+  if (value < 0n || value > MAX_BIGINT) {
+    throw new TypeError(`${fieldName} must be a non-negative 64-bit integer.`);
+  }
+  return value;
+}
+
 function normalizeRequiredText(value, fieldName) {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new TypeError(`${fieldName} must be a non-empty string.`);
@@ -240,6 +254,37 @@ function normalizeTransferInput(input) {
     amount: normalizePositiveAmount(input.amount),
     debitTransactionType: normalizeTransactionType(debitTransactionType),
     creditTransactionType: normalizeTransactionType(creditTransactionType),
+    idempotencyKey: normalizeRequiredText(
+      input.idempotencyKey,
+      "idempotencyKey",
+    ),
+    ...normalizeReference(input.referenceType, input.referenceId),
+  });
+}
+
+function normalizeTradeSettlementInput(input) {
+  if (!input || typeof input !== "object") {
+    throw new TypeError("Trade settlement input is required.");
+  }
+  const playerAId = normalizePlayerId(input.playerAId);
+  const playerBId = normalizePlayerId(input.playerBId);
+  if (playerAId === playerBId) {
+    throw new TypeError("Trade settlement requires two different players.");
+  }
+
+  return Object.freeze({
+    playerAId,
+    playerBId,
+    playerAOffer: normalizeNonNegativeAmount(
+      input.playerAOffer,
+      "playerAOffer",
+    ),
+    playerBOffer: normalizeNonNegativeAmount(
+      input.playerBOffer,
+      "playerBOffer",
+    ),
+    currency: normalizeCurrency(input.currency),
+    transactionType: normalizeTransactionType(input.transactionType),
     idempotencyKey: normalizeRequiredText(
       input.idempotencyKey,
       "idempotencyKey",
@@ -470,6 +515,132 @@ export function createEconomyService({ databasePool }) {
         return Object.freeze({
           debit: debitTransaction,
           credit: creditTransaction,
+          replayed: false,
+        });
+      });
+    },
+
+    async settleTrade(input, { database } = {}) {
+      const settlement = normalizeTradeSettlementInput(input);
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const wallets = await lockWallets(transactionDatabase, [
+          settlement.playerAId,
+          settlement.playerBId,
+        ]);
+        const playerADelta = settlement.playerBOffer - settlement.playerAOffer;
+        const playerBDelta = -playerADelta;
+        const entries = [
+          { playerId: settlement.playerAId, amount: playerADelta },
+          { playerId: settlement.playerBId, amount: playerBDelta },
+        ].filter((entry) => entry.amount !== 0n);
+        const keys = entries.map(
+          (entry) => `${settlement.idempotencyKey}:player:${entry.playerId}`,
+        );
+        const existingTransactions = keys.length
+          ? await economyTransactionRepository.findByIdempotencyKeys(
+              transactionDatabase,
+              keys,
+            )
+          : [];
+
+        if (existingTransactions.length > 0) {
+          if (existingTransactions.length !== entries.length) {
+            throw new EconomyError(
+              "IDEMPOTENCY_CONFLICT",
+              "The trade settlement has incomplete ledger entries.",
+            );
+          }
+          const byPlayerId = new Map(
+            existingTransactions.map((transaction) => [
+              transaction.playerId,
+              transaction,
+            ]),
+          );
+          for (const entry of entries) {
+            const transaction = byPlayerId.get(entry.playerId);
+            assertMatchingTransaction(transaction, {
+              playerId: entry.playerId,
+              currency: settlement.currency,
+              amount: entry.amount,
+              transactionType: settlement.transactionType,
+              referenceType: settlement.referenceType,
+              referenceId: settlement.referenceId,
+            });
+          }
+          return Object.freeze({
+            transactions: Object.freeze(existingTransactions),
+            replayed: true,
+          });
+        }
+
+        const walletA = wallets.get(settlement.playerAId);
+        const walletB = wallets.get(settlement.playerBId);
+        if (
+          getBalance(walletA, settlement.currency) < settlement.playerAOffer ||
+          getBalance(walletB, settlement.currency) < settlement.playerBOffer
+        ) {
+          throw new EconomyError(
+            `INSUFFICIENT_${settlement.currency}`,
+            `Insufficient ${settlement.currency.toLowerCase()} balance for trade.`,
+          );
+        }
+        const balancesAfter = new Map([
+          [
+            settlement.playerAId,
+            getBalance(walletA, settlement.currency) + playerADelta,
+          ],
+          [
+            settlement.playerBId,
+            getBalance(walletB, settlement.currency) + playerBDelta,
+          ],
+        ]);
+        if ([...balancesAfter.values()].some((balance) => balance > MAX_BIGINT)) {
+          throw new EconomyError(
+            "BALANCE_OVERFLOW",
+            "The resulting balance exceeds the supported range.",
+          );
+        }
+
+        if (entries.length === 0) {
+          return Object.freeze({
+            transactions: Object.freeze([]),
+            balancesAfter: Object.freeze({
+              [settlement.playerAId]: getBalance(walletA, settlement.currency).toString(),
+              [settlement.playerBId]: getBalance(walletB, settlement.currency).toString(),
+            }),
+            replayed: false,
+          });
+        }
+
+        for (const playerId of [settlement.playerAId, settlement.playerBId]) {
+          await walletRepository.setBalance(transactionDatabase, {
+            playerId,
+            currency: settlement.currency,
+            balance: balancesAfter.get(playerId).toString(),
+          });
+        }
+        const transactions = [];
+        for (const entry of entries) {
+          transactions.push(
+            await economyTransactionRepository.create(transactionDatabase, {
+              playerId: entry.playerId,
+              currency: settlement.currency,
+              amount: entry.amount.toString(),
+              transactionType: settlement.transactionType,
+              referenceType: settlement.referenceType,
+              referenceId: settlement.referenceId,
+              idempotencyKey: `${settlement.idempotencyKey}:player:${entry.playerId}`,
+              balanceAfter: balancesAfter.get(entry.playerId).toString(),
+            }),
+          );
+        }
+        return Object.freeze({
+          transactions: Object.freeze(transactions),
+          balancesAfter: Object.freeze({
+            [settlement.playerAId]: balancesAfter.get(settlement.playerAId).toString(),
+            [settlement.playerBId]: balancesAfter.get(settlement.playerBId).toString(),
+          }),
           replayed: false,
         });
       });

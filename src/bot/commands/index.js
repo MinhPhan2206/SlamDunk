@@ -10,6 +10,7 @@ import { rarityCommand } from "./rarity.command.js";
 import { quicksellCommand } from "./quicksell.command.js";
 import { upgradeCommand } from "./upgrade.command.js";
 import { marketCommand } from "./market.command.js";
+import { tradeCommand } from "./trade.command.js";
 
 export const commands = Object.freeze([
   pingCommand,
@@ -24,4 +25,5 @@ export const commands = Object.freeze([
   quicksellCommand,
   upgradeCommand,
   marketCommand,
+  tradeCommand,
 ]);

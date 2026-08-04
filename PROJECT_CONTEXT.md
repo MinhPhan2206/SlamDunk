@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M15 completed.
-> **Next milestone:** M16 — Direct Trade.
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M16 completed.
+> **Next milestone:** TBD — the planned M0–M16 roadmap is complete.
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -2465,8 +2465,31 @@ Card ownership transfer and ownership history
 integration and command tests using node:test
 ```
 
-Battle eligibility for listed cards remains TBD. M15 did not implement Direct
-Trade. Current next milestone is M16 — Direct Trade.
+Battle eligibility for listed cards remains TBD.
+
+## M16 — Direct Trade
+
+Completed.
+
+Implemented concepts:
+
+```text
+012_create_direct_trades.sql
+/trade create, view, add-card, remove-card, set-gold, confirm, and cancel
+exactly two Player participants
+optional Card and Gold offers
+trade lock lifecycle and one active Trade participation per Card Instance
+all confirmations cleared whenever an offer changes
+automatic atomic execution after both participants confirm
+gross Gold availability validation and net DIRECT_TRADE ledger movements
+Card ownership transfer, lineup cleanup, and ownership history
+0% Trade fee
+integration and command tests using node:test
+```
+
+Trade card-count limits, final Gold/card limits, and expiry remain TBD. The
+planned M0–M16 roadmap is now complete; the next milestone requires a new
+product decision.
 
 ---
 
@@ -2489,10 +2512,11 @@ explicit migration runner
 009_create_battle_matches.sql
 010_create_fusions_and_upgrade_items.sql
 011_create_market_listings.sql
+012_create_direct_trades.sql
 Player repository/service
 Wallet repository/service
 immutable EconomyTransaction repository
-atomic credit, debit, and transfer Economy service operations
+atomic credit, debit, transfer, and Direct Trade settlement operations
 Reward service with atomic `/claim` cooldown and Gold credit
 Card Template repository/service
 Trait Definition and Card Template Trait repository/service
@@ -2504,6 +2528,7 @@ Lineup repository/service with five position slots
 Battle repository/service with persisted PvE snapshots
 Fusion and Upgrade Item repository/service with audit history
 Market repository/service with atomic Gold and Card transfer
+Direct Trade repository/service with confirmation and atomic settlement
 /profile command and profile embed presenter
 /claim command and cooldown presenter
 /pack command and button selection handler
@@ -2512,6 +2537,7 @@ Market repository/service with atomic Gold and Card transfer
 /battle command and result presenter
 /upgrade fusion and item subcommands
 /market browse, sell, buy, and cancel subcommands
+/trade create, view, offer, confirm, and cancel subcommands
 /cooldowns command for CLAIM and FREE_PACK cooldown status
 /rarity command for Card Template discovery by tier
 ```
@@ -2805,16 +2831,16 @@ M12 Battle MVP   → DONE
 M13 Quicksell    → DONE
 M14 Fusion / Upgrade → DONE
 M15 Market        → DONE
-M16 Direct Trade  → NEXT
+M16 Direct Trade  → DONE
 ```
 
-Before doing M16:
+Before defining a new milestone:
 
 ```text
 inspect the real repository
 ```
 
-Do not rewrite valid M1–M15 code merely to match an example file structure.
+Do not rewrite valid M1–M16 code merely to match an example file structure.
 
 ---
 

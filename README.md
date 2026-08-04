@@ -67,6 +67,8 @@ npm test
 - `/upgrade fusion card_a:<id> card_b:<id>` — fuse matching Card Templates.
 - `/upgrade item card_id:<id>` — consume one Level Up item for +1 Level.
 - `/market browse|sell|buy|cancel` — use the fixed-price Card Market.
+- `/trade create|view|add-card|remove-card|set-gold|confirm|cancel` — manage a
+  two-player Direct Trade.
 
 Grant Level Up items locally as an administrator:
 

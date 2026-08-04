@@ -126,6 +126,19 @@ export function createCardInstanceService({
       return instance;
     },
 
+    async getInstancesForUpdate(
+      cardInstanceIds,
+      { database = databasePool } = {},
+    ) {
+      if (!Array.isArray(cardInstanceIds)) {
+        throw new TypeError("cardInstanceIds must be an array.");
+      }
+      const normalizedIds = cardInstanceIds.map((cardInstanceId) =>
+        normalizeId(cardInstanceId, "cardInstanceId"),
+      );
+      return cardInstanceRepository.findByIdsForUpdate(database, normalizedIds);
+    },
+
     async lockForMarket(
       { cardInstanceId, ownerPlayerId },
       { database } = {},
@@ -220,6 +233,10 @@ export function createCardInstanceService({
       }
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await cardInstanceRepository.removeFromLineups(
+          transactionDatabase,
+          normalizedCardInstanceId,
+        );
         const updated = await cardInstanceRepository.transferMarketOwnership(
           transactionDatabase,
           {
@@ -243,6 +260,133 @@ export function createCardInstanceService({
             reason: "MARKET",
             referenceType: "MARKET_LISTING",
             referenceId: normalizedListingId,
+          },
+        );
+        return Object.freeze({ instance: updated, ownershipHistory });
+      });
+    },
+
+    async lockForTrade(
+      { cardInstanceId, ownerPlayerId },
+      { database } = {},
+    ) {
+      const normalizedCardInstanceId = normalizeId(
+        cardInstanceId,
+        "cardInstanceId",
+      );
+      const normalizedOwnerPlayerId = normalizeId(
+        ownerPlayerId,
+        "ownerPlayerId",
+      );
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const instance = await cardInstanceRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedCardInstanceId,
+        );
+        if (!instance || instance.ownerPlayerId !== normalizedOwnerPlayerId) {
+          throw new CardError("CARD_NOT_OWNED", "You do not own this card.");
+        }
+        if (
+          instance.status !== "ACTIVE" ||
+          instance.marketLock ||
+          instance.tradeLock
+        ) {
+          throw new CardError(
+            "CARD_NOT_TRADE_AVAILABLE",
+            "This card is not available for Direct Trade.",
+          );
+        }
+        return cardInstanceRepository.setTradeLock(transactionDatabase, {
+          cardInstanceId: normalizedCardInstanceId,
+          tradeLock: true,
+        });
+      });
+    },
+
+    async unlockFromTrade(
+      { cardInstanceId, ownerPlayerId },
+      { database } = {},
+    ) {
+      const normalizedCardInstanceId = normalizeId(
+        cardInstanceId,
+        "cardInstanceId",
+      );
+      const normalizedOwnerPlayerId = normalizeId(
+        ownerPlayerId,
+        "ownerPlayerId",
+      );
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const instance = await cardInstanceRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedCardInstanceId,
+        );
+        if (
+          !instance ||
+          instance.ownerPlayerId !== normalizedOwnerPlayerId ||
+          instance.status !== "ACTIVE" ||
+          !instance.tradeLock
+        ) {
+          throw new CardError(
+            "CARD_TRADE_LOCK_INVALID",
+            "The card Direct Trade lock is invalid.",
+          );
+        }
+        return cardInstanceRepository.setTradeLock(transactionDatabase, {
+          cardInstanceId: normalizedCardInstanceId,
+          tradeLock: false,
+        });
+      });
+    },
+
+    async transferTradeOwnership(
+      { cardInstanceId, fromPlayerId, toPlayerId, tradeId },
+      { database } = {},
+    ) {
+      const normalizedCardInstanceId = normalizeId(
+        cardInstanceId,
+        "cardInstanceId",
+      );
+      const normalizedFromPlayerId = normalizeId(fromPlayerId, "fromPlayerId");
+      const normalizedToPlayerId = normalizeId(toPlayerId, "toPlayerId");
+      const normalizedTradeId = normalizeId(tradeId, "tradeId");
+
+      if (normalizedFromPlayerId === normalizedToPlayerId) {
+        throw new CardError(
+          "CARD_TRANSFER_SAME_OWNER",
+          "Card transfer requires a different owner.",
+        );
+      }
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await cardInstanceRepository.removeFromLineups(
+          transactionDatabase,
+          normalizedCardInstanceId,
+        );
+        const updated = await cardInstanceRepository.transferTradeOwnership(
+          transactionDatabase,
+          {
+            cardInstanceId: normalizedCardInstanceId,
+            fromPlayerId: normalizedFromPlayerId,
+            toPlayerId: normalizedToPlayerId,
+          },
+        );
+        if (!updated) {
+          throw new CardError(
+            "CARD_TRADE_TRANSFER_INVALID",
+            "The offered card is no longer available for transfer.",
+          );
+        }
+        const ownershipHistory = await cardOwnershipRepository.create(
+          transactionDatabase,
+          {
+            cardInstanceId: normalizedCardInstanceId,
+            fromPlayerId: normalizedFromPlayerId,
+            toPlayerId: normalizedToPlayerId,
+            reason: "DIRECT_TRADE",
+            referenceType: "TRADE",
+            referenceId: normalizedTradeId,
           },
         );
         return Object.freeze({ instance: updated, ownershipHistory });
