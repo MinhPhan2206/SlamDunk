@@ -45,6 +45,13 @@ Start the bot:
 npm start
 ```
 
+Run the integration tests after PostgreSQL is available and migrations are up
+to date:
+
+```text
+npm test
+```
+
 ## Current Commands
 
 - `/ping` — check whether the bot is online.

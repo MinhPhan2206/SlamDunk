@@ -1,8 +1,8 @@
 # SlamDunk — Codex Project Context
 
 > **Purpose:** Persistent project context for Codex.  
-> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M4 completed.
-> **Next milestone:** M5 — Economy Ledger.
+> **Current status:** Requirements baseline completed, Architecture Phase completed, M0–M5 completed.
+> **Next milestone:** M6 — /claim.
 > **Important:** Always inspect the repository before changing code. This document describes the agreed project baseline, but the repository is the source of truth for what has actually been implemented.
 
 ---
@@ -2134,6 +2134,27 @@ safe deferred-interaction error handling
 M4 intentionally did not add migrations, Economy Ledger, currency mutation,
 or later gameplay features.
 
+## M5 — Economy Ledger
+
+Completed.
+
+Implemented concepts:
+
+```text
+003_create_economy_transactions.sql
+immutable economy transaction audit trail
+GOLD and SHARDS currency validation
+atomic Wallet + ledger updates
+credit, debit, transfer, and sufficient-balance operations
+mandatory idempotency keys for currency movements
+consistent wallet lock ordering
+domain error codes for economy failures
+PostgreSQL integration coverage using node:test
+```
+
+M5 intentionally did not add `/claim`, cooldowns, rewards, or later gameplay
+features.
+
 ---
 
 # 44. Current Next Milestone
@@ -2141,20 +2162,20 @@ or later gameplay features.
 Current next milestone:
 
 ```text
-M5 — Economy Ledger
+M6 — /claim
 ```
 
-Codex should wait for an explicit M5 task/prompt before implementation.
+Codex should wait for an explicit M6 task/prompt before implementation.
 
 ---
 
-# 45. M5 Scope Guardrail
+# 45. M6 Scope Guardrail
 
-The next milestone is Economy Ledger, but its exact acceptance criteria must come
+The next milestone is `/claim`, but its exact acceptance criteria must come
 from the explicit milestone prompt.
 
-Do not automatically implement `/claim`, Cards, Pack, Battle, Market, Trade,
-or Fusion as part of M5.
+Do not automatically implement `/daily`, Cards, Pack, Battle, Market, Trade,
+or Fusion as part of M6.
 
 ---
 
@@ -2168,8 +2189,11 @@ transaction helper
 explicit migration runner
 001_create_players.sql
 002_create_wallets.sql
+003_create_economy_transactions.sql
 Player repository/service
 Wallet repository/service
+immutable EconomyTransaction repository
+atomic credit, debit, and transfer Economy service operations
 /profile command and profile embed presenter
 ```
 
@@ -2448,16 +2472,17 @@ M1 Discord       → DONE
 M2 PostgreSQL    → DONE
 M3 Player/Wallet → DONE
 M4 /profile      → DONE
-M5 Economy Ledger → NEXT
+M5 Economy Ledger → DONE
+M6 /claim        → NEXT
 ```
 
-Before doing M5:
+Before doing M6:
 
 ```text
 inspect the real repository
 ```
 
-Do not rewrite valid M1–M4 code merely to match an example file structure.
+Do not rewrite valid M1–M5 code merely to match an example file structure.
 
 ---
 
