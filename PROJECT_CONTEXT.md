@@ -535,6 +535,7 @@ Conceptual Instance data:
 
 ```text
 card_instance_id
+public_card_id
 card_template_id
 owner_player_id
 serial_number
@@ -2366,7 +2367,8 @@ Implemented concepts:
 read-only Collection module
 active Card Instance queries scoped to the owning Player
 Card Template details joined for display
-optional named-rarity filter
+default acquisition order from oldest to newest
+newly obtained cards appended to the end
 10-card pagination
 /collection guild slash command and embed presenter
 integration and command tests using node:test
@@ -2389,7 +2391,7 @@ primary/secondary position eligibility
 owned ACTIVE Card Instance validation
 no duplicate Card Instance in one lineup
 /lineup view, set, and remove subcommands
-Card Instance IDs exposed through /collection
+public Card IDs and Collection positions exposed through /collection
 integration and command tests using node:test
 ```
 
@@ -2857,6 +2859,19 @@ numeric Card Template rarity field. As explicitly approved for development,
 it removed existing Card Instances and their dependent operational records,
 preserved battle snapshots, and credited every existing Player 20,000 Gold
 through an auditable EconomyTransaction.
+
+Migration `016_add_public_card_ids.sql` adds a unique nine-digit public ID to
+each Card Instance. Internal foreign keys keep using `card_instance_id`.
+Player-facing `card_id` options accept `public_card_id` (with optional `!`
+prefix) or the card's current one-based position in `/collection`. The default Collection order is
+oldest to newest, so newly obtained Drop/Pack cards appear at the end.
+
+Migration `017_create_collection_preferences.sql` and `/sort` persist a Player's
+Collection ordering. Supported choices include rarity, OVR, Card Level, newest,
+oldest, player name, position, and implemented individual stats. Calling
+`/sort` without `sort_by` selects Rarity. A Player with no preference remains
+oldest-first so newly obtained Drop/Pack cards appear at the end. Collection
+positions and `card_id` resolution always use the same saved sort.
 
 Before defining a new milestone:
 

@@ -10,7 +10,7 @@ function formatSlot(slot) {
 
   return [
     `**${slot.slot}: ${slot.playerName} - ${slot.edition}**`,
-    `${formatRarity(slot.rarityCode)} | OVR ${slot.overall} | Level ${slot.cardLevel} | #${slot.serialNumber} | ID ${slot.cardInstanceId}`,
+    `${formatRarity(slot.rarityCode)} | OVR ${slot.overall} | Level ${slot.cardLevel} | #${slot.serialNumber} | ID !${slot.publicCardId}`,
   ].join("\n");
 }
 

@@ -1,6 +1,7 @@
 import {
   ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle,
 } from "discord.js";
+import { CardError } from "../../modules/card/index.js";
 import { TradeError } from "../../modules/trade/index.js";
 import { createTradePayload } from "../presenters/trade.presenter.js";
 
@@ -12,7 +13,7 @@ function modal(action, tradeId) {
     .addComponents(new ActionRowBuilder().addComponents(
       new TextInputBuilder()
         .setCustomId(cards ? "card_ids" : "gold")
-        .setLabel(cards ? "Card IDs, separated by commas (max 10)" : "Gold amount (max 20,000,000)")
+        .setLabel(cards ? "Public IDs or collection # (max 10)" : "Gold amount (max 20,000,000)")
         .setStyle(cards ? TextInputStyle.Paragraph : TextInputStyle.Short)
         .setRequired(true)
         .setValue(cards ? "" : "0"),
@@ -23,7 +24,7 @@ function parseCardIds(value) {
   const trimmed = value.trim();
   if (!trimmed) return [];
   const ids = trimmed.split(/[ ,\n]+/).filter(Boolean);
-  if (ids.some((id) => !/^\d+$/.test(id))) throw new TradeError("INVALID_CARD_IDS", "Card IDs must be positive integers separated by commas.");
+  if (ids.some((id) => !/^!?\d+$/.test(id))) throw new TradeError("INVALID_CARD_IDS", "Card IDs must be positive integers, optionally prefixed with !, and separated by commas.");
   return ids;
 }
 
@@ -42,9 +43,20 @@ export const tradeComponent = Object.freeze({
     try {
       let result;
       if (action === "cards") {
+        const references = parseCardIds(
+          interaction.fields.getTextInputValue("card_ids"),
+        );
+        const cardInstanceIds = await Promise.all(
+          references.map((cardReference) =>
+            services.collection.resolveOwnedCardReference({
+              playerId: player.playerId,
+              cardReference,
+            }),
+          ),
+        );
         result = await services.trade.setCardOffer({
           tradeId, playerId: player.playerId,
-          cardInstanceIds: parseCardIds(interaction.fields.getTextInputValue("card_ids")),
+          cardInstanceIds,
         });
       } else if (action === "gold") {
         result = await services.trade.setGoldOffer({
@@ -60,7 +72,7 @@ export const tradeComponent = Object.freeze({
       }
       await interaction.editReply(createTradePayload(result));
     } catch (error) {
-      if (error instanceof TradeError) {
+      if (error instanceof TradeError || error instanceof CardError) {
         await interaction.followUp({ content: error.message, ephemeral: true });
         return;
       }

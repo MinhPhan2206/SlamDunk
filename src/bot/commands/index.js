@@ -15,6 +15,7 @@ import { oddsCommand } from "./odds.command.js";
 import { packCommand } from "./pack.command.js";
 import { dailyCommand } from "./daily.command.js";
 import { exchangeCommand } from "./exchange.command.js";
+import { sortCommand } from "./sort.command.js";
 
 export const commands = Object.freeze([
   pingCommand,
@@ -34,4 +35,5 @@ export const commands = Object.freeze([
   packCommand,
   dailyCommand,
   exchangeCommand,
+  sortCommand,
 ]);

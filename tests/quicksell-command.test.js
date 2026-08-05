@@ -21,6 +21,11 @@ test("quicksell command destroys the selected card for Shards", async () => {
     },
   };
   const services = {
+    collection: {
+      async resolveOwnedCardReference() {
+        return "42";
+      },
+    },
     player: {
       async getOrCreatePlayer() {
         return { playerId: "7" };
@@ -32,6 +37,7 @@ test("quicksell command destroys the selected card for Shards", async () => {
         return {
           card: {
             cardInstanceId: "42",
+            publicCardId: "123456789",
             playerName: "Test Guard",
             edition: "Base",
           },

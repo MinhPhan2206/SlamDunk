@@ -1,3 +1,5 @@
+import { randomInt } from "node:crypto";
+
 import { withTransaction } from "../../database/transaction/transaction-manager.js";
 import { CardError } from "./card.errors.js";
 import { cardInstanceRepository } from "./card-instance.repository.js";
@@ -12,6 +14,9 @@ const CREATION_REASONS = Object.freeze({
   EVENT_REWARD: "EVENT_REWARD",
 });
 const REFERENCE_TYPE_PATTERN = /^[A-Z][A-Z0-9_]*$/;
+const PUBLIC_CARD_ID_MINIMUM = 100_000_000;
+const PUBLIC_CARD_ID_MAXIMUM_EXCLUSIVE = 1_000_000_000;
+const PUBLIC_CARD_ID_ATTEMPTS = 10;
 
 function normalizeId(value, fieldName) {
   const normalized = String(value);
@@ -89,6 +94,8 @@ export function createCardInstanceService({
   databasePool,
   cardTemplateService,
   playerService,
+  generatePublicCardId = () =>
+    randomInt(PUBLIC_CARD_ID_MINIMUM, PUBLIC_CARD_ID_MAXIMUM_EXCLUSIVE),
 }) {
   async function getInstance(
     cardInstanceId,
@@ -460,16 +467,27 @@ export function createCardInstanceService({
             transactionDatabase,
             mint.cardTemplateId,
           );
-          const instance = await cardInstanceRepository.create(
-            transactionDatabase,
-            {
-              cardTemplateId: mint.cardTemplateId,
-              ownerPlayerId: mint.ownerPlayerId,
-              serialNumber: counter.lastSerialNumber,
-              cardLevel: mint.cardLevel,
-              obtainedMethod: mint.obtainedMethod,
-            },
-          );
+          let instance = null;
+          for (let attempt = 0; attempt < PUBLIC_CARD_ID_ATTEMPTS; attempt += 1) {
+            instance = await cardInstanceRepository.create(
+              transactionDatabase,
+              {
+                cardTemplateId: mint.cardTemplateId,
+                ownerPlayerId: mint.ownerPlayerId,
+                serialNumber: counter.lastSerialNumber,
+                cardLevel: mint.cardLevel,
+                obtainedMethod: mint.obtainedMethod,
+                publicCardId: generatePublicCardId(),
+              },
+            );
+            if (instance) break;
+          }
+          if (!instance) {
+            throw new CardError(
+              "PUBLIC_CARD_ID_EXHAUSTED",
+              "A unique public Card ID could not be allocated.",
+            );
+          }
           const ownershipHistory = await cardOwnershipRepository.create(
             transactionDatabase,
             {

@@ -13,6 +13,7 @@ export function createPackOpeningPayload(result) {
           `${formatRarity(template.rarityCode)} | OVR ${template.overall}`,
           `Card Level: **${instance.cardLevel}**`,
           `Serial: **#${instance.serialNumber}**`,
+          `Card ID: **!${instance.publicCardId}**`,
           `Cost: **${pack.priceGold.toLocaleString("en-US")} Gold**`,
         ].join("\n")),
     ],

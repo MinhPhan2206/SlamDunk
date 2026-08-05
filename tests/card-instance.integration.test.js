@@ -90,6 +90,8 @@ test("Card Instances receive per-template serials and ownership history", async 
 
     assert.equal(firstMint.instance.serialNumber, "1");
     assert.equal(secondMint.instance.serialNumber, "2");
+    assert.notEqual(firstMint.instance.publicCardId, secondMint.instance.publicCardId);
+    assert.match(firstMint.instance.publicCardId, /^\d{9}$/);
     assert.equal(firstMint.instance.cardLevel, 2);
     assert.equal(firstMint.instance.status, "ACTIVE");
     assert.equal(firstMint.instance.ownerPlayerId, playerId);
@@ -104,15 +106,54 @@ test("Card Instances receive per-template serials and ownership history", async 
     );
     assert.equal(collection.total, "2");
     assert.equal(collection.cards.length, 2);
-    assert.equal(collection.cards[0].cardInstanceId, secondMint.instance.cardInstanceId);
+    assert.equal(collection.cards[0].cardInstanceId, firstMint.instance.cardInstanceId);
+    assert.equal(collection.cards[0].collectionPosition, 1);
+    assert.match(collection.cards[0].publicCardId, /^\d{9}$/);
     assert.equal(collection.cards[0].playerName, "M8 Test Player");
     assert.equal(collection.cards[0].rarityCode, "SUPERSTAR");
 
-    const emptyTier = await collectionService.listOwnedCards(
-      { playerId, rarityCode: "ALL_STAR" },
+    assert.equal(
+      await collectionService.resolveOwnedCardReference(
+        { playerId, cardReference: firstMint.instance.publicCardId },
+        { database },
+      ),
+      firstMint.instance.cardInstanceId,
+    );
+    assert.equal(
+      await collectionService.resolveOwnedCardReference(
+        { playerId, cardReference: `!${firstMint.instance.publicCardId}` },
+        { database },
+      ),
+      firstMint.instance.cardInstanceId,
+    );
+    assert.equal(
+      await collectionService.resolveOwnedCardReference(
+        { playerId, cardReference: "2" },
+        { database },
+      ),
+      secondMint.instance.cardInstanceId,
+    );
+
+    const sorted = await collectionService.setSort(
+      { playerId, sortBy: "NEWEST" },
       { database },
     );
-    assert.equal(emptyTier.total, "0");
+    assert.equal(sorted.sortKey, "NEWEST");
+    const newestFirst = await collectionService.listOwnedCards(
+      { playerId },
+      { database },
+    );
+    assert.equal(
+      newestFirst.cards[0].cardInstanceId,
+      secondMint.instance.cardInstanceId,
+    );
+    assert.equal(
+      await collectionService.resolveOwnedCardReference(
+        { playerId, cardReference: "1" },
+        { database },
+      ),
+      secondMint.instance.cardInstanceId,
+    );
 
     const counter = await cardInstanceService.getMintCounter(
       template.cardTemplateId,
@@ -184,12 +225,13 @@ test("Card Instances receive per-template serials and ownership history", async 
         `
           INSERT INTO card_instances (
             card_template_id,
+            public_card_id,
             owner_player_id,
             serial_number,
             card_level,
             obtained_method
           )
-          VALUES ($1, $2, 100, 6, 'ADMIN_GRANT')
+          VALUES ($1, 999999999, $2, 100, 6, 'ADMIN_GRANT')
         `,
         [template.cardTemplateId, playerId],
       ),

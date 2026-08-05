@@ -1,6 +1,8 @@
 function mapOwnedCard(row) {
   return Object.freeze({
     cardInstanceId: row.card_instance_id,
+    publicCardId: row.public_card_id,
+    collectionPosition: Number(row.collection_position),
     cardTemplateId: row.card_template_id,
     serialNumber: row.serial_number,
     cardLevel: row.card_level,
@@ -16,15 +18,69 @@ function mapOwnedCard(row) {
 }
 
 export const collectionRepository = Object.freeze({
+  async getSortKey(database, playerId) {
+    const result = await database.query(
+      `SELECT sort_key FROM player_collection_preferences WHERE player_id = $1`,
+      [playerId],
+    );
+    return result.rows[0]?.sort_key ?? null;
+  },
+
+  async setSortKey(database, { playerId, sortKey }) {
+    const result = await database.query(
+      `
+        INSERT INTO player_collection_preferences (player_id, sort_key)
+        VALUES ($1, $2)
+        ON CONFLICT (player_id) DO UPDATE
+          SET sort_key = EXCLUDED.sort_key, updated_at = CURRENT_TIMESTAMP
+        RETURNING sort_key, updated_at
+      `,
+      [playerId, sortKey],
+    );
+    return Object.freeze({
+      sortKey: result.rows[0].sort_key,
+      updatedAt: result.rows[0].updated_at,
+    });
+  },
+
+  async resolveOwnedReference(
+    database,
+    { playerId, cardReference, sortKey },
+  ) {
+    const { orderBy } = getCollectionSortDefinition(sortKey);
+    const result = await database.query(
+      `
+        WITH ordered_cards AS (
+          SELECT
+            ci.card_instance_id,
+            ci.public_card_id,
+            ROW_NUMBER() OVER (ORDER BY ${orderBy}) AS collection_position
+          FROM card_instances ci
+          JOIN card_templates ct ON ct.card_template_id = ci.card_template_id
+          JOIN rarities r ON r.rarity_id = ct.rarity_id
+          WHERE ci.owner_player_id = $1 AND ci.status = 'ACTIVE'
+        )
+        SELECT card_instance_id
+        FROM ordered_cards
+        WHERE
+          ($2::BIGINT >= 100000000 AND public_card_id = $2)
+          OR
+          ($2::BIGINT < 100000000 AND collection_position = $2)
+      `,
+      [playerId, cardReference],
+    );
+    return result.rows[0]?.card_instance_id ?? null;
+  },
+
   async listOwnedCards(
     database,
-    { playerId, rarityCode, limit, offset },
+    { playerId, sortKey, limit, offset },
   ) {
-    const parameters = [playerId, rarityCode];
+    const { orderBy } = getCollectionSortDefinition(sortKey);
+    const parameters = [playerId];
     const filter = `
       ci.owner_player_id = $1
       AND ci.status = 'ACTIVE'
-      AND ($2::text IS NULL OR r.rarity_code = $2)
     `;
     const countResult = await database.query(
       `
@@ -41,6 +97,10 @@ export const collectionRepository = Object.freeze({
       `
         SELECT
           ci.card_instance_id,
+          ci.public_card_id,
+          ROW_NUMBER() OVER (
+            ORDER BY ${orderBy}
+          ) AS collection_position,
           ci.card_template_id,
           ci.serial_number,
           ci.card_level,
@@ -57,8 +117,8 @@ export const collectionRepository = Object.freeze({
           ON ct.card_template_id = ci.card_template_id
         JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ${filter}
-        ORDER BY ci.obtained_at DESC, ci.card_instance_id DESC
-        LIMIT $3 OFFSET $4
+        ORDER BY ${orderBy}
+        LIMIT $2 OFFSET $3
       `,
       [...parameters, limit, offset],
     );
@@ -69,3 +129,4 @@ export const collectionRepository = Object.freeze({
     });
   },
 });
+import { getCollectionSortDefinition } from "./collection-sort.js";

@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 
+import { CardError } from "../../modules/card/index.js";
 import { UpgradeError } from "../../modules/upgrade/index.js";
 import {
   createFusionEmbed,
@@ -19,10 +20,10 @@ export const upgradeCommand = Object.freeze({
         .setName("fusion")
         .setDescription("Fuse two cards from the same Card Template.")
         .addStringOption((option) =>
-          cardOption(option, "card_a", "First Card Instance ID."),
+          cardOption(option, "card_a", "First public Card ID or collection number."),
         )
         .addStringOption((option) =>
-          cardOption(option, "card_b", "Second Card Instance ID."),
+          cardOption(option, "card_b", "Second public Card ID or collection number."),
         ),
     )
     .addSubcommand((subcommand) =>
@@ -30,7 +31,7 @@ export const upgradeCommand = Object.freeze({
         .setName("item")
         .setDescription("Use one Level Up item on a card.")
         .addStringOption((option) =>
-          cardOption(option, "card_id", "Card Instance ID to upgrade."),
+          cardOption(option, "card_id", "Public Card ID or collection number."),
         ),
     ),
 
@@ -43,16 +44,21 @@ export const upgradeCommand = Object.freeze({
 
     try {
       const subcommand = interaction.options.getSubcommand();
+      const resolve = (optionName) =>
+        services.collection.resolveOwnedCardReference({
+          playerId: player.playerId,
+          cardReference: interaction.options.getString(optionName, true),
+        });
       const result =
         subcommand === "fusion"
           ? await services.upgrade.fuseCards({
               playerId: player.playerId,
-              sourceCardAId: interaction.options.getString("card_a", true),
-              sourceCardBId: interaction.options.getString("card_b", true),
+              sourceCardAId: await resolve("card_a"),
+              sourceCardBId: await resolve("card_b"),
             })
           : await services.upgrade.useLevelUpItem({
               playerId: player.playerId,
-              cardInstanceId: interaction.options.getString("card_id", true),
+              cardInstanceId: await resolve("card_id"),
             });
       const embed =
         subcommand === "fusion"
@@ -60,7 +66,7 @@ export const upgradeCommand = Object.freeze({
           : createLevelUpEmbed(result);
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      if (error instanceof UpgradeError) {
+      if (error instanceof UpgradeError || error instanceof CardError) {
         await interaction.editReply({ content: error.message, embeds: [] });
         return;
       }

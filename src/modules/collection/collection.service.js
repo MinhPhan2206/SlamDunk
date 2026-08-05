@@ -1,4 +1,9 @@
 import { collectionRepository } from "./collection.repository.js";
+import {
+  DEFAULT_COLLECTION_SORT,
+  getCollectionSortDefinition,
+} from "./collection-sort.js";
+import { CardError } from "../card/index.js";
 
 const PAGE_SIZE = 10;
 
@@ -12,18 +17,6 @@ function normalizeId(value) {
   return normalized;
 }
 
-function normalizeRarityCode(value) {
-  if (value == null) {
-    return null;
-  }
-
-  if (typeof value !== "string" || !/^[A-Z][A-Z0-9_]*$/.test(value)) {
-    throw new TypeError("rarityCode must be a valid rarity code.");
-  }
-
-  return value;
-}
-
 function normalizePage(value) {
   if (!Number.isSafeInteger(value) || value < 1 || value > 1_000_000) {
     throw new TypeError("page must be a positive safe integer.");
@@ -32,16 +25,70 @@ function normalizePage(value) {
   return value;
 }
 
+function normalizeCardReference(value) {
+  const normalized = String(value).trim().replace(/^!/, "");
+  if (!/^\d+$/.test(normalized) || BigInt(normalized) <= 0n) {
+    throw new TypeError("cardReference must be a positive integer.");
+  }
+  return normalized;
+}
+
 export function createCollectionService({ databasePool }) {
+  async function getPlayerSort(playerId, database) {
+    return (
+      (await collectionRepository.getSortKey(database, playerId)) ??
+      DEFAULT_COLLECTION_SORT
+    );
+  }
+
   return Object.freeze({
+    async setSort(
+      { playerId, sortBy = "RARITY" },
+      { database = databasePool } = {},
+    ) {
+      const normalizedPlayerId = normalizeId(playerId);
+      const definition = getCollectionSortDefinition(sortBy);
+      const preference = await collectionRepository.setSortKey(database, {
+        playerId: normalizedPlayerId,
+        sortKey: definition.key,
+      });
+      return Object.freeze({ ...preference, label: definition.label });
+    },
+
+    async resolveOwnedCardReference(
+      { playerId, cardReference },
+      { database = databasePool } = {},
+    ) {
+      const normalizedPlayerId = normalizeId(playerId);
+      const normalizedReference = normalizeCardReference(cardReference);
+      const sortKey = await getPlayerSort(normalizedPlayerId, database);
+      const cardInstanceId = await collectionRepository.resolveOwnedReference(
+        database,
+        {
+          playerId: normalizedPlayerId,
+          cardReference: normalizedReference,
+          sortKey,
+        },
+      );
+      if (!cardInstanceId) {
+        throw new CardError(
+          "CARD_REFERENCE_NOT_FOUND",
+          "No active owned card matches that public ID or collection number.",
+        );
+      }
+      return cardInstanceId;
+    },
+
     async listOwnedCards(
-      { playerId, rarityCode = null, page = 1 },
+      { playerId, page = 1 },
       { database = databasePool } = {},
     ) {
       const normalizedPage = normalizePage(page);
+      const normalizedPlayerId = normalizeId(playerId);
+      const sortKey = await getPlayerSort(normalizedPlayerId, database);
       const result = await collectionRepository.listOwnedCards(database, {
-        playerId: normalizeId(playerId),
-        rarityCode: normalizeRarityCode(rarityCode),
+        playerId: normalizedPlayerId,
+        sortKey,
         limit: PAGE_SIZE,
         offset: (normalizedPage - 1) * PAGE_SIZE,
       });
@@ -55,7 +102,8 @@ export function createCollectionService({ databasePool }) {
         page: normalizedPage,
         pageSize: PAGE_SIZE,
         totalPages,
-        rarityCode: normalizeRarityCode(rarityCode),
+        sortKey,
+        sortLabel: getCollectionSortDefinition(sortKey).label,
       });
     },
   });

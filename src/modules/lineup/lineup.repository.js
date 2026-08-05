@@ -13,6 +13,7 @@ function mapSlot(row) {
   return Object.freeze({
     slot: row.slot,
     cardInstanceId: row.card_instance_id,
+    publicCardId: row.public_card_id,
     serialNumber: row.serial_number,
     cardLevel: row.card_level,
     playerName: row.player_name,
@@ -46,6 +47,7 @@ export const lineupRepository = Object.freeze({
         SELECT
           ls.slot,
           ci.card_instance_id,
+          ci.public_card_id,
           ci.serial_number,
           ci.card_level,
           ct.player_name,

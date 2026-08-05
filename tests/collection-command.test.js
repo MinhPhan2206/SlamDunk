@@ -32,7 +32,6 @@ test("collection command displays active cards for the current Player", async ()
       async listOwnedCards(input) {
         assert.deepEqual(input, {
           playerId: "8",
-          rarityCode: "SUPERSTAR",
           page: 1,
         });
         return {
@@ -40,6 +39,8 @@ test("collection command displays active cards for the current Player", async ()
             {
               playerName: "Test Player",
               edition: "Base",
+              collectionPosition: 1,
+              publicCardId: "123456789",
               rarityCode: "SUPERSTAR",
               overall: 94,
               primaryPosition: "SF",
@@ -51,7 +52,7 @@ test("collection command displays active cards for the current Player", async ()
           total: "1",
           page: 1,
           totalPages: 1,
-          rarityCode: "SUPERSTAR",
+          sortLabel: "Oldest",
         };
       },
     },

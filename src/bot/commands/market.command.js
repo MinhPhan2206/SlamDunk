@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 
+import { CardError } from "../../modules/card/index.js";
 import { MarketError } from "../../modules/market/index.js";
 import {
   createMarketBrowseEmbed,
@@ -29,7 +30,7 @@ export const marketCommand = Object.freeze({
         .addStringOption((option) =>
           option
             .setName("card_id")
-            .setDescription("Card Instance ID shown in /collection.")
+            .setDescription("Public Card ID or number in /collection.")
             .setRequired(true),
         )
         .addIntegerOption((option) =>
@@ -65,9 +66,13 @@ export const marketCommand = Object.freeze({
       let result;
       let embed;
       if (subcommand === "sell") {
+        const cardInstanceId = await services.collection.resolveOwnedCardReference({
+          playerId: player.playerId,
+          cardReference: interaction.options.getString("card_id", true),
+        });
         result = await services.market.createListing({
           sellerPlayerId: player.playerId,
-          cardInstanceId: interaction.options.getString("card_id", true),
+          cardInstanceId,
           priceGold: interaction.options.getInteger("price", true),
         });
         embed = createMarketListingEmbed(result);
@@ -90,7 +95,7 @@ export const marketCommand = Object.freeze({
 
       await interaction.editReply({ embeds: [embed] });
     } catch (error) {
-      if (error instanceof MarketError) {
+      if (error instanceof MarketError || error instanceof CardError) {
         await interaction.editReply({ content: error.message, embeds: [] });
         return;
       }

@@ -43,6 +43,11 @@ test("market sell command creates a fixed-price listing", async () => {
   });
   const services = {
     player: playerService,
+    collection: {
+      async resolveOwnedCardReference() {
+        return "42";
+      },
+    },
     market: {
       async createListing(input) {
         assert.deepEqual(input, {
@@ -56,6 +61,7 @@ test("market sell command creates a fixed-price listing", async () => {
             cardInstanceId: "42",
             priceGold: "500",
           },
+          card: { publicCardId: "123456789" },
         };
       },
     },
@@ -80,6 +86,7 @@ test("market browse command displays active listings", async () => {
             {
               listingId: "9",
               cardInstanceId: "42",
+              publicCardId: "123456789",
               priceGold: "500",
               sellerName: "Seller",
               playerName: "Test Guard",

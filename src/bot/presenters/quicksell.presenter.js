@@ -9,5 +9,5 @@ export function createQuicksellEmbed({ card, shardReward, shardBalance }) {
       { name: "Received", value: `${shardReward} Shards`, inline: true },
       { name: "Shard Balance", value: shardBalance, inline: true },
     )
-    .setFooter({ text: `Card Instance ${card.cardInstanceId} was destroyed.` });
+    .setFooter({ text: `Card !${card.publicCardId} was destroyed.` });
 }

@@ -1,5 +1,6 @@
 const CARD_INSTANCE_COLUMNS = `
   card_instance_id,
+  public_card_id,
   card_template_id,
   owner_player_id,
   serial_number,
@@ -22,6 +23,7 @@ function mapCardInstance(row) {
 
   return Object.freeze({
     cardInstanceId: row.card_instance_id,
+    publicCardId: row.public_card_id,
     cardTemplateId: row.card_template_id,
     ownerPlayerId: row.owner_player_id,
     serialNumber: row.serial_number,
@@ -197,22 +199,26 @@ export const cardInstanceRepository = Object.freeze({
       serialNumber,
       cardLevel,
       obtainedMethod,
+      publicCardId,
     },
   ) {
     const result = await database.query(
       `
         INSERT INTO card_instances (
           card_template_id,
+          public_card_id,
           owner_player_id,
           serial_number,
           card_level,
           obtained_method
         )
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT (public_card_id) DO NOTHING
         RETURNING ${CARD_INSTANCE_COLUMNS}
       `,
       [
         cardTemplateId,
+        publicCardId,
         ownerPlayerId,
         serialNumber,
         cardLevel,

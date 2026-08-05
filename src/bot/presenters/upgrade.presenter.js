@@ -17,7 +17,7 @@ export function createFusionEmbed({ sourceCards, resultCard }) {
       },
       {
         name: "Result",
-        value: `Card ${resultCard.cardInstanceId} | #${resultCard.serialNumber} | Lv${resultCard.cardLevel}`,
+        value: `Card !${resultCard.publicCardId} | #${resultCard.serialNumber} | Lv${resultCard.cardLevel}`,
       },
     );
 }
@@ -41,5 +41,5 @@ export function createLevelUpEmbed({
         inline: true,
       },
     )
-    .setFooter({ text: `Card Instance ${card.cardInstanceId}` });
+    .setFooter({ text: `Card !${card.publicCardId}` });
 }

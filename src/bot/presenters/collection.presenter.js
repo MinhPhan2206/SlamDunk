@@ -9,8 +9,8 @@ function formatCard(card) {
     .join("/");
 
   return [
-    `**${card.playerName} - ${card.edition}**`,
-    `${formatRarity(card.rarityCode)} | OVR ${card.overall} | ${positions} | Level ${card.cardLevel} | #${card.serialNumber} | ID ${card.cardInstanceId}`,
+    `**${card.collectionPosition}. ${card.playerName} - ${card.edition}**`,
+    `${formatRarity(card.rarityCode)} | OVR ${card.overall} | ${positions} | Level ${card.cardLevel} | #${card.serialNumber} | ID !${card.publicCardId}`,
   ].join("\n");
 }
 
@@ -20,16 +20,12 @@ export function createCollectionEmbed(result) {
     .setTitle("Your Collection");
 
   if (result.cards.length === 0) {
-    embed.setDescription(
-      result.rarityCode
-        ? `No active cards found in ${formatRarity(result.rarityCode)}.`
-        : "You do not own any active cards yet.",
-    );
+    embed.setDescription("You do not own any active cards yet.");
   } else {
     embed.setDescription(result.cards.map(formatCard).join("\n\n"));
   }
 
   return embed.setFooter({
-    text: `Page ${result.page}/${Math.max(result.totalPages, 1)} | ${result.total} cards`,
+    text: `Page ${result.page}/${Math.max(result.totalPages, 1)} | ${result.total} cards | Sort: ${result.sortLabel}`,
   });
 }

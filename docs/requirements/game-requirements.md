@@ -24,6 +24,11 @@
   rarity. The current names are Base, Common, Uncommon, Alpha, All-Star,
   Superstar, and Goat.
 - `/rarity` lists template definitions, not Card Instances owned by a Player.
+- `/sort` persists each Player's `/collection` ordering. If `sort_by` is
+  omitted, it defaults to Rarity. Supported choices are oldest, newest, rarity,
+  OVR, Card Level, player name, position, and implemented Card stats.
+- A Player without a saved preference uses oldest-first order so newly obtained
+  Drop/Pack cards appear at the end of `/collection`.
 
 ## M9 Free Drop Behavior
 

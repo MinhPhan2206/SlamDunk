@@ -33,6 +33,11 @@ test("upgrade fusion command combines two Card Instances", async () => {
     card_b: "42",
   });
   const services = {
+    collection: {
+      async resolveOwnedCardReference({ cardReference }) {
+        return cardReference;
+      },
+    },
     player: {
       async getOrCreatePlayer() {
         return { playerId: "7" };
@@ -58,6 +63,7 @@ test("upgrade fusion command combines two Card Instances", async () => {
           ],
           resultCard: {
             cardInstanceId: "43",
+            publicCardId: "123456789",
             serialNumber: "3",
             cardLevel: 5,
           },
@@ -77,6 +83,11 @@ test("upgrade fusion command combines two Card Instances", async () => {
 test("upgrade item command consumes one Level Up item", async () => {
   const { interaction, replies } = createInteraction("item", { card_id: "43" });
   const services = {
+    collection: {
+      async resolveOwnedCardReference({ cardReference }) {
+        return cardReference;
+      },
+    },
     player: {
       async getOrCreatePlayer() {
         return { playerId: "7" };
@@ -88,6 +99,7 @@ test("upgrade item command consumes one Level Up item", async () => {
         return {
           card: {
             cardInstanceId: "43",
+            publicCardId: "123456789",
             playerName: "Test Guard",
             edition: "Base",
           },

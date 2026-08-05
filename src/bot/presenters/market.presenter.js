@@ -22,7 +22,7 @@ export function createMarketBrowseEmbed({ listings }) {
         (listing) =>
           [
             `**Listing ${listing.listingId} — ${listing.playerName} - ${listing.edition}**`,
-            `${formatRarity(listing.rarityCode)} | Lv${listing.cardLevel} | #${listing.serialNumber} | Card ${listing.cardInstanceId}`,
+            `${formatRarity(listing.rarityCode)} | Lv${listing.cardLevel} | #${listing.serialNumber} | ID !${listing.publicCardId}`,
             `${gold(listing.priceGold)} | Seller: ${listing.sellerName}`,
           ].join("\n"),
       )
@@ -30,11 +30,11 @@ export function createMarketBrowseEmbed({ listings }) {
   );
 }
 
-export function createMarketListingEmbed({ listing }) {
+export function createMarketListingEmbed({ listing, card }) {
   return new EmbedBuilder()
     .setColor(MARKET_COLOR)
     .setTitle("Market Listing Created")
-    .setDescription(`Card ${listing.cardInstanceId} is now listed.`)
+    .setDescription(`Card !${card.publicCardId} is now listed.`)
     .addFields(
       { name: "Listing ID", value: listing.listingId, inline: true },
       { name: "Price", value: gold(listing.priceGold), inline: true },
@@ -52,7 +52,7 @@ export function createMarketPurchaseEmbed({ listing, card, economy }) {
   return new EmbedBuilder()
     .setColor(MARKET_COLOR)
     .setTitle("Market Purchase Complete")
-    .setDescription(`You now own Card ${card.cardInstanceId}.`)
+    .setDescription(`You now own Card !${card.publicCardId}.`)
     .addFields(
       { name: "Price", value: gold(listing.priceGold), inline: true },
       {

@@ -302,6 +302,7 @@ Suggested fields:
 
 ```text
 card_instance_id       PK
+public_card_id         UNIQUE, nine-digit player-facing ID
 card_template_id       FK
 owner_player_id        FK nullable for destroyed/system states
 
@@ -357,6 +358,16 @@ Migration `006_create_card_instances.sql` implements `card_instances` with a
 unique serial per Card Template, Card Level 1–5, lifecycle status, ownership,
 obtain method, and Market/Trade lock flags. Active instances must have an owner.
 Destroyed-card and lock state constraints are enforced by PostgreSQL.
+
+Migration `016_add_public_card_ids.sql` adds an immutable, unique nine-digit
+`public_card_id`. Internal relations continue to use `card_instance_id`.
+Player-facing `card_id` inputs resolve either this public ID (with an optional
+`!` prefix) or the card's current one-based position in the owner's default
+Collection order.
+
+`player_collection_preferences` stores one validated `sort_key` per Player.
+Both `/collection` pagination and collection-position card lookup use the same
+stable ordering, preventing a displayed position from resolving another card.
 
 ---
 

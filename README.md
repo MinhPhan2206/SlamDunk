@@ -62,7 +62,8 @@ npm test
 - `/pack pack_type:<code>` — buy and immediately open a Pack.
 - `/exchange item:shard` — exchange 500 Shards for one Level Up item.
 - `/odds drop|pack` — view configured Free Drop or Pack rarity odds.
-- `/collection` — view owned active cards with rarity filtering and pagination.
+- `/collection` — view owned active cards using the saved ordering and pagination.
+- `/sort [sort_by]` — save the ordering used by `/collection`; omitted option defaults to Rarity.
 - `/lineup view|set|remove` — manage the active five-position lineup.
 - `/battle` — simulate a persisted PvE match with the active lineup.
 - `/cooldowns` — view the current Claim and Free Drop cooldown status.

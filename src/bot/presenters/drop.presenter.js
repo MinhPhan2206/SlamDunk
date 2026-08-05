@@ -67,6 +67,7 @@ export function createDropSelectionPayload(result) {
         `${formatRarity(template.rarityCode)} | OVR ${template.overall}`,
         `Card Level: **${instance.cardLevel}**`,
         `Serial: **#${instance.serialNumber}**`,
+        `Card ID: **!${instance.publicCardId}**`,
       ].join("\n"),
     );
 

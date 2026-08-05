@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 
+import { CardError } from "../../modules/card/index.js";
 import { LineupError } from "../../modules/lineup/index.js";
 import { createLineupEmbed } from "../presenters/lineup.presenter.js";
 
@@ -33,7 +34,7 @@ export const lineupCommand = Object.freeze({
       ).addStringOption((option) =>
         option
           .setName("card_id")
-          .setDescription("Card Instance ID shown in /collection.")
+          .setDescription("Public Card ID or number in /collection.")
           .setRequired(true),
       ),
     )
@@ -56,10 +57,14 @@ export const lineupCommand = Object.freeze({
     try {
       let result;
       if (subcommand === "set") {
+        const cardInstanceId = await services.collection.resolveOwnedCardReference({
+          playerId: player.playerId,
+          cardReference: interaction.options.getString("card_id", true),
+        });
         result = await services.lineup.setCard({
           playerId: player.playerId,
           slot: interaction.options.getString("slot", true),
-          cardInstanceId: interaction.options.getString("card_id", true),
+          cardInstanceId,
         });
       } else if (subcommand === "remove") {
         result = await services.lineup.removeCard({
@@ -72,7 +77,7 @@ export const lineupCommand = Object.freeze({
 
       await interaction.editReply({ embeds: [createLineupEmbed(result)] });
     } catch (error) {
-      if (error instanceof LineupError) {
+      if (error instanceof LineupError || error instanceof CardError) {
         await interaction.editReply({ content: error.message, embeds: [] });
         return;
       }
