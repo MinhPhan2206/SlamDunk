@@ -12,6 +12,9 @@ import { upgradeCommand } from "./upgrade.command.js";
 import { marketCommand } from "./market.command.js";
 import { tradeCommand } from "./trade.command.js";
 import { oddsCommand } from "./odds.command.js";
+import { packCommand } from "./pack.command.js";
+import { dailyCommand } from "./daily.command.js";
+import { exchangeCommand } from "./exchange.command.js";
 
 export const commands = Object.freeze([
   pingCommand,
@@ -28,4 +31,7 @@ export const commands = Object.freeze([
   marketCommand,
   tradeCommand,
   oddsCommand,
+  packCommand,
+  dailyCommand,
+  exchangeCommand,
 ]);

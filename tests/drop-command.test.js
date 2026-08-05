@@ -19,7 +19,11 @@ function template(cardTemplateId, playerName) {
 
 function offer() {
   return {
-    session: { dropSessionId: "10", status: "OPEN" },
+    session: {
+      dropSessionId: "10",
+      status: "OPEN",
+      selectionExpiresAt: new Date(Date.now() + 60_000),
+    },
     candidates: [
       { candidatePosition: 1, cardTemplateId: "1", template: template("1", "Alpha") },
       { candidatePosition: 2, cardTemplateId: "2", template: template("2", "Beta") },

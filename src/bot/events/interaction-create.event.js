@@ -39,7 +39,11 @@ export function createInteractionCreateHandler(
     if (interaction.isChatInputCommand()) {
       handler = commands.get(interaction.commandName);
       interactionLabel = `command /${interaction.commandName}`;
-    } else if (interaction.isButton()) {
+    } else if (
+      interaction.isButton() ||
+      interaction.isStringSelectMenu() ||
+      interaction.isModalSubmit()
+    ) {
       const namespace = interaction.customId.split(":", 1)[0];
       handler = componentHandlers.get(namespace);
       interactionLabel = `component ${namespace}`;

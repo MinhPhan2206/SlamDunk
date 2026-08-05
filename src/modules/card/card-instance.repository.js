@@ -39,6 +39,14 @@ function mapCardInstance(row) {
 }
 
 export const cardInstanceRepository = Object.freeze({
+  async isInLineup(database, cardInstanceId) {
+    const result = await database.query(
+      "SELECT EXISTS (SELECT 1 FROM lineup_slots WHERE card_instance_id = $1) AS in_lineup",
+      [cardInstanceId],
+    );
+    return result.rows[0].in_lineup;
+  },
+
   async incrementGamesPlayed(database, { ownerPlayerId, cardInstanceIds }) {
     const result = await database.query(
       `

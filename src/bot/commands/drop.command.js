@@ -32,6 +32,28 @@ export const dropCommand = Object.freeze({
           : createDropOfferPayload(result);
 
       await interaction.editReply(payload);
+
+      if (result.session.status === "OPEN") {
+        const delay = Math.max(
+          0,
+          result.session.selectionExpiresAt.getTime() - Date.now(),
+        );
+        const timer = setTimeout(async () => {
+          try {
+            const completed = await services.drop.confirmSelection({
+              playerId: player.playerId,
+              dropSessionId: result.session.dropSessionId,
+              candidatePosition: 1,
+            });
+            await interaction.editReply(createDropSelectionPayload(completed));
+          } catch (error) {
+            if (!(error instanceof DropError)) {
+              console.error(`Drop timeout completion failed: ${error.message}`);
+            }
+          }
+        }, delay);
+        timer.unref();
+      }
     } catch (error) {
       if (
         error instanceof DropError &&

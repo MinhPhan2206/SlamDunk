@@ -3,109 +3,40 @@ import test from "node:test";
 
 import { tradeCommand } from "../src/bot/commands/trade.command.js";
 
-function createInteraction(subcommand, values = {}) {
+test("trade command creates an interactive Direct Trade", async () => {
   const replies = [];
-  return {
-    replies,
-    interaction: {
-      user: { id: "234567890123456789", username: "TradeTester" },
-      options: {
-        getSubcommand() {
-          return subcommand;
-        },
-        getString(name) {
-          return values[name];
-        },
-        getInteger(name) {
-          return values[name];
-        },
-        getUser(name) {
-          return values[name];
-        },
-      },
-      async deferReply() {
-        replies.push({ type: "defer" });
-      },
-      async editReply(payload) {
-        replies.push({ type: "edit", payload });
-      },
-    },
+  const invited = { id: "345678901234567890", username: "OtherPlayer", bot: false };
+  const interaction = {
+    user: { id: "234567890123456789", username: "TradeTester" },
+    options: { getUser() { return invited; } },
+    async deferReply() { replies.push("defer"); },
+    async editReply(payload) { replies.push(payload); },
   };
-}
-
-function tradeState(status = "OPEN") {
-  return {
-    trade: { tradeId: "9", status },
-    participants: [
-      {
-        playerId: "7",
-        username: "TradeTester",
-        goldOffered: "0",
-        confirmedAt: null,
-      },
-      {
-        playerId: "8",
-        username: "OtherPlayer",
-        goldOffered: "0",
-        confirmedAt: null,
-      },
-    ],
-    cards: [],
-  };
-}
-
-test("trade create command creates the invited Player and Direct Trade", async () => {
-  const { interaction, replies } = createInteraction("create", {
-    user: { id: "345678901234567890", username: "OtherPlayer", bot: false },
-  });
   const services = {
     player: {
       async getOrCreatePlayer({ discordUserId }) {
-        return {
-          playerId: discordUserId === interaction.user.id ? "7" : "8",
-        };
+        return { playerId: discordUserId === interaction.user.id ? "7" : "8" };
       },
     },
     trade: {
       async createTrade(input) {
-        assert.deepEqual(input, {
-          initiatorPlayerId: "7",
-          invitedPlayerId: "8",
-        });
-        return tradeState();
+        assert.deepEqual(input, { initiatorPlayerId: "7", invitedPlayerId: "8" });
+        return {
+          trade: { tradeId: "9", status: "OPEN", expiresAt: new Date(Date.now() + 60_000) },
+          participants: [
+            { playerId: "7", username: "TradeTester", goldOffered: "0", confirmedAt: null },
+            { playerId: "8", username: "OtherPlayer", goldOffered: "0", confirmedAt: null },
+          ],
+          cards: [],
+        };
       },
+      async expireTrade() {},
     },
   };
 
   await tradeCommand.execute(interaction, { services });
 
-  assert.equal(replies[0].type, "defer");
-  const embed = replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.title, /Direct Trade Created/);
-  assert.match(embed.description, /Trade 9/);
-});
-
-test("trade confirm command displays a completed trade", async () => {
-  const { interaction, replies } = createInteraction("confirm", {
-    trade_id: "9",
-  });
-  const services = {
-    player: {
-      async getOrCreatePlayer() {
-        return { playerId: "7" };
-      },
-    },
-    trade: {
-      async confirmTrade(input) {
-        assert.deepEqual(input, { tradeId: "9", playerId: "7" });
-        return { ...tradeState("COMPLETED"), completed: true };
-      },
-    },
-  };
-
-  await tradeCommand.execute(interaction, { services });
-
-  const embed = replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.title, /Direct Trade Completed/);
-  assert.match(embed.description, /COMPLETED/);
+  assert.equal(replies[0], "defer");
+  assert.equal(replies[1].components[0].components.length, 4);
+  assert.match(replies[1].embeds[0].toJSON().description, /Trade 9/);
 });

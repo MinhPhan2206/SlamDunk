@@ -57,7 +57,10 @@ npm test
 - `/ping` — check whether the bot is online.
 - `/profile` — create or view your Player and Wallet profile.
 - `/claim` — receive 300–500 Gold every 30 minutes.
+- `/daily` — receive daily Gold and Shards.
 - `/drop` — open a Free Drop and choose one of three Card Templates.
+- `/pack pack_type:<code>` — buy and immediately open a Pack.
+- `/exchange item:shard` — exchange 500 Shards for one Level Up item.
 - `/odds drop|pack` — view configured Free Drop or Pack rarity odds.
 - `/collection` — view owned active cards with tier filtering and pagination.
 - `/lineup view|set|remove` — manage the active five-position lineup.
@@ -68,8 +71,7 @@ npm test
 - `/upgrade fusion card_a:<id> card_b:<id>` — fuse matching Card Templates.
 - `/upgrade item card_id:<id>` — consume one Level Up item for +1 Level.
 - `/market browse|sell|buy|cancel` — use the fixed-price Card Market.
-- `/trade create|view|add-card|remove-card|set-gold|confirm|cancel` — manage a
-  two-player Direct Trade.
+- `/trade user:<user>` — manage a two-player Direct Trade through buttons and modals.
 
 Grant Level Up items locally as an administrator:
 

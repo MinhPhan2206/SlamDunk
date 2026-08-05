@@ -839,8 +839,6 @@ Paid Pack purchase/opening tables
 Item inventory model
 Battle snapshot storage strategy
 Battle play-by-play persistence
-Trade card count limit
-Listed-card battle eligibility
 Multiple saved lineups
 ```
 

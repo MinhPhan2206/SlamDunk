@@ -10,6 +10,8 @@ function mapTrade(row) {
     updatedAt: row.updated_at,
     completedAt: row.completed_at,
     cancelledAt: row.cancelled_at,
+    expiresAt: row.expires_at,
+    expiredAt: row.expired_at,
   });
 }
 
@@ -46,17 +48,19 @@ const TRADE_COLUMNS = `
   updated_at,
   completed_at,
   cancelled_at
+  ,expires_at
+  ,expired_at
 `;
 
 export const tradeRepository = Object.freeze({
-  async create(database, { createdByPlayerId, participantPlayerIds }) {
+  async create(database, { createdByPlayerId, participantPlayerIds, expiresAt }) {
     const result = await database.query(
       `
-        INSERT INTO trades (created_by_player_id)
-        VALUES ($1)
+        INSERT INTO trades (created_by_player_id, expires_at)
+        VALUES ($1, $2)
         RETURNING ${TRADE_COLUMNS}
       `,
-      [createdByPlayerId],
+      [createdByPlayerId, expiresAt],
     );
     const trade = mapTrade(result.rows[0]);
     await database.query(
@@ -83,6 +87,13 @@ export const tradeRepository = Object.freeze({
       [tradeId],
     );
     return mapTrade(result.rows[0]);
+  },
+
+  async findExpiredOpen(database) {
+    const result = await database.query(
+      `SELECT ${TRADE_COLUMNS} FROM trades WHERE status = 'OPEN' AND expires_at <= CURRENT_TIMESTAMP ORDER BY trade_id`,
+    );
+    return result.rows.map(mapTrade);
   },
 
   async findParticipants(database, tradeId) {
@@ -237,6 +248,19 @@ export const tradeRepository = Object.freeze({
         SET
           status = 'CANCELLED',
           cancelled_at = CURRENT_TIMESTAMP,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE trade_id = $1 AND status = 'OPEN'
+        RETURNING ${TRADE_COLUMNS}
+      `,
+      [tradeId],
+    );
+    return mapTrade(result.rows[0]);
+  },
+
+  async markExpired(database, tradeId) {
+    const result = await database.query(
+      `
+        UPDATE trades SET status = 'EXPIRED', expired_at = CURRENT_TIMESTAMP,
           updated_at = CURRENT_TIMESTAMP
         WHERE trade_id = $1 AND status = 'OPEN'
         RETURNING ${TRADE_COLUMNS}

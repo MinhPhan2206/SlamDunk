@@ -301,7 +301,7 @@ The first configured paid Pack product uses the stable code `standard`:
 
 The Pack catalog is keyed by Pack code. Future Packs must define their own
 display name and rarity distribution instead of changing Standard Pack odds.
-Pack buying and opening behavior is not implemented by this odds decision.
+Pack buying and opening behavior is defined separately from the odds table.
 
 Expected server supply must be calculated across every source:
 
@@ -429,11 +429,9 @@ The following values are still TBD and must be finalized through simulation and
 playtesting:
 
 ```text
-Final Daily reward and cooldown
-Final Free Drop cooldown, candidate count, and odds
-Standard, Premium, Promo/Event, and Shard Key odds
-Final pack prices
-Final quicksell Shard values
+Final Free Drop odds
+Premium, Promo/Event, and Shard Key odds
+Future Pack prices
 Final Shard Key costs
 Event-card internal weights
 Desired Goat and Superstar annual supply

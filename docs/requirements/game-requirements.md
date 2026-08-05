@@ -41,6 +41,10 @@
   candidates, and the provisional Tier 1–7 weights in
   `economy-pack-baseline.md`. These remain adjustable simulation values rather
   than finalized production balance.
+- Three candidates is the production candidate count.
+- The selection window lasts 10 seconds. When it expires, candidate 1 is
+  selected automatically and the Player cannot select another candidate.
+- Free Drop has no pity system.
 
 ## Drop and Pack Odds
 
@@ -53,7 +57,32 @@
 - Pack definitions are keyed by stable Pack codes so each future Pack can own
   an independent name and rarity distribution.
 - This iteration exposes Pack catalog odds only. Buying or opening Packs remains
-  a separate future feature.
+  a separate module from Free Drop.
+
+## Pack Purchase
+
+- `/pack pack_type:<code>` buys and opens the selected Pack immediately.
+- Standard Pack costs 1,000 Gold, grants one random Card, and has a one-second
+  anti-spam cooldown with no purchase limit.
+- Gold debit, ledger entry, rarity roll, Card mint, PackOpening completion, and
+  cooldown update are one PostgreSQL transaction.
+- Discord interaction ID provides idempotency. A retry returns the existing
+  Pack result and cannot charge Gold or mint another Card.
+- Eligible Card Templates within each of the current seven rarity tiers have
+  equal probability after the rarity roll.
+- Future Premium, Event, and Shard Packs own separate catalog definitions and odds.
+
+## Daily Reward
+
+- `/daily` has a 24-hour cooldown.
+- A successful Daily grants 1,500–2,000 Gold and 20–30 Shards, inclusive.
+- Both rewards, ledger entries, and cooldown are atomic and idempotent.
+
+## Shard Exchange
+
+- `/exchange item:shard` displays an interactive Exchange menu.
+- One Level Up item costs 500 Shards.
+- Shard debit, exchange audit record, and item grant are atomic and idempotent.
 
 ## M12 Battle MVP Behavior
 
@@ -117,4 +146,16 @@ Hai Card Instance nguồn được giữ lại trong lịch sử với trạng t
 - Mọi thay đổi Card hoặc Gold offer đều xoá confirmation của cả hai bên.
 - Khi cả hai xác nhận final offer, Gold và Card ownership được chuyển trong
   cùng một PostgreSQL transaction.
-- Giới hạn số Card, giới hạn Gold/Card cuối cùng và trade expiry vẫn là TBD.
+- Mỗi người có thể offer tối đa 10 Card và 20.000.000 Gold.
+- Trade hết hạn sau 3 phút, chuyển sang `EXPIRED` và mở khóa Card.
+- `/trade user:<user>` dùng buttons và modal để sửa Card, Gold, confirm hoặc cancel;
+  không dùng các subcommand riêng cho từng thao tác.
+- Market fee luôn bằng 0. Card đang được listing không thể vào Lineup hoặc Battle;
+  Card đang trong Lineup phải được tháo trước khi listing.
+
+## Future Card Stats Direction
+
+The proposed future Card stat set is Three Point, Mid Range, Finishing,
+Playmaking, Interior Defending, Perimeter Defending, and Strength. The current
+database schema and Battle implementation remain unchanged until Card data and
+Battle formulas are ready for a coordinated migration.

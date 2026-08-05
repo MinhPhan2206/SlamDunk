@@ -60,7 +60,8 @@ docs/
     ├── 04-data-model.md
     ├── 05-card-lifecycle.md
     ├── 06-transaction-rules.md
-    └── 07-project-structure.md
+    ├── 07-project-structure.md
+    └── 08-deployment-and-operations.md
 ```
 
 ---

@@ -336,15 +336,9 @@ Architecture must remain flexible for:
 Final Free Drop probabilities
 Hard circulation caps
 Exact Trait coefficients
-Pack cooldown
-Pack reveal rules
 Pack timeout behavior
-Paid pack structure
-Daily rewards
-Quicksell values
+Future paid Pack products
 Additional Gold sinks
-Listed-card battle eligibility
-Maximum cards per direct trade
 Battle simulation depth
 Fatigue
 Substitutions

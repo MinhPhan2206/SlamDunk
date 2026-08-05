@@ -4,8 +4,6 @@ import { EconomyCurrency, EconomyError } from "../economy/index.js";
 import { TradeError } from "./trade.errors.js";
 import { tradeRepository } from "./trade.repository.js";
 
-const MAX_BIGINT = 9_223_372_036_854_775_807n;
-
 function normalizeId(value, fieldName) {
   const normalized = String(value);
   if (!/^\d+$/.test(normalized) || BigInt(normalized) <= 0n) {
@@ -14,7 +12,7 @@ function normalizeId(value, fieldName) {
   return normalized;
 }
 
-function normalizeGold(value) {
+function normalizeGold(value, maximumGold) {
   if (
     typeof value !== "bigint" &&
     !(typeof value === "string" && /^\d+$/.test(value)) &&
@@ -23,8 +21,8 @@ function normalizeGold(value) {
     throw new TypeError("goldOffered must be a non-negative integer.");
   }
   const amount = BigInt(value);
-  if (amount < 0n || amount > MAX_BIGINT) {
-    throw new TypeError("goldOffered must be a non-negative 64-bit integer.");
+  if (amount < 0n || amount > BigInt(maximumGold)) {
+    throw new TradeError("TRADE_GOLD_LIMIT", `Gold offered cannot exceed ${maximumGold}.`);
   }
   return amount.toString();
 }
@@ -44,6 +42,9 @@ function assertOpenTrade(trade) {
       "TRADE_NOT_OPEN",
       "This Direct Trade is no longer open.",
     );
+  }
+  if (trade.expiresAt <= new Date()) {
+    throw new TradeError("TRADE_EXPIRED", "This Direct Trade has expired.");
   }
 }
 
@@ -73,8 +74,14 @@ export function createTradeService({
   cardInstanceService,
   economyService,
   playerService,
+  tradeConfig,
 }) {
-  return Object.freeze({
+  if (
+    !Number.isSafeInteger(tradeConfig?.maximumCardsPerPlayer) ||
+    !Number.isSafeInteger(tradeConfig?.maximumGoldPerPlayer) ||
+    !Number.isSafeInteger(tradeConfig?.expiryMinutes)
+  ) throw new TypeError("Valid tradeConfig is required.");
+  const service = {
     async createTrade(
       { initiatorPlayerId, invitedPlayerId },
       { database } = {},
@@ -102,6 +109,7 @@ export function createTradeService({
         const trade = await tradeRepository.create(transactionDatabase, {
           createdByPlayerId: initiatorId,
           participantPlayerIds: [initiatorId, invitedId],
+          expiresAt: new Date(Date.now() + tradeConfig.expiryMinutes * 60_000),
         });
         return getState(transactionDatabase, trade);
       });
@@ -138,6 +146,10 @@ export function createTradeService({
           trade.tradeId,
         );
         assertParticipant(participants, normalizedPlayerId);
+        const currentCards = await tradeRepository.findCards(transactionDatabase, trade.tradeId);
+        if (currentCards.filter((card) => card.offeredByPlayerId === normalizedPlayerId).length >= tradeConfig.maximumCardsPerPlayer) {
+          throw new TradeError("TRADE_CARD_LIMIT", `Each Player can offer at most ${tradeConfig.maximumCardsPerPlayer} cards.`);
+        }
 
         try {
           await cardInstanceService.lockForTrade(
@@ -218,7 +230,7 @@ export function createTradeService({
     ) {
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
-      const normalizedGold = normalizeGold(goldOffered);
+      const normalizedGold = normalizeGold(goldOffered, tradeConfig.maximumGoldPerPlayer);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         const trade = await tradeRepository.findByIdForUpdate(
@@ -411,5 +423,69 @@ export function createTradeService({
         });
       });
     },
-  });
+
+    async setCardOffer({ tradeId, playerId, cardInstanceIds }, { database } = {}) {
+      const normalizedTradeId = normalizeId(tradeId, "tradeId");
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      if (!Array.isArray(cardInstanceIds)) throw new TypeError("cardInstanceIds must be an array.");
+      const desiredIds = [...new Set(cardInstanceIds.map((id) => normalizeId(id, "cardInstanceId")))];
+      if (desiredIds.length > tradeConfig.maximumCardsPerPlayer) {
+        throw new TradeError("TRADE_CARD_LIMIT", `Each Player can offer at most ${tradeConfig.maximumCardsPerPlayer} cards.`);
+      }
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const trade = await tradeRepository.findByIdForUpdate(transactionDatabase, normalizedTradeId);
+        assertOpenTrade(trade);
+        const participants = await tradeRepository.findParticipants(transactionDatabase, trade.tradeId);
+        assertParticipant(participants, normalizedPlayerId);
+        const state = await getState(transactionDatabase, trade);
+        const current = state.cards.filter((card) => card.offeredByPlayerId === normalizedPlayerId);
+        const desired = new Set(desiredIds);
+        for (const card of current) {
+          if (!desired.has(card.cardInstanceId)) {
+            await cardInstanceService.unlockFromTrade({ cardInstanceId: card.cardInstanceId, ownerPlayerId: normalizedPlayerId }, { database: transactionDatabase });
+            await tradeRepository.resolveCard(transactionDatabase, { tradeCardId: card.tradeCardId, outcome: "REMOVED" });
+          }
+        }
+        const currentIds = new Set(current.map((card) => card.cardInstanceId));
+        for (const cardInstanceId of desiredIds) {
+          if (!currentIds.has(cardInstanceId)) {
+            try {
+              await cardInstanceService.lockForTrade({ cardInstanceId, ownerPlayerId: normalizedPlayerId }, { database: transactionDatabase });
+              await tradeRepository.addCard(transactionDatabase, { tradeId: trade.tradeId, cardInstanceId, offeredByPlayerId: normalizedPlayerId });
+            } catch (error) {
+              if (error instanceof CardError || error?.code === "23505") {
+                throw new TradeError("TRADE_CARD_NOT_AVAILABLE", "One or more cards are unavailable for Direct Trade.");
+              }
+              throw error;
+            }
+          }
+        }
+        await tradeRepository.clearConfirmations(transactionDatabase, trade.tradeId);
+        return getState(transactionDatabase, trade);
+      });
+    },
+
+    async expireTrade({ tradeId }, { database } = {}) {
+      const normalizedTradeId = normalizeId(tradeId, "tradeId");
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const trade = await tradeRepository.findByIdForUpdate(transactionDatabase, normalizedTradeId);
+        if (!trade || trade.status !== "OPEN") return trade ? getState(transactionDatabase, trade) : null;
+        const state = await getState(transactionDatabase, trade);
+        for (const card of state.cards) {
+          await cardInstanceService.unlockFromTrade({ cardInstanceId: card.cardInstanceId, ownerPlayerId: card.offeredByPlayerId }, { database: transactionDatabase });
+        }
+        await tradeRepository.resolveAllCards(transactionDatabase, { tradeId: trade.tradeId, outcome: "EXPIRED" });
+        const expired = await tradeRepository.markExpired(transactionDatabase, trade.tradeId);
+        return Object.freeze({ ...state, trade: expired });
+      });
+    },
+
+    async expireDueTrades() {
+      const trades = await tradeRepository.findExpiredOpen(databasePool);
+      const results = [];
+      for (const trade of trades) results.push(await service.expireTrade({ tradeId: trade.tradeId }));
+      return Object.freeze(results);
+    },
+  };
+  return Object.freeze(service);
 }

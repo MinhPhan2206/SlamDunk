@@ -43,6 +43,12 @@ function normalizeCandidatePosition(candidatePosition, maximum) {
 
 function validateConfig(config) {
   if (
+    !Number.isSafeInteger(config?.selectionSeconds) ||
+    config.selectionSeconds <= 0
+  ) {
+    throw new TypeError("dropConfig.selectionSeconds must be positive.");
+  }
+  if (
     !Number.isSafeInteger(config?.cooldownMinutes) ||
     config.cooldownMinutes <= 0
   ) {
@@ -83,12 +89,17 @@ function validateConfig(config) {
   return Object.freeze({
     cooldownMinutes: config.cooldownMinutes,
     candidateCount: config.candidateCount,
+    selectionSeconds: config.selectionSeconds,
     rarityWeights: Object.freeze(rarityWeights),
   });
 }
 
 function addMinutes(date, minutes) {
   return new Date(date.getTime() + minutes * 60_000);
+}
+
+function addSeconds(date, seconds) {
+  return new Date(date.getTime() + seconds * 1_000);
 }
 
 function selectCandidates(templates, config, rollInteger) {
@@ -282,6 +293,7 @@ export function createDropService({
             playerId: normalizedPlayerId,
             dropType: FREE_DROP_TYPE,
             interactionId: normalizedInteractionId,
+            selectionExpiresAt: addSeconds(currentTime, config.selectionSeconds),
           },
         );
         await dropSessionRepository.createCandidates(
@@ -308,7 +320,7 @@ export function createDropService({
         dropSessionId,
         "dropSessionId",
       );
-      const normalizedPosition = normalizeCandidatePosition(
+      const requestedPosition = normalizeCandidatePosition(
         candidatePosition,
         config.candidateCount,
       );
@@ -332,6 +344,13 @@ export function createDropService({
             "This Drop session does not belong to the Player.",
           );
         }
+
+        const currentTime =
+          await cooldownRepository.getDatabaseTime(transactionDatabase);
+        const normalizedPosition =
+          session.status === "OPEN" && session.selectionExpiresAt <= currentTime
+            ? 1
+            : requestedPosition;
 
         const candidates = await dropSessionRepository.findCandidates(
           transactionDatabase,
@@ -379,8 +398,6 @@ export function createDropService({
             resultCardInstanceId: mint.instance.cardInstanceId,
           },
         );
-        const currentTime =
-          await cooldownRepository.getDatabaseTime(transactionDatabase);
         const updatedCooldown = await cooldownRepository.setAvailableAt(
           transactionDatabase,
           {
@@ -396,6 +413,27 @@ export function createDropService({
 
         return Object.freeze({ ...hydrated, cooldown: updatedCooldown });
       });
+    },
+
+    async completeExpiredOffers() {
+      const sessions = await dropSessionRepository.findExpiredOpen(databasePool);
+      const completed = [];
+      for (const session of sessions) {
+        try {
+          completed.push(
+            await this.confirmSelection({
+              playerId: session.playerId,
+              dropSessionId: session.dropSessionId,
+              candidatePosition: 1,
+            }),
+          );
+        } catch (error) {
+          if (!(error instanceof DropError)) {
+            throw error;
+          }
+        }
+      }
+      return Object.freeze(completed);
     },
   });
 }

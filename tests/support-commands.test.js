@@ -48,6 +48,14 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
           availableAt,
         };
       },
+      async getDailyCooldown(playerId) {
+        assert.equal(playerId, "1");
+        return {
+          cooldownType: "DAILY",
+          available: true,
+          availableAt: null,
+        };
+      },
     },
     drop: {
       async getCooldown(playerId) {

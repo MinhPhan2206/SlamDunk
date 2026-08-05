@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { getDatabaseConfig } from "../src/config/env.js";
+import { gameConfig } from "../src/config/game-config.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import {
   createCardInstanceService,
@@ -53,6 +54,7 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
     cardInstanceService,
     economyService,
     playerService,
+    tradeConfig: gameConfig.trade,
   });
   const testRunId = Date.now().toString();
 
@@ -231,6 +233,45 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
       { database },
     );
     assert.equal(unlocked.tradeLock, false);
+
+    const expiryCard = await cardInstanceService.mintCard(
+      {
+        cardTemplateId: template.cardTemplateId,
+        ownerPlayerId: playerAId,
+        cardLevel: 1,
+        obtainedMethod: "ADMIN_GRANT",
+      },
+      { database },
+    );
+    const expiring = await tradeService.createTrade(
+      { initiatorPlayerId: playerAId, invitedPlayerId: playerBId },
+      { database },
+    );
+    await tradeService.addCard(
+      {
+        tradeId: expiring.trade.tradeId,
+        playerId: playerAId,
+        cardInstanceId: expiryCard.instance.cardInstanceId,
+      },
+      { database },
+    );
+    const expired = await tradeService.expireTrade(
+      { tradeId: expiring.trade.tradeId },
+      { database },
+    );
+    assert.equal(expired.trade.status, "EXPIRED");
+    assert.equal(
+      (await cardInstanceService.getInstance(expiryCard.instance.cardInstanceId, { database })).tradeLock,
+      false,
+    );
+
+    await assert.rejects(
+      tradeService.setGoldOffer(
+        { tradeId: cancellable.trade.tradeId, playerId: playerAId, goldOffered: 20_000_001 },
+        { database },
+      ),
+      (error) => error instanceof TradeError && error.code === "TRADE_GOLD_LIMIT",
+    );
 
     const insufficientTrade = await tradeService.createTrade(
       { initiatorPlayerId: playerAId, invitedPlayerId: playerBId },

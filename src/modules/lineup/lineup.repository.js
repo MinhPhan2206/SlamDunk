@@ -74,6 +74,8 @@ export const lineupRepository = Object.freeze({
           ci.card_instance_id,
           ci.owner_player_id,
           ci.status,
+          ci.market_lock,
+          ci.trade_lock,
           ct.primary_position,
           ct.secondary_position
         FROM card_instances ci

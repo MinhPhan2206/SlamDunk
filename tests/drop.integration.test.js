@@ -129,6 +129,10 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
     const transactionTimeResult = await database.query(
       "SELECT CURRENT_TIMESTAMP AS current_time",
     );
+    await database.query(
+      "UPDATE drop_sessions SET selection_expires_at = CURRENT_TIMESTAMP - INTERVAL '1 second' WHERE drop_session_id = $1",
+      [offer.session.dropSessionId],
+    );
     const selection = await dropService.confirmSelection(
       {
         playerId,
@@ -143,6 +147,10 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
     assert.equal(selection.resultInstance.obtainedMethod, "DROP");
     assert.equal(selection.resultInstance.cardLevel, 1);
     assert.equal(selection.resultInstance.serialNumber, "1");
+    assert.equal(
+      selection.session.selectedTemplateId,
+      offer.candidates[0].cardTemplateId,
+    );
     assert.equal(
       selection.cooldown.availableAt.getTime() -
         transactionTimeResult.rows[0].current_time.getTime(),
@@ -163,7 +171,7 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
       {
         playerId,
         dropSessionId: offer.session.dropSessionId,
-        candidatePosition: 2,
+        candidatePosition: 1,
       },
       { database },
     );
@@ -175,7 +183,7 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
         {
           playerId,
           dropSessionId: offer.session.dropSessionId,
-          candidatePosition: 1,
+          candidatePosition: 2,
         },
         { database },
       ),

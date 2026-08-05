@@ -26,6 +26,7 @@ import { createTraitService } from "./modules/trait/index.js";
 import { createUpgradeService } from "./modules/upgrade/index.js";
 import { createMarketService } from "./modules/market/index.js";
 import { createTradeService } from "./modules/trade/index.js";
+import { createExchangeService } from "./modules/exchange/index.js";
 
 export function createApplication({ discordToken, databaseUrl }) {
   const client = createDiscordClient();
@@ -39,6 +40,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     databasePool,
     economyService,
     claimConfig: gameConfig.claim,
+    dailyConfig: gameConfig.daily,
   });
   const cardTemplateService = createCardTemplateService({ databasePool });
   const traitService = createTraitService({
@@ -56,7 +58,13 @@ export function createApplication({ discordToken, databaseUrl }) {
     cardTemplateService,
     dropConfig: gameConfig.drop,
   });
-  const packService = createPackService({ packCatalog: gameConfig.packs });
+  const packService = createPackService({
+    packCatalog: gameConfig.packs,
+    databasePool,
+    economyService,
+    cardTemplateService,
+    cardInstanceService,
+  });
   const collectionService = createCollectionService({ databasePool });
   const lineupService = createLineupService({ databasePool });
   const battleService = createBattleService({
@@ -88,6 +96,13 @@ export function createApplication({ discordToken, databaseUrl }) {
     cardInstanceService,
     economyService,
     playerService,
+    tradeConfig: gameConfig.trade,
+  });
+  const exchangeService = createExchangeService({
+    databasePool,
+    economyService,
+    exchangeConfig: gameConfig.exchange,
+    upgradeConfig: gameConfig.upgrade,
   });
   const services = Object.freeze({
     battle: battleService,
@@ -96,6 +111,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     collection: collectionService,
     lineup: lineupService,
     economy: economyService,
+    exchange: exchangeService,
     drop: dropService,
     pack: packService,
     player: playerService,
@@ -133,6 +149,8 @@ export function createApplication({ discordToken, databaseUrl }) {
     async start() {
       await checkPostgresConnection(databasePool);
       console.log("PostgreSQL connection established.");
+      await dropService.completeExpiredOffers();
+      await tradeService.expireDueTrades();
       await client.login(discordToken);
     },
 

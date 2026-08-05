@@ -33,7 +33,7 @@ export function createDropOfferPayload({ session, candidates }) {
     .setColor(DROP_COLOR)
     .setTitle("Free Drop")
     .setDescription(candidates.map(candidateLine).join("\n\n"))
-    .setFooter({ text: "Choose one card. Only your selection will be minted." });
+    .setFooter({ text: "Choose within 10 seconds. Timeout automatically selects card 1." });
   const row = new ActionRowBuilder().addComponents(
     candidates.map((candidate) =>
       new ButtonBuilder()

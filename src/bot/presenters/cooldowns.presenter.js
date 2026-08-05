@@ -8,10 +8,11 @@ function cooldownStatus(cooldown) {
     : `Available ${discordRelativeTimestamp(cooldown.availableAt)}`;
 }
 
-export function createCooldownsMessage(claimCooldown, freeDropCooldown) {
+export function createCooldownsMessage(claimCooldown, dailyCooldown, freeDropCooldown) {
   return [
     `**Cooldowns**`,
     `Claim: **${cooldownStatus(claimCooldown)}**`,
+    `Daily: **${cooldownStatus(dailyCooldown)}**`,
     `Free Drop: **${cooldownStatus(freeDropCooldown)}**`,
   ].join("\n");
 }

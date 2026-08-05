@@ -7,6 +7,7 @@ const SESSION_COLUMNS = `
   selected_template_id,
   result_card_instance_id,
   completed_at,
+  selection_expires_at,
   created_at,
   updated_at
 `;
@@ -25,6 +26,7 @@ function mapSession(row) {
     selectedTemplateId: row.selected_template_id,
     resultCardInstanceId: row.result_card_instance_id,
     completedAt: row.completed_at,
+    selectionExpiresAt: row.selection_expires_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   });
@@ -40,18 +42,19 @@ function mapCandidate(row) {
 }
 
 export const dropSessionRepository = Object.freeze({
-  async create(database, { playerId, dropType, interactionId }) {
+  async create(database, { playerId, dropType, interactionId, selectionExpiresAt }) {
     const result = await database.query(
       `
         INSERT INTO drop_sessions (
           player_id,
           drop_type,
-          created_interaction_id
+          created_interaction_id,
+          selection_expires_at
         )
-        VALUES ($1, $2, $3)
+        VALUES ($1, $2, $3, $4)
         RETURNING ${SESSION_COLUMNS}
       `,
-      [playerId, dropType, interactionId],
+      [playerId, dropType, interactionId, selectionExpiresAt],
     );
 
     return mapSession(result.rows[0]);
@@ -147,6 +150,18 @@ export const dropSessionRepository = Object.freeze({
     );
 
     return mapSession(result.rows[0]);
+  },
+
+  async findExpiredOpen(database) {
+    const result = await database.query(
+      `
+        SELECT ${SESSION_COLUMNS}
+        FROM drop_sessions
+        WHERE status = 'OPEN' AND selection_expires_at <= CURRENT_TIMESTAMP
+        ORDER BY drop_session_id
+      `,
+    );
+    return result.rows.map(mapSession);
   },
 
   async complete(

@@ -14,13 +14,14 @@ export const cooldownsCommand = Object.freeze({
       discordUserId: interaction.user.id,
       usernameSnapshot: interaction.user.username,
     });
-    const [claimCooldown, freeDropCooldown] = await Promise.all([
+    const [claimCooldown, dailyCooldown, freeDropCooldown] = await Promise.all([
       services.reward.getClaimCooldown(player.playerId),
+      services.reward.getDailyCooldown(player.playerId),
       services.drop.getCooldown(player.playerId),
     ]);
 
     await interaction.editReply({
-      content: createCooldownsMessage(claimCooldown, freeDropCooldown),
+      content: createCooldownsMessage(claimCooldown, dailyCooldown, freeDropCooldown),
     });
   },
 });

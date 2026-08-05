@@ -370,7 +370,7 @@ Provisional simulation baseline:
 /challenge: point margin × 50 Gold, 60-minute cooldown
 Challenge streak: +5% per win, capped at ×1.5
 
-Standard Pack: 2,000 Gold
+Standard Pack: 1,000 Gold (confirmed)
 Premium Pack: 6,000 Gold
 Promo/Event Pack: 10,000–12,000 Gold
 ```
@@ -1307,10 +1307,7 @@ Still TBD:
 
 ```text
 final cooldown
-final candidate count
-timeout behavior
 paid pack structure
-pack prices
 final Free Drop probabilities
 ```
 
@@ -1323,6 +1320,8 @@ Free Drop cooldown: 15 minutes
 Cards shown: 3
 Choose: 1
 Cost: FREE
+Selection window: 10 seconds; timeout automatically selects candidate 1
+Pity: none
 ```
 
 This is now the provisional baseline for simulation and playtesting, but it is
@@ -1353,7 +1352,23 @@ Goat        0.0100%
 
 Future Packs must be added as independent Pack catalog entries with their own
 stable code, display name, and rarity weights. `/odds drop` and `/odds pack`
-display configured odds. Pack purchase/opening remains a future feature.
+display configured odds. Pack purchase/opening is implemented independently of Drop.
+
+Confirmed Standard Pack behavior:
+
+```text
+Command: /pack pack_type:standard
+Cost: 1,000 Gold
+Result: 1 Card
+Cooldown: 1 second
+Purchase limit: none during test
+Within-rarity Card Template weighting: uniform for the current 7 rarities
+```
+
+The command opens immediately after submission. Debit, ledger, roll, mint,
+PackOpening completion, and cooldown are atomic. Discord interaction ID prevents
+double charge and duplicate mint on retry. Premium, Event, and Shard Packs will
+use independent catalog entries and odds.
 
 ---
 
@@ -1377,13 +1392,8 @@ Economy transaction type: CLAIM
 Discord interaction ID provides idempotency
 ```
 
-Still TBD:
-
-```text
-Daily cooldown
-Daily reward
-Pack cooldown
-```
+Confirmed `/daily`: 24-hour cooldown, 1,500–2,000 Gold, and 20–30 Shards.
+Confirmed Standard Pack anti-spam cooldown: 1 second.
 
 Database must eventually be the source of truth for cooldown state.
 
@@ -1414,7 +1424,7 @@ Shards credited
 
 Destroyed card remains in database history.
 
-Final Shard values are TBD.
+The configured rarity-based Quicksell Shard values are confirmed for the current version.
 
 Provisional simulation values:
 
@@ -1594,13 +1604,9 @@ Quicksell
 Other Trades
 ```
 
-Still TBD:
-
-```text
-max cards per trade
-trade expiry
-final Gold+Cards limits
-```
+Confirmed Direct Trade limits: 10 Card Instances and 20,000,000 Gold per
+participant. A Trade expires after 3 minutes and unlocks its Cards. The Discord
+interface uses one `/trade user:<user>` command followed by buttons and modals.
 
 ---
 
@@ -2717,21 +2723,12 @@ final Total Trait Level ranges after battle balancing
 final number of Traits in the global MVP Trait catalog
 
 final pack cooldown
-final candidate count
 pack timeout behavior
-additional paid Pack products, purchase/opening rules, and prices
-
-Daily cooldown/reward
-Quicksell values
+additional paid Pack products and their prices
 
 additional Gold sinks
 
 final Card Level battle modifier
-
-whether market-listed cards can battle
-max cards per direct trade
-final trade Gold/card limits
-trade expiry
 
 battle formulas
 simulation depth

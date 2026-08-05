@@ -171,6 +171,17 @@ export function createCardInstanceService({
             "This card is not available for a Market listing.",
           );
         }
+        if (
+          await cardInstanceRepository.isInLineup(
+            transactionDatabase,
+            normalizedCardInstanceId,
+          )
+        ) {
+          throw new CardError(
+            "CARD_IN_LINEUP",
+            "Remove this card from the lineup before listing it on the Market.",
+          );
+        }
         return cardInstanceRepository.setMarketLock(transactionDatabase, {
           cardInstanceId: normalizedCardInstanceId,
           marketLock: true,

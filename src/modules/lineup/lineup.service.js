@@ -71,6 +71,12 @@ export function createLineupService({ databasePool }) {
         if (card.status !== "ACTIVE") {
           throw new LineupError("CARD_NOT_ACTIVE", "Only active cards can enter a lineup.");
         }
+        if (card.market_lock || card.trade_lock) {
+          throw new LineupError(
+            "CARD_LOCKED",
+            "Market-listed or trade-locked cards cannot enter a lineup.",
+          );
+        }
         if (![card.primary_position, card.secondary_position].includes(normalizedSlot)) {
           throw new LineupError(
             "CARD_POSITION_INELIGIBLE",

@@ -7,6 +7,7 @@ export const gameConfig = Object.freeze({
   drop: Object.freeze({
     cooldownMinutes: 15,
     candidateCount: 3,
+    selectionSeconds: 10,
     rarityWeights: Object.freeze([
       Object.freeze({ rarityTier: 1, weight: 500_000 }),
       Object.freeze({ rarityTier: 2, weight: 320_000 }),
@@ -22,6 +23,9 @@ export const gameConfig = Object.freeze({
       packCode: "standard",
       displayName: "Standard Pack",
       default: true,
+      priceGold: 1_000,
+      cooldownSeconds: 1,
+      cardCount: 1,
       rarityWeights: Object.freeze([
         Object.freeze({ rarityTier: 1, weight: 100_000 }),
         Object.freeze({ rarityTier: 2, weight: 350_000 }),
@@ -33,6 +37,24 @@ export const gameConfig = Object.freeze({
       ]),
     }),
   ]),
+  daily: Object.freeze({
+    cooldownHours: 24,
+    minimumGold: 1_500,
+    maximumGold: 2_000,
+    minimumShards: 20,
+    maximumShards: 30,
+  }),
+  exchange: Object.freeze({
+    shard: Object.freeze({
+      levelUpCost: 500,
+      levelUpQuantity: 1,
+    }),
+  }),
+  trade: Object.freeze({
+    maximumCardsPerPlayer: 10,
+    maximumGoldPerPlayer: 20_000_000,
+    expiryMinutes: 3,
+  }),
   battle: Object.freeze({
     aiCardLevel: 3,
     levelRatingBonus: 1,

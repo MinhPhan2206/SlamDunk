@@ -18,6 +18,7 @@ test("claim atomically credits Gold, records cooldown, and supports replay", asy
     databasePool: pool,
     economyService,
     claimConfig: gameConfig.claim,
+    dailyConfig: gameConfig.daily,
     rollInteger(minimum, maximumExclusive) {
       assert.equal(minimum, 300);
       assert.equal(maximumExclusive, 501);
