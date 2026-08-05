@@ -28,7 +28,7 @@ Card Instance
 Example:
 
 ```text
-Stephen Curry — Hall of Fame
+Stephen Curry — Goat
 ```
 
 may be one Card Template.

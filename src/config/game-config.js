@@ -4,7 +4,7 @@ export const gameConfig = Object.freeze({
     minimumGold: 300,
     maximumGold: 500,
   }),
-  freeDrop: Object.freeze({
+  drop: Object.freeze({
     cooldownMinutes: 15,
     candidateCount: 3,
     rarityWeights: Object.freeze([
@@ -17,6 +17,22 @@ export const gameConfig = Object.freeze({
       Object.freeze({ rarityTier: 7, weight: 5 }),
     ]),
   }),
+  packs: Object.freeze([
+    Object.freeze({
+      packCode: "standard",
+      displayName: "Standard Pack",
+      default: true,
+      rarityWeights: Object.freeze([
+        Object.freeze({ rarityTier: 1, weight: 100_000 }),
+        Object.freeze({ rarityTier: 2, weight: 350_000 }),
+        Object.freeze({ rarityTier: 3, weight: 400_000 }),
+        Object.freeze({ rarityTier: 4, weight: 120_000 }),
+        Object.freeze({ rarityTier: 5, weight: 27_000 }),
+        Object.freeze({ rarityTier: 6, weight: 2_900 }),
+        Object.freeze({ rarityTier: 7, weight: 100 }),
+      ]),
+    }),
+  ]),
   battle: Object.freeze({
     aiCardLevel: 3,
     levelRatingBonus: 1,

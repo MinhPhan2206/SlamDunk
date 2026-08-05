@@ -8,7 +8,7 @@ import {
   createCardInstanceService,
   createCardTemplateService,
 } from "../src/modules/card/index.js";
-import { PackError, createPackService } from "../src/modules/pack/index.js";
+import { DropError, createDropService } from "../src/modules/drop/index.js";
 import { createPlayerService } from "../src/modules/player/index.js";
 
 function createTemplateInput(edition, overall) {
@@ -68,7 +68,7 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
     const playerResult = await database.query(
       `
         INSERT INTO players (discord_user_id, username_snapshot)
-        VALUES ($1, 'M9PackOwner')
+        VALUES ($1, 'M9DropOwner')
         RETURNING player_id
       `,
       [`992${testRunId}`],
@@ -90,18 +90,18 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
         return templates;
       },
     };
-    const packService = createPackService({
+    const dropService = createDropService({
       databasePool: pool,
       cardInstanceService,
       cardTemplateService,
-      freeDropConfig: gameConfig.freeDrop,
+      dropConfig: gameConfig.drop,
       rollInteger(minimum, maximumExclusive) {
         assert.ok(maximumExclusive > minimum);
         return minimum;
       },
     });
 
-    const offer = await packService.createFreeDropOffer(
+    const offer = await dropService.createOffer(
       { playerId, interactionId },
       { database },
     );
@@ -110,29 +110,29 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
     assert.equal(offer.candidates.length, 3);
     assert.equal(new Set(offer.candidates.map((item) => item.cardTemplateId)).size, 3);
 
-    const replayedOffer = await packService.createFreeDropOffer(
+    const replayedOffer = await dropService.createOffer(
       { playerId, interactionId },
       { database },
     );
-    assert.equal(replayedOffer.session.packSessionId, offer.session.packSessionId);
+    assert.equal(replayedOffer.session.dropSessionId, offer.session.dropSessionId);
     assert.equal(replayedOffer.replayed, true);
 
-    const otherInteractionOffer = await packService.createFreeDropOffer(
+    const otherInteractionOffer = await dropService.createOffer(
       { playerId, interactionId: `990${testRunId}` },
       { database },
     );
     assert.equal(
-      otherInteractionOffer.session.packSessionId,
-      offer.session.packSessionId,
+      otherInteractionOffer.session.dropSessionId,
+      offer.session.dropSessionId,
     );
 
     const transactionTimeResult = await database.query(
       "SELECT CURRENT_TIMESTAMP AS current_time",
     );
-    const selection = await packService.confirmFreeDropSelection(
+    const selection = await dropService.confirmSelection(
       {
         playerId,
-        packSessionId: offer.session.packSessionId,
+        dropSessionId: offer.session.dropSessionId,
         candidatePosition: 2,
       },
       { database },
@@ -140,7 +140,7 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
 
     assert.equal(selection.session.status, "COMPLETED");
     assert.equal(selection.resultInstance.ownerPlayerId, playerId);
-    assert.equal(selection.resultInstance.obtainedMethod, "PACK");
+    assert.equal(selection.resultInstance.obtainedMethod, "DROP");
     assert.equal(selection.resultInstance.cardLevel, 1);
     assert.equal(selection.resultInstance.serialNumber, "1");
     assert.equal(
@@ -153,16 +153,16 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
       `
         SELECT COUNT(*) AS instance_count
         FROM card_instances
-        WHERE owner_player_id = $1 AND obtained_method = 'PACK'
+        WHERE owner_player_id = $1 AND obtained_method = 'DROP'
       `,
       [playerId],
     );
     assert.equal(instanceCount.rows[0].instance_count, "1");
 
-    const replayedSelection = await packService.confirmFreeDropSelection(
+    const replayedSelection = await dropService.confirmSelection(
       {
         playerId,
-        packSessionId: offer.session.packSessionId,
+        dropSessionId: offer.session.dropSessionId,
         candidatePosition: 2,
       },
       { database },
@@ -171,25 +171,25 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
     assert.equal(replayedSelection.replayed, true);
 
     await assert.rejects(
-      packService.confirmFreeDropSelection(
+      dropService.confirmSelection(
         {
           playerId,
-          packSessionId: offer.session.packSessionId,
+          dropSessionId: offer.session.dropSessionId,
           candidatePosition: 1,
         },
         { database },
       ),
       (error) =>
-        error instanceof PackError && error.code === "PACK_ALREADY_COMPLETED",
+        error instanceof DropError && error.code === "DROP_ALREADY_COMPLETED",
     );
 
     await assert.rejects(
-      packService.createFreeDropOffer(
+      dropService.createOffer(
         { playerId, interactionId: `989${testRunId}` },
         { database },
       ),
       (error) =>
-        error instanceof PackError &&
+        error instanceof DropError &&
         error.code === "FREE_DROP_COOLDOWN_ACTIVE",
     );
   } finally {
@@ -197,8 +197,8 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
     const residualSessions = await database.query(
       `
         SELECT COUNT(*) AS session_count
-        FROM pack_sessions ps
-        JOIN players p ON p.player_id = ps.player_id
+        FROM drop_sessions ds
+        JOIN players p ON p.player_id = ds.player_id
         WHERE p.discord_user_id = $1
       `,
       [`992${testRunId}`],

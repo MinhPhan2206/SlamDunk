@@ -1,20 +1,20 @@
 import { MessageFlags } from "discord.js";
 
-import { PackError } from "../../modules/pack/index.js";
-import { createPackSelectionPayload } from "../presenters/pack.presenter.js";
+import { DropError } from "../../modules/drop/index.js";
+import { createDropSelectionPayload } from "../presenters/drop.presenter.js";
 
-const CUSTOM_ID_PATTERN = /^pack:select:(\d+):(\d+)$/;
+const CUSTOM_ID_PATTERN = /^drop:select:(\d+):(\d+)$/;
 
-export const packSelectionComponent = Object.freeze({
-  namespace: "pack",
+export const dropSelectionComponent = Object.freeze({
+  namespace: "drop",
 
   async execute(interaction, { services }) {
     const match = CUSTOM_ID_PATTERN.exec(interaction.customId);
 
     if (!match) {
-      throw new PackError(
-        "INVALID_PACK_SELECTION",
-        "The Pack selection button is invalid.",
+      throw new DropError(
+        "INVALID_DROP_SELECTION",
+        "The Drop selection button is invalid.",
       );
     }
 
@@ -26,20 +26,20 @@ export const packSelectionComponent = Object.freeze({
     });
 
     try {
-      const result = await services.pack.confirmFreeDropSelection({
+      const result = await services.drop.confirmSelection({
         playerId: player.playerId,
-        packSessionId: match[1],
+        dropSessionId: match[1],
         candidatePosition: Number(match[2]),
       });
 
-      await interaction.editReply(createPackSelectionPayload(result));
+      await interaction.editReply(createDropSelectionPayload(result));
     } catch (error) {
       if (
-        error instanceof PackError &&
+        error instanceof DropError &&
         [
-          "PACK_SESSION_NOT_FOUND",
-          "PACK_CANDIDATE_NOT_FOUND",
-          "PACK_ALREADY_COMPLETED",
+          "DROP_SESSION_NOT_FOUND",
+          "DROP_CANDIDATE_NOT_FOUND",
+          "DROP_ALREADY_COMPLETED",
         ].includes(error.code)
       ) {
         await interaction.followUp({

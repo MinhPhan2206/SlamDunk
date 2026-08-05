@@ -214,20 +214,21 @@ Trait engine should only evaluate traits relevant to the current battle action.
 
 ---
 
-## 7. Pack Module
+## 7. Drop Module
 
 ### Responsibility
 
-Resolve pack eligibility, rarity selection, Card Template candidates, selection result, and initial Card Level.
+Resolve Free Drop eligibility, rarity selection, Card Template candidates,
+selection result, and initial Card Level.
 
 ### Main Operations
 
 ```text
-checkPackCooldown()
+checkDropCooldown()
 rollRarity()
 selectCandidateTemplates()
-createPackOffer()
-confirmPackSelection()
+createDropOffer()
+confirmDropSelection()
 rollInitialLevel()
 ```
 
@@ -236,13 +237,26 @@ rollInitialLevel()
 ```text
 Player
 Card
-Reward / Economy (for paid packs)
 GameConfig
 ```
 
 ### Important Rule
 
 The selected Card Instance is minted only through Card module behavior.
+
+---
+
+## 7.1 Pack Module
+
+### Responsibility
+
+Manage a catalog of paid Pack products keyed by stable Pack code. Each Pack owns
+its display name and rarity distribution so future products do not modify the
+Standard Pack definition.
+
+The current implementation exposes Pack odds only. Pack purchase, opening,
+eligibility, and persistence remain future behavior and must not reuse the Free
+Drop session model.
 
 ---
 

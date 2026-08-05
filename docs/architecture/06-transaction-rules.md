@@ -332,7 +332,7 @@ BEGIN
 2. Verify Gold balance
 3. Debit pack price
 4. Create EconomyTransaction
-5. Create PackSession / entitlement
+5. Create a paid Pack entitlement/opening record
 
 COMMIT
 ```
@@ -343,11 +343,11 @@ The paid entitlement must be persisted so a process crash cannot charge the play
 
 ---
 
-# 11. Free Pack Selection
+# 11. Free Drop Selection
 
-Recommended design uses a persisted PackSession.
+The implemented design uses a persisted DropSession.
 
-PackSession stores:
+DropSession stores:
 
 ```text
 player
@@ -364,14 +364,14 @@ Selection transaction:
 ```text
 BEGIN
 
-1. Lock PackSession
+1. Lock DropSession
 2. Verify OPEN and not expired
 3. Verify selected candidate belongs to session
 4. Lock template MintCounter
 5. Roll initial level 1–5
 6. Mint selected Card Instance
 7. Mark session COMPLETED
-8. Update FREE_PACK cooldown
+8. Update FREE_DROP cooldown
 
 COMMIT
 ```
@@ -381,9 +381,9 @@ This prevents duplicate button clicks from minting multiple cards.
 ### M9 Implementation Note
 
 M9 persists the Free Drop offer before rendering Discord buttons. Selection
-locks the Player's `FREE_PACK` cooldown row and PackSession in a consistent
+locks the Player's `FREE_DROP` cooldown row and DropSession in a consistent
 order, validates ownership and candidate membership, then mints through the Card
-module. Mint counters, Card Instance, ownership history, completed PackSession,
+module. Mint counters, Card Instance, ownership history, completed DropSession,
 and cooldown commit together. Replaying the selected button returns the stored
 Card Instance.
 
@@ -442,7 +442,7 @@ Possible keys:
 
 ```text
 Discord interaction ID
-PackSession ID
+DropSession ID
 MarketListing ID
 Trade ID
 Match ID
@@ -461,7 +461,7 @@ Recommended general order:
 
 ```text
 1. Parent operation row
-   MarketListing / Trade / Match / PackSession
+   MarketListing / Trade / Match / DropSession
 
 2. CardInstances
    ordered by card_instance_id ascending

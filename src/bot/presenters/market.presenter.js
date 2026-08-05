@@ -1,4 +1,5 @@
 import { EmbedBuilder } from "discord.js";
+import { formatRarity } from "../../config/rarity-config.js";
 
 const MARKET_COLOR = 0x22c55e;
 
@@ -21,7 +22,7 @@ export function createMarketBrowseEmbed({ listings }) {
         (listing) =>
           [
             `**Listing ${listing.listingId} — ${listing.playerName} - ${listing.edition}**`,
-            `Tier ${listing.rarityTier} | Lv${listing.cardLevel} | #${listing.serialNumber} | Card ${listing.cardInstanceId}`,
+            `${formatRarity(listing.rarityTier)} | Lv${listing.cardLevel} | #${listing.serialNumber} | Card ${listing.cardInstanceId}`,
             `${gold(listing.priceGold)} | Seller: ${listing.sellerName}`,
           ].join("\n"),
       )

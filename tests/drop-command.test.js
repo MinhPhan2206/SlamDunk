@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { packCommand } from "../src/bot/commands/pack.command.js";
-import { packSelectionComponent } from "../src/bot/components/pack-selection.component.js";
+import { dropCommand } from "../src/bot/commands/drop.command.js";
+import { dropSelectionComponent } from "../src/bot/components/drop-selection.component.js";
 import { createInteractionCreateHandler } from "../src/bot/events/interaction-create.event.js";
 
 function template(cardTemplateId, playerName) {
@@ -19,7 +19,7 @@ function template(cardTemplateId, playerName) {
 
 function offer() {
   return {
-    session: { packSessionId: "10", status: "OPEN" },
+    session: { dropSessionId: "10", status: "OPEN" },
     candidates: [
       { candidatePosition: 1, cardTemplateId: "1", template: template("1", "Alpha") },
       { candidatePosition: 2, cardTemplateId: "2", template: template("2", "Beta") },
@@ -29,11 +29,12 @@ function offer() {
   };
 }
 
-test("pack command displays three persisted choices", async () => {
+test("drop command displays three persisted choices", async () => {
+  assert.equal(dropCommand.data.name, "drop");
   const replies = [];
   const interaction = {
     id: "123456789012345678",
-    user: { id: "234567890123456789", username: "PackTester" },
+    user: { id: "234567890123456789", username: "DropTester" },
     async deferReply() {
       replies.push({ type: "defer" });
     },
@@ -47,8 +48,8 @@ test("pack command displays three persisted choices", async () => {
         return { playerId: "5" };
       },
     },
-    pack: {
-      async createFreeDropOffer(input) {
+    drop: {
+      async createOffer(input) {
         assert.deepEqual(input, {
           playerId: "5",
           interactionId: interaction.id,
@@ -58,21 +59,21 @@ test("pack command displays three persisted choices", async () => {
     },
   };
 
-  await packCommand.execute(interaction, { services });
+  await dropCommand.execute(interaction, { services });
 
   assert.equal(replies[0].type, "defer");
   assert.equal(replies[1].payload.components[0].components.length, 3);
   assert.equal(
     replies[1].payload.components[0].components[1].data.custom_id,
-    "pack:select:10:2",
+    "drop:select:10:2",
   );
 });
 
-test("pack selection component edits the offer with the minted card", async () => {
+test("drop selection component edits the offer with the minted card", async () => {
   const replies = [];
   const interaction = {
-    customId: "pack:select:10:2",
-    user: { id: "234567890123456789", username: "PackTester" },
+    customId: "drop:select:10:2",
+    user: { id: "234567890123456789", username: "DropTester" },
     async deferUpdate() {
       replies.push({ type: "deferUpdate" });
     },
@@ -90,11 +91,11 @@ test("pack selection component edits the offer with the minted card", async () =
         return { playerId: "5" };
       },
     },
-    pack: {
-      async confirmFreeDropSelection(input) {
+    drop: {
+      async confirmSelection(input) {
         assert.deepEqual(input, {
           playerId: "5",
-          packSessionId: "10",
+          dropSessionId: "10",
           candidatePosition: 2,
         });
         return {
@@ -112,7 +113,7 @@ test("pack selection component edits the offer with the minted card", async () =
     },
   };
 
-  await packSelectionComponent.execute(interaction, { services });
+  await dropSelectionComponent.execute(interaction, { services });
 
   assert.equal(replies[0].type, "deferUpdate");
   assert.equal(replies[1].payload.components.length, 0);
@@ -121,10 +122,10 @@ test("pack selection component edits the offer with the minted card", async () =
   assert.match(embed.description, /Serial: \*\*#12\*\*/);
 });
 
-test("interaction router dispatches Pack button interactions by namespace", async () => {
+test("interaction router dispatches Drop button interactions by namespace", async () => {
   let receivedInteraction;
   const interaction = {
-    customId: "pack:select:10:2",
+    customId: "drop:select:10:2",
     isChatInputCommand() {
       return false;
     },
@@ -137,7 +138,7 @@ test("interaction router dispatches Pack button interactions by namespace", asyn
     { services: {} },
     new Map([
       [
-        "pack",
+        "drop",
         {
           async execute(received) {
             receivedInteraction = received;

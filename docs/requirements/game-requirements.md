@@ -18,29 +18,42 @@
 ## Supporting Commands
 
 - `/cooldowns` reports cooldown availability using PostgreSQL time as the source
-  of truth. It currently reports `CLAIM` and `FREE_PACK`; Daily and Weekly can
+  of truth. It currently reports `CLAIM` and `FREE_DROP`; Daily and Weekly can
   be added when those reward systems exist.
 - `/rarity` accepts a numeric rarity tier from 1 through 7 and lists Card
-  Templates in that tier. Tier 7 is Hall of Fame. Names for Tiers 1 through 6
-  remain TBD.
+  Templates in that tier. The finalized names are Base, Common, Uncommon,
+  Alpha, All-Star, Superstar, and Goat.
 - `/rarity` lists template definitions, not Card Instances owned by a Player.
 
 ## M9 Free Drop Behavior
 
-- `/pack` creates a persisted Free Drop offer containing three distinct,
+- `/drop` creates a persisted Free Drop offer containing three distinct,
   packable, non-retired Card Templates.
 - The Player chooses one candidate; only that candidate becomes a Card Instance.
 - The new Card Instance receives a random initial Card Level from 1 through 5.
 - Candidate selection, Card Instance minting, ownership history, mint counters,
-  PackSession completion, and cooldown update are atomic in PostgreSQL.
+  DropSession completion, and cooldown update are atomic in PostgreSQL.
 - Replaying the same selection must return the existing result and must not mint
   another Card Instance.
-- An open offer is reused when `/pack` is called again. M9 does not expire or
+- An open offer is reused when `/drop` is called again. M9 does not expire or
   reroll an abandoned offer because timeout behavior remains TBD.
 - The current playtest configuration uses a 15-minute Free Drop cooldown, three
   candidates, and the provisional Tier 1–7 weights in
   `economy-pack-baseline.md`. These remain adjustable simulation values rather
   than finalized production balance.
+
+## Drop and Pack Odds
+
+- Free Drop and Pack are separate modules and separate product sources.
+- `/odds drop` displays the configured per-candidate Free Drop distribution.
+- `/odds pack` displays the Standard Pack distribution by default; an optional
+  `pack_code` selects another configured Pack when more products are added.
+- Standard Pack odds are: Base 10%, Common 35%, Uncommon 40%, Alpha 12%,
+  All-Star 2.7%, Superstar 0.29%, and Goat 0.01%.
+- Pack definitions are keyed by stable Pack codes so each future Pack can own
+  an independent name and rarity distribution.
+- This iteration exposes Pack catalog odds only. Buying or opening Packs remains
+  a separate future feature.
 
 ## M12 Battle MVP Behavior
 

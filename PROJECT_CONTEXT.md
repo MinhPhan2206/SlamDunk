@@ -646,44 +646,36 @@ First MVP uses:
 7 rarity tiers
 ```
 
-Highest rarity:
+Final rarity names:
 
 ```text
-Hall of Fame
+Tier 1 — Base
+Tier 2 — Common
+Tier 3 — Uncommon
+Tier 4 — Alpha
+Tier 5 — All-Star
+Tier 6 — Superstar
+Tier 7 — Goat
 ```
 
-Previous working rarity names:
-
-```text
-Base
-Common
-Uncommon
-Rare
-Elite
-Legendary
-Hall of Fame
-```
-
-Only `Hall of Fame` is explicitly confirmed as the renamed top rarity.
-
-Final rarity probabilities are TBD.
+These names are confirmed. Numeric tiers remain the persisted representation;
+stable codes and display names are centralized in application configuration.
 
 The intended curve is very steep, inspired by the provided Basketbot rarity reference.
 
 Provisional Free Drop simulation distribution:
 
 ```text
-Tier 1                    50.0000%
-Tier 2                    32.0000%
-Tier 3                    16.0000%
-Tier 4                     1.8000%
-Tier 5                     0.1900%
-Tier 6                     0.0095%
-Tier 7 — Hall of Fame      0.0005%
+Tier 1 — Base             50.0000%
+Tier 2 — Common           32.0000%
+Tier 3 — Uncommon         16.0000%
+Tier 4 — Alpha             1.8000%
+Tier 5 — All-Star          0.1900%
+Tier 6 — Superstar         0.0095%
+Tier 7 — Goat              0.0005%
 ```
 
 This distribution totals 100% but remains a card-supply simulation baseline.
-Tier numbering does not finalize the names of Tier 1–6.
 
 Do not silently finalize draft probabilities.
 
@@ -723,7 +715,7 @@ Tier 3:        0–2
 Tier 4:        2–6
 Tier 5:        6–12
 Tier 6:        17–22
-Hall of Fame: 20–30
+Goat:         20–30
 
 Trait Level values:
 
@@ -772,13 +764,13 @@ Clutch Performer II   = 2
 
 Total Trait Level = 10
 
-Therefore, even a Hall of Fame card with:
+Therefore, even a Goat card with:
 
 Total Trait Level = 20–30
 
 does not need 20–30 different Traits.
 
-A Hall of Fame card may instead contain approximately 7–12 meaningful Traits depending on their tiers.
+A Goat card may instead contain approximately 7–12 meaningful Traits depending on their tiers.
 
 For the first MVP, SlamDunk should use a smaller global Trait pool of approximately 18 core Traits.
 
@@ -1301,7 +1293,7 @@ rather than only:
 Conceptually:
 
 ```text
-/pack
+/drop
 ```
 
 Current direction:
@@ -1319,7 +1311,7 @@ final candidate count
 timeout behavior
 paid pack structure
 pack prices
-final rarity probabilities
+final Free Drop probabilities
 ```
 
 Previous numbers such as 15 minutes / 3 candidates were draft only unless later approved.
@@ -1346,6 +1338,23 @@ Free Drop
 → Shard Key / Special Source
 ```
 
+Drop and Pack are separate modules. The configured Standard Pack uses code
+`standard` and the following approved rarity distribution:
+
+```text
+Base       10.0000%
+Common     35.0000%
+Uncommon   40.0000%
+Alpha      12.0000%
+All-Star    2.7000%
+Superstar   0.2900%
+Goat        0.0100%
+```
+
+Future Packs must be added as independent Pack catalog entries with their own
+stable code, display name, and rarity weights. `/odds drop` and `/odds pack`
+display configured odds. Pack purchase/opening remains a future feature.
+
 ---
 
 # 21. Reward Commands
@@ -1355,7 +1364,7 @@ Reward commands:
 ```text
 /claim
 /daily
-/pack
+/drop
 ```
 
 Confirmed for `/claim`:
@@ -1838,7 +1847,7 @@ Potential types:
 ```text
 CLAIM
 DAILY
-FREE_PACK
+FREE_DROP
 ```
 
 Implement only when cooldown features reach their milestone.
@@ -2047,7 +2056,7 @@ M5 — Economy Ledger
 M6 — /claim
 M7 — Card Template + Traits
 M8 — Card Instance
-M9 — /pack
+M9 — /drop
 M10 — /collection
 M11 — Lineup
 M12 — Battle MVP
@@ -2286,7 +2295,7 @@ PostgreSQL integration coverage using node:test
 
 M7 intentionally did not seed a final Trait catalog or finalize Tier 1–6 names,
 base-stat maximums, Trait battle coefficients, or rarity Trait Level budgets.
-It did not add Card Instance, serial/mint state, ownership, `/pack`, or later
+It did not add Card Instance, serial/mint state, ownership, `/drop`, or later
 gameplay features.
 
 ## M8 — Card Instance
@@ -2307,12 +2316,12 @@ Card Template lookup by numeric rarity tier
 PostgreSQL integration and Discord command tests using node:test
 ```
 
-M8 intentionally did not implement Pack sessions, Pack odds, `/pack`,
+M8 intentionally did not implement Drop sessions, Drop odds, `/drop`,
 `/collection`, ownership transfer, destruction, Fusion, Market, Trade, Lineup,
-or Battle. Pack request idempotency will be introduced with the Pack operation
+or Battle. Drop request idempotency will be introduced with the Drop operation
 in M9.
 
-## M9 — /pack
+## M9 — /drop
 
 Completed.
 
@@ -2320,7 +2329,7 @@ Implemented concepts:
 
 ```text
 007_create_pack_sessions.sql
-persisted PackSession and PackSessionCandidate records
+persisted DropSession and DropSessionCandidate records (renamed by migration 013)
 one open Free Drop per Player
 three distinct packable Card Template candidates
 button-based Discord selection
@@ -2328,14 +2337,14 @@ only the selected candidate is minted
 random initial Card Level from 1 through 5
 atomic Card Instance, mint counter, ownership history, session, and cooldown
 idempotent selection replay protection
-FREE_PACK cooldown shown by /cooldowns
+FREE_DROP cooldown shown by /cooldowns
 PostgreSQL integration and Discord command/component tests using node:test
 ```
 
 M9 uses the documented provisional playtest baseline: 15-minute Free Drop
 cooldown, three candidates, and the Tier 1–7 simulation weights. These remain
 centralized, adjustable configuration rather than final production balance.
-Pack timeout remains TBD, so an open session is reused until the Player selects
+Drop timeout remains TBD, so an open session is reused until the Player selects
 a candidate. M9 did not seed a fictional Card Template catalog and did not
 implement paid Packs, `/collection`, Lineup, Battle, Quicksell, Fusion, Market,
 or Trade.
@@ -2475,6 +2484,7 @@ Implemented concepts:
 
 ```text
 012_create_direct_trades.sql
+013_separate_drop_from_pack.sql
 /trade create, view, add-card, remove-card, set-gold, confirm, and cancel
 exactly two Player participants
 optional Card and Gold offers
@@ -2522,7 +2532,8 @@ Card Template repository/service
 Trait Definition and Card Template Trait repository/service
 Card Instance, mint-counter, and ownership-history repositories
 transactional Card Instance mint service
-Pack Session/Candidate repository and transactional Free Drop service
+Drop Session/Candidate repository and transactional Free Drop service
+separate Pack catalog service keyed by Pack code
 read-only Collection repository/service
 Lineup repository/service with five position slots
 Battle repository/service with persisted PvE snapshots
@@ -2531,15 +2542,16 @@ Market repository/service with atomic Gold and Card transfer
 Direct Trade repository/service with confirmation and atomic settlement
 /profile command and profile embed presenter
 /claim command and cooldown presenter
-/pack command and button selection handler
+/drop command and button selection handler
 /collection command and embed presenter
 /lineup view, set, and remove subcommands
 /battle command and result presenter
 /upgrade fusion and item subcommands
 /market browse, sell, buy, and cancel subcommands
 /trade create, view, offer, confirm, and cancel subcommands
-/cooldowns command for CLAIM and FREE_PACK cooldown status
+/cooldowns command for CLAIM and FREE_DROP cooldown status
 /rarity command for Card Template discovery by tier
+/odds command for separate Drop and Pack rarity distributions
 ```
 
 Inspect the real repository and migration history before changing this
@@ -2648,8 +2660,8 @@ same Card Instance
 First MVP:
 7 rarity tiers
 
-Top rarity:
-Hall of Fame
+Rarities:
+Base, Common, Uncommon, Alpha, All-Star, Superstar, Goat
 
 Traits:
 fixed by Card Template
@@ -2696,8 +2708,7 @@ Do not silently finalize:
 ```text
 hard circulation caps
 
-final rarity names except Hall of Fame
-final rarity probabilities
+final Free Drop probabilities
 
 exact battle effect/formula of each Trait Tier
 
@@ -2708,7 +2719,7 @@ final number of Traits in the global MVP Trait catalog
 final pack cooldown
 final candidate count
 pack timeout behavior
-paid pack structure/prices
+additional paid Pack products, purchase/opening rules, and prices
 
 Daily cooldown/reward
 Quicksell values
@@ -2824,7 +2835,7 @@ M5 Economy Ledger → DONE
 M6 /claim        → DONE
 M7 Card Template + Traits → DONE
 M8 Card Instance → DONE
-M9 /pack         → DONE
+M9 /drop         → DONE
 M10 /collection  → DONE
 M11 Lineup       → DONE
 M12 Battle MVP   → DONE

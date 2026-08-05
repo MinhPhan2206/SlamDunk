@@ -1,4 +1,5 @@
 import { EmbedBuilder } from "discord.js";
+import { formatRarity } from "../../config/rarity-config.js";
 
 const LINEUP_COLOR = 0xf28c28;
 
@@ -9,7 +10,7 @@ function formatSlot(slot) {
 
   return [
     `**${slot.slot}: ${slot.playerName} - ${slot.edition}**`,
-    `Tier ${slot.rarityTier} | OVR ${slot.overall} | Level ${slot.cardLevel} | #${slot.serialNumber} | ID ${slot.cardInstanceId}`,
+    `${formatRarity(slot.rarityTier)} | OVR ${slot.overall} | Level ${slot.cardLevel} | #${slot.serialNumber} | ID ${slot.cardInstanceId}`,
   ].join("\n");
 }
 

@@ -18,6 +18,7 @@ import { createEconomyService } from "./modules/economy/index.js";
 import { createCollectionService } from "./modules/collection/index.js";
 import { createLineupService } from "./modules/lineup/index.js";
 import { createPlayerService } from "./modules/player/index.js";
+import { createDropService } from "./modules/drop/index.js";
 import { createPackService } from "./modules/pack/index.js";
 import { createRewardService } from "./modules/reward/index.js";
 import { createQuicksellService } from "./modules/quicksell/index.js";
@@ -49,12 +50,13 @@ export function createApplication({ discordToken, databaseUrl }) {
     cardTemplateService,
     playerService,
   });
-  const packService = createPackService({
+  const dropService = createDropService({
     databasePool,
     cardInstanceService,
     cardTemplateService,
-    freeDropConfig: gameConfig.freeDrop,
+    dropConfig: gameConfig.drop,
   });
+  const packService = createPackService({ packCatalog: gameConfig.packs });
   const collectionService = createCollectionService({ databasePool });
   const lineupService = createLineupService({ databasePool });
   const battleService = createBattleService({
@@ -94,6 +96,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     collection: collectionService,
     lineup: lineupService,
     economy: economyService,
+    drop: dropService,
     pack: packService,
     player: playerService,
     reward: rewardService,

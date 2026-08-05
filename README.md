@@ -57,7 +57,8 @@ npm test
 - `/ping` — check whether the bot is online.
 - `/profile` — create or view your Player and Wallet profile.
 - `/claim` — receive 300–500 Gold every 30 minutes.
-- `/pack` — open a Free Drop and choose one of three Card Templates.
+- `/drop` — open a Free Drop and choose one of three Card Templates.
+- `/odds drop|pack` — view configured Free Drop or Pack rarity odds.
 - `/collection` — view owned active cards with tier filtering and pagination.
 - `/lineup view|set|remove` — manage the active five-position lineup.
 - `/battle` — simulate a persisted PvE match with the active lineup.

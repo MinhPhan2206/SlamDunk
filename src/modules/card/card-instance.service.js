@@ -5,6 +5,7 @@ import { cardMintCounterRepository } from "./card-mint-counter.repository.js";
 import { cardOwnershipRepository } from "./card-ownership.repository.js";
 
 const CREATION_REASONS = Object.freeze({
+  DROP: "DROP",
   PACK: "PACK",
   FUSION: "FUSION_CREATED",
   ADMIN_GRANT: "ADMIN_TRANSFER",
@@ -33,7 +34,7 @@ function normalizeCardLevel(cardLevel) {
 function normalizeObtainedMethod(obtainedMethod) {
   if (!Object.hasOwn(CREATION_REASONS, obtainedMethod)) {
     throw new TypeError(
-      "obtainedMethod must be PACK, FUSION, ADMIN_GRANT, or EVENT_REWARD.",
+      "obtainedMethod must be DROP, PACK, FUSION, ADMIN_GRANT, or EVENT_REWARD.",
     );
   }
 

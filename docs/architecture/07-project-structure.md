@@ -84,6 +84,7 @@ src/
 │   ├── economy/
 │   ├── card/
 │   ├── trait/
+│   ├── drop/
 │   ├── pack/
 │   ├── reward/
 │   ├── collection/
@@ -128,13 +129,14 @@ Contains Discord-specific code only.
 ```text
 bot/
 ├── commands/
-│   ├── pack.command.js
+│   ├── drop.command.js
+│   ├── odds.command.js
 │   ├── claim.command.js
 │   ├── market.command.js
 │   └── trade.command.js
 │
 ├── interactions/
-│   ├── pack-selection.handler.js
+│   ├── drop-selection.component.js
 │   ├── trade-confirm.handler.js
 │   └── market-buy.handler.js
 │
@@ -296,7 +298,11 @@ migrations/
 ├── 006_create_card_instances.sql
 ├── 007_create_pack_sessions.sql
 ├── 008_create_lineups.sql
-└── 009_create_battle_matches.sql
+├── 009_create_battle_matches.sql
+├── 010_create_fusions_and_upgrade_items.sql
+├── 011_create_market_listings.sql
+├── 012_create_direct_trades.sql
+└── 013_separate_drop_from_pack.sql
 ```
 
 Future migrations are added only when their implementation milestone begins.
@@ -368,6 +374,7 @@ tests/
 ├── unit/
 │   ├── card/
 │   ├── economy/
+│   ├── drop/
 │   ├── pack/
 │   ├── upgrade/
 │   └── battle/
@@ -593,7 +600,7 @@ M5  — Economy Ledger
 M6  — /claim
 M7  — Card Template + Traits
 M8  — Card Instance
-M9  — /pack
+M9  — /drop
 M10 — /collection
 M11 — Lineup
 M12 — Battle MVP

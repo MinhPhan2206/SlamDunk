@@ -1,16 +1,16 @@
 import { SlashCommandBuilder } from "discord.js";
 
-import { PackError } from "../../modules/pack/index.js";
+import { DropError } from "../../modules/drop/index.js";
 import {
-  createPackCatalogMessage,
-  createPackCooldownMessage,
-  createPackOfferPayload,
-  createPackSelectionPayload,
-} from "../presenters/pack.presenter.js";
+  createDropCatalogMessage,
+  createDropCooldownMessage,
+  createDropOfferPayload,
+  createDropSelectionPayload,
+} from "../presenters/drop.presenter.js";
 
-export const packCommand = Object.freeze({
+export const dropCommand = Object.freeze({
   data: new SlashCommandBuilder()
-    .setName("pack")
+    .setName("drop")
     .setDescription("Open your free SlamDunk card drop."),
 
   async execute(interaction, { services }) {
@@ -22,23 +22,23 @@ export const packCommand = Object.freeze({
     });
 
     try {
-      const result = await services.pack.createFreeDropOffer({
+      const result = await services.drop.createOffer({
         playerId: player.playerId,
         interactionId: interaction.id,
       });
       const payload =
         result.session.status === "COMPLETED"
-          ? createPackSelectionPayload(result)
-          : createPackOfferPayload(result);
+          ? createDropSelectionPayload(result)
+          : createDropOfferPayload(result);
 
       await interaction.editReply(payload);
     } catch (error) {
       if (
-        error instanceof PackError &&
+        error instanceof DropError &&
         error.code === "FREE_DROP_COOLDOWN_ACTIVE"
       ) {
         await interaction.editReply({
-          content: createPackCooldownMessage(error.details.availableAt),
+          content: createDropCooldownMessage(error.details.availableAt),
           embeds: [],
           components: [],
         });
@@ -46,11 +46,11 @@ export const packCommand = Object.freeze({
       }
 
       if (
-        error instanceof PackError &&
-        error.code === "PACK_CATALOG_TOO_SMALL"
+        error instanceof DropError &&
+        error.code === "DROP_CATALOG_TOO_SMALL"
       ) {
         await interaction.editReply({
-          content: createPackCatalogMessage(error.details),
+          content: createDropCatalogMessage(error.details),
           embeds: [],
           components: [],
         });

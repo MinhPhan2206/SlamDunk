@@ -215,18 +215,22 @@ Multiple editions may exist
 
 First MVP has 7 tiers.
 
-Top rarity:
+Final rarity names:
 
 ```text
-HALL_OF_FAME
+Tier 1  BASE       (Base)
+Tier 2  COMMON     (Common)
+Tier 3  UNCOMMON   (Uncommon)
+Tier 4  ALPHA      (Alpha)
+Tier 5  ALL_STAR   (All-Star)
+Tier 6  SUPERSTAR  (Superstar)
+Tier 7  GOAT       (Goat)
 ```
-
-Final names for all lower tiers should be treated as configuration/product data until finalized.
 
 ### M7 Implementation Note
 
-The initial schema stores rarity as numeric `rarity_tier` from 1 through 7 so
-Tier 1–6 names can remain configurable. Tier 7 represents `HALL_OF_FAME`.
+The schema stores rarity as numeric `rarity_tier` from 1 through 7. Display
+names and stable codes are centralized in application configuration.
 
 Height and weight are stored explicitly as `height_cm` and `weight_kg`. Base
 stats must be non-negative, but no final game-balance maximum is enforced yet.
@@ -424,14 +428,14 @@ milestones.
 
 ---
 
-# 13. PackSession
+# 13. DropSession
 
 M9 implements persisted Free Drop offers with:
 
 ```text
-pack_session_id
+drop_session_id
 player_id
-pack_type
+drop_type
 status
 created_interaction_id
 selected_template_id
@@ -441,14 +445,14 @@ created_at
 updated_at
 ```
 
-`pack_session_candidates` stores each candidate position, Card Template, and
+`drop_session_candidates` stores each candidate position, Card Template, and
 rolled rarity tier. Candidates are unique within a session, and a partial
 unique index permits only one open Free Drop per Player.
 
 An open session has no selected Template or result Card Instance. A completed
 session must reference both. This state consistency is enforced by PostgreSQL.
-M9 intentionally has no expiration column because Pack timeout behavior remains
-TBD; calling `/pack` again reuses the existing open session.
+M9 intentionally has no expiration column because Drop timeout behavior remains
+TBD; calling `/drop` again reuses the existing open session.
 
 ---
 
@@ -763,7 +767,7 @@ Examples:
 ```text
 CLAIM
 DAILY
-FREE_PACK
+FREE_DROP
 ```
 
 This is more extensible than:
@@ -829,10 +833,9 @@ Still unresolved:
 
 ```text
 Hard circulation caps
-Final rarity names except Hall of Fame
 Final rarity probabilities
 Card image/asset references
-Paid pack tables
+Paid Pack purchase/opening tables
 Item inventory model
 Battle snapshot storage strategy
 Battle play-by-play persistence

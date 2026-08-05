@@ -49,11 +49,11 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
         };
       },
     },
-    pack: {
-      async getFreeDropCooldown(playerId) {
+    drop: {
+      async getCooldown(playerId) {
         assert.equal(playerId, "1");
         return {
-          cooldownType: "FREE_PACK",
+          cooldownType: "FREE_DROP",
           available: true,
           availableAt: null,
         };
@@ -84,7 +84,7 @@ test("rarity command lists Card Templates for the requested tier", async () => {
           templates: [
             {
               playerName: "Test Legend",
-              edition: "Hall of Fame",
+              edition: "Goat",
               season: null,
               overall: 99,
               primaryPosition: "SG",
@@ -102,7 +102,7 @@ test("rarity command lists Card Templates for the requested tier", async () => {
   assert.equal(interaction.replies[0].type, "defer");
   const embed = interaction.replies[1].payload.embeds[0].toJSON();
   assert.match(embed.title, /Tier 7/);
-  assert.match(embed.title, /Hall of Fame/);
+  assert.match(embed.title, /Goat/);
   assert.match(embed.description, /Test Legend/);
   assert.match(embed.description, /OVR 99/);
 });

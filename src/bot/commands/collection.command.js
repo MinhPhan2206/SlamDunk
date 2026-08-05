@@ -1,6 +1,12 @@
 import { SlashCommandBuilder } from "discord.js";
 
+import { rarityDefinitions } from "../../config/rarity-config.js";
 import { createCollectionEmbed } from "../presenters/collection.presenter.js";
+
+const RARITY_CHOICES = rarityDefinitions.map(({ name, rarityTier }) => ({
+  name: `${name} (Tier ${rarityTier})`,
+  value: rarityTier,
+}));
 
 export const collectionCommand = Object.freeze({
   data: new SlashCommandBuilder()
@@ -9,9 +15,8 @@ export const collectionCommand = Object.freeze({
     .addIntegerOption((option) =>
       option
         .setName("tier")
-        .setDescription("Optional rarity Tier from 1 through 7.")
-        .setMinValue(1)
-        .setMaxValue(7),
+        .setDescription("Optional Card rarity filter.")
+        .addChoices(...RARITY_CHOICES),
     )
     .addIntegerOption((option) =>
       option

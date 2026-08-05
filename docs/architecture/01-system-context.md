@@ -84,7 +84,7 @@ Typical actions:
 /profile
 /claim
 /daily
-/pack
+/drop
 /collection
 /card
 /lineup
@@ -309,7 +309,7 @@ The architecture assumes:
 Card OVR range: 60–99
 8 base card stats
 7 rarity tiers for first MVP
-Top rarity: Hall of Fame
+Rarities: Base, Common, Uncommon, Alpha, All-Star, Superstar, Goat
 Traits fixed by Card Template
 Trait tiers fixed by Card Template
 Trait tiers use I / II / III
@@ -333,7 +333,7 @@ Direct Trade
 Architecture must remain flexible for:
 
 ```text
-Final rarity probabilities
+Final Free Drop probabilities
 Hard circulation caps
 Exact Trait coefficients
 Pack cooldown

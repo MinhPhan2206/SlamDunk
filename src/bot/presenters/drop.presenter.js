@@ -4,12 +4,9 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from "discord.js";
+import { formatRarity } from "../../config/rarity-config.js";
 
-const PACK_COLOR = 0xf28c28;
-
-function rarityName(rarityTier) {
-  return rarityTier === 7 ? "Tier 7 - Hall of Fame" : `Tier ${rarityTier}`;
-}
+const DROP_COLOR = 0xf28c28;
 
 function templateName(template) {
   return `${template.playerName} - ${template.edition}`;
@@ -23,17 +20,17 @@ function candidateLine(candidate) {
 
   return [
     `**${candidate.candidatePosition}. ${templateName(template)}**`,
-    `${rarityName(template.rarityTier)} | OVR ${template.overall} | ${positions}`,
+    `${formatRarity(template.rarityTier)} | OVR ${template.overall} | ${positions}`,
   ].join("\n");
 }
 
-function selectionCustomId(packSessionId, candidatePosition) {
-  return `pack:select:${packSessionId}:${candidatePosition}`;
+function selectionCustomId(dropSessionId, candidatePosition) {
+  return `drop:select:${dropSessionId}:${candidatePosition}`;
 }
 
-export function createPackOfferPayload({ session, candidates }) {
+export function createDropOfferPayload({ session, candidates }) {
   const embed = new EmbedBuilder()
-    .setColor(PACK_COLOR)
+    .setColor(DROP_COLOR)
     .setTitle("Free Drop")
     .setDescription(candidates.map(candidateLine).join("\n\n"))
     .setFooter({ text: "Choose one card. Only your selection will be minted." });
@@ -42,7 +39,7 @@ export function createPackOfferPayload({ session, candidates }) {
       new ButtonBuilder()
         .setCustomId(
           selectionCustomId(
-            session.packSessionId,
+            session.dropSessionId,
             candidate.candidatePosition,
           ),
         )
@@ -54,7 +51,7 @@ export function createPackOfferPayload({ session, candidates }) {
   return { embeds: [embed], components: [row] };
 }
 
-export function createPackSelectionPayload(result) {
+export function createDropSelectionPayload(result) {
   const selectedCandidate = result.candidates.find(
     (candidate) =>
       candidate.cardTemplateId === result.session.selectedTemplateId,
@@ -62,12 +59,12 @@ export function createPackSelectionPayload(result) {
   const template = selectedCandidate.template;
   const instance = result.resultInstance;
   const embed = new EmbedBuilder()
-    .setColor(PACK_COLOR)
+    .setColor(DROP_COLOR)
     .setTitle("Free Drop Selected")
     .setDescription(
       [
         `**${templateName(template)}**`,
-        `${rarityName(template.rarityTier)} | OVR ${template.overall}`,
+        `${formatRarity(template.rarityTier)} | OVR ${template.overall}`,
         `Card Level: **${instance.cardLevel}**`,
         `Serial: **#${instance.serialNumber}**`,
       ].join("\n"),
@@ -76,12 +73,12 @@ export function createPackSelectionPayload(result) {
   return { embeds: [embed], components: [] };
 }
 
-export function createPackCooldownMessage(availableAt) {
+export function createDropCooldownMessage(availableAt) {
   const timestamp = Math.floor(availableAt.getTime() / 1_000);
   return `Your Free Drop is on cooldown. Available <t:${timestamp}:R>.`;
 }
 
-export function createPackCatalogMessage({ required, available }) {
+export function createDropCatalogMessage({ required, available }) {
   return [
     "Free Drop cannot be opened yet because the Card catalog is too small.",
     `Required packable templates: ${required}. Available: ${available}.`,

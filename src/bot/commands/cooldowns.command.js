@@ -16,7 +16,7 @@ export const cooldownsCommand = Object.freeze({
     });
     const [claimCooldown, freeDropCooldown] = await Promise.all([
       services.reward.getClaimCooldown(player.playerId),
-      services.pack.getFreeDropCooldown(player.playerId),
+      services.drop.getCooldown(player.playerId),
     ]);
 
     await interaction.editReply({

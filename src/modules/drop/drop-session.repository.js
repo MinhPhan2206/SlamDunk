@@ -1,7 +1,7 @@
 const SESSION_COLUMNS = `
-  pack_session_id,
+  drop_session_id,
   player_id,
-  pack_type,
+  drop_type,
   status,
   created_interaction_id,
   selected_template_id,
@@ -17,9 +17,9 @@ function mapSession(row) {
   }
 
   return Object.freeze({
-    packSessionId: row.pack_session_id,
+    dropSessionId: row.drop_session_id,
     playerId: row.player_id,
-    packType: row.pack_type,
+    dropType: row.drop_type,
     status: row.status,
     createdInteractionId: row.created_interaction_id,
     selectedTemplateId: row.selected_template_id,
@@ -32,37 +32,37 @@ function mapSession(row) {
 
 function mapCandidate(row) {
   return Object.freeze({
-    packSessionId: row.pack_session_id,
+    dropSessionId: row.drop_session_id,
     candidatePosition: row.candidate_position,
     cardTemplateId: row.card_template_id,
     rolledRarityTier: row.rolled_rarity_tier,
   });
 }
 
-export const packSessionRepository = Object.freeze({
-  async create(database, { playerId, packType, interactionId }) {
+export const dropSessionRepository = Object.freeze({
+  async create(database, { playerId, dropType, interactionId }) {
     const result = await database.query(
       `
-        INSERT INTO pack_sessions (
+        INSERT INTO drop_sessions (
           player_id,
-          pack_type,
+          drop_type,
           created_interaction_id
         )
         VALUES ($1, $2, $3)
         RETURNING ${SESSION_COLUMNS}
       `,
-      [playerId, packType, interactionId],
+      [playerId, dropType, interactionId],
     );
 
     return mapSession(result.rows[0]);
   },
 
-  async createCandidates(database, packSessionId, candidates) {
+  async createCandidates(database, dropSessionId, candidates) {
     const values = [];
     const placeholders = candidates.map((candidate, index) => {
       const offset = index * 4;
       values.push(
-        packSessionId,
+        dropSessionId,
         candidate.candidatePosition,
         candidate.cardTemplateId,
         candidate.rolledRarityTier,
@@ -71,15 +71,15 @@ export const packSessionRepository = Object.freeze({
     });
     const result = await database.query(
       `
-        INSERT INTO pack_session_candidates (
-          pack_session_id,
+        INSERT INTO drop_session_candidates (
+          drop_session_id,
           candidate_position,
           card_template_id,
           rolled_rarity_tier
         )
         VALUES ${placeholders.join(", ")}
         RETURNING
-          pack_session_id,
+          drop_session_id,
           candidate_position,
           card_template_id,
           rolled_rarity_tier
@@ -90,19 +90,19 @@ export const packSessionRepository = Object.freeze({
     return result.rows.map(mapCandidate);
   },
 
-  async findCandidates(database, packSessionId) {
+  async findCandidates(database, dropSessionId) {
     const result = await database.query(
       `
         SELECT
-          pack_session_id,
+          drop_session_id,
           candidate_position,
           card_template_id,
           rolled_rarity_tier
-        FROM pack_session_candidates
-        WHERE pack_session_id = $1
+        FROM drop_session_candidates
+        WHERE drop_session_id = $1
         ORDER BY candidate_position
       `,
-      [packSessionId],
+      [dropSessionId],
     );
 
     return result.rows.map(mapCandidate);
@@ -112,7 +112,7 @@ export const packSessionRepository = Object.freeze({
     const result = await database.query(
       `
         SELECT ${SESSION_COLUMNS}
-        FROM pack_sessions
+        FROM drop_sessions
         WHERE created_interaction_id = $1
       `,
       [interactionId],
@@ -121,29 +121,29 @@ export const packSessionRepository = Object.freeze({
     return mapSession(result.rows[0]);
   },
 
-  async findOpenForUpdate(database, { playerId, packType }) {
+  async findOpenForUpdate(database, { playerId, dropType }) {
     const result = await database.query(
       `
         SELECT ${SESSION_COLUMNS}
-        FROM pack_sessions
-        WHERE player_id = $1 AND pack_type = $2 AND status = 'OPEN'
+        FROM drop_sessions
+        WHERE player_id = $1 AND drop_type = $2 AND status = 'OPEN'
         FOR UPDATE
       `,
-      [playerId, packType],
+      [playerId, dropType],
     );
 
     return mapSession(result.rows[0]);
   },
 
-  async findByIdForUpdate(database, packSessionId) {
+  async findByIdForUpdate(database, dropSessionId) {
     const result = await database.query(
       `
         SELECT ${SESSION_COLUMNS}
-        FROM pack_sessions
-        WHERE pack_session_id = $1
+        FROM drop_sessions
+        WHERE drop_session_id = $1
         FOR UPDATE
       `,
-      [packSessionId],
+      [dropSessionId],
     );
 
     return mapSession(result.rows[0]);
@@ -151,21 +151,21 @@ export const packSessionRepository = Object.freeze({
 
   async complete(
     database,
-    { packSessionId, selectedTemplateId, resultCardInstanceId },
+    { dropSessionId, selectedTemplateId, resultCardInstanceId },
   ) {
     const result = await database.query(
       `
-        UPDATE pack_sessions
+        UPDATE drop_sessions
         SET
           status = 'COMPLETED',
           selected_template_id = $2,
           result_card_instance_id = $3,
           completed_at = CURRENT_TIMESTAMP,
           updated_at = CURRENT_TIMESTAMP
-        WHERE pack_session_id = $1 AND status = 'OPEN'
+        WHERE drop_session_id = $1 AND status = 'OPEN'
         RETURNING ${SESSION_COLUMNS}
       `,
-      [packSessionId, selectedTemplateId, resultCardInstanceId],
+      [dropSessionId, selectedTemplateId, resultCardInstanceId],
     );
 
     return mapSession(result.rows[0]);

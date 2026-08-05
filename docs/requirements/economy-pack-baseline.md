@@ -176,8 +176,8 @@ five highest-OVR cards.
 
 Meaningful chase targets should include favorite players, specific templates,
 event cards, strong gameplay cards, matchup counters, Trait combinations,
-higher Card Levels, collection completion, market opportunities, and Hall of
-Fame cards. Hall of Fame should not be the only desirable result.
+higher Card Levels, collection completion, market opportunities, and Goat
+cards. Goat should not be the only desirable result.
 
 ## 5. Gold Economy
 
@@ -274,16 +274,34 @@ Premium packs should provide a clearly noticeable probability improvement.
 
 | Rarity tier | Probability | Approximate frequency |
 | --- | ---: | ---: |
-| Tier 1 | 50.0000% | — |
-| Tier 2 | 32.0000% | — |
-| Tier 3 | 16.0000% | — |
-| Tier 4 | 1.8000% | 1 / 56 |
-| Tier 5 | 0.1900% | 1 / 526 |
-| Tier 6 | 0.0095% | 1 / 10,526 |
-| Tier 7 — Hall of Fame | 0.0005% | 1 / 200,000 |
+| Tier 1 — Base | 50.0000% | — |
+| Tier 2 — Common | 32.0000% | — |
+| Tier 3 — Uncommon | 16.0000% | — |
+| Tier 4 — Alpha | 1.8000% | 1 / 56 |
+| Tier 5 — All-Star | 0.1900% | 1 / 526 |
+| Tier 6 — Superstar | 0.0095% | 1 / 10,526 |
+| Tier 7 — Goat | 0.0005% | 1 / 200,000 |
 
 The distribution totals 100%. It is a card-supply simulation baseline, not a
 final production probability table.
+
+## 7.1 Standard Pack Rarity Distribution
+
+The first configured paid Pack product uses the stable code `standard`:
+
+| Rarity tier | Probability |
+| --- | ---: |
+| Tier 1 — Base | 10.0000% |
+| Tier 2 — Common | 35.0000% |
+| Tier 3 — Uncommon | 40.0000% |
+| Tier 4 — Alpha | 12.0000% |
+| Tier 5 — All-Star | 2.7000% |
+| Tier 6 — Superstar | 0.2900% |
+| Tier 7 — Goat | 0.0100% |
+
+The Pack catalog is keyed by Pack code. Future Packs must define their own
+display name and rarity distribution instead of changing Standard Pack odds.
+Pack buying and opening behavior is not implemented by this odds decision.
 
 Expected server supply must be calculated across every source:
 
@@ -384,7 +402,7 @@ Gold Created and Destroyed
 Sink Ratio
 Shard Generation and Destruction
 Supply by Rarity and Card Template
-Hall of Fame circulation
+Goat circulation
 Duplicate rate
 Expected time to Card Level 5
 Market purchasing power
@@ -418,7 +436,7 @@ Final pack prices
 Final quicksell Shard values
 Final Shard Key costs
 Event-card internal weights
-Desired Hall of Fame and Tier 6 annual supply
+Desired Goat and Superstar annual supply
 Supporter economic benefits and cooldown reductions
 Final Challenge base Gold and streak multiplier
 Additional Gold sinks
