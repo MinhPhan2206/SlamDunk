@@ -43,23 +43,23 @@ function normalizeCatalog(packCatalog) {
 }
 
 function pickTemplate(templates, pack, rollInteger) {
-  const byTier = new Map();
+  const byRarity = new Map();
   for (const template of templates) {
-    const entries = byTier.get(template.rarityTier) ?? [];
+    const entries = byRarity.get(template.rarityCode) ?? [];
     entries.push(template);
-    byTier.set(template.rarityTier, entries);
+    byRarity.set(template.rarityCode, entries);
   }
-  const available = pack.rarityWeights.filter(({ rarityTier }) => byTier.has(rarityTier));
+  const available = pack.rarityWeights.filter(({ rarityCode }) => byRarity.has(rarityCode));
   if (!available.length) throw new PackError("PACK_CATALOG_EMPTY", "No eligible cards are available for this Pack.");
   const total = available.reduce((sum, entry) => sum + entry.weight, 0);
   const roll = rollInteger(0, total);
   let cumulative = 0;
-  let tier = available.at(-1).rarityTier;
+  let rarityCode = available.at(-1).rarityCode;
   for (const entry of available) {
     cumulative += entry.weight;
-    if (roll < cumulative) { tier = entry.rarityTier; break; }
+    if (roll < cumulative) { rarityCode = entry.rarityCode; break; }
   }
-  const candidates = byTier.get(tier);
+  const candidates = byRarity.get(rarityCode);
   return candidates[rollInteger(0, candidates.length)];
 }
 

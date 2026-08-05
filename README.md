@@ -62,11 +62,11 @@ npm test
 - `/pack pack_type:<code>` — buy and immediately open a Pack.
 - `/exchange item:shard` — exchange 500 Shards for one Level Up item.
 - `/odds drop|pack` — view configured Free Drop or Pack rarity odds.
-- `/collection` — view owned active cards with tier filtering and pagination.
+- `/collection` — view owned active cards with rarity filtering and pagination.
 - `/lineup view|set|remove` — manage the active five-position lineup.
 - `/battle` — simulate a persisted PvE match with the active lineup.
 - `/cooldowns` — view the current Claim and Free Drop cooldown status.
-- `/rarity tier:<1-7>` — list Card Templates in a rarity tier.
+- `/rarity rarity:<name>` — list Card Templates in a named rarity.
 - `/quicksell card_id:<id>` — destroy an unwanted card for Shards.
 - `/upgrade fusion card_a:<id> card_b:<id>` — fuse matching Card Templates.
 - `/upgrade item card_id:<id>` — consume one Level Up item for +1 Level.

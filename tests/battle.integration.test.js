@@ -22,7 +22,7 @@ function templateInput(slot, index, testRunId) {
     season: "2026-27",
     primaryPosition: slot,
     secondaryPosition: null,
-    rarityTier: 2,
+    rarityCode: "COMMON",
     overall: 82 + index,
     insideScoring: 75 + index,
     midRange: 76 + index,

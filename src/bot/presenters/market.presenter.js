@@ -22,7 +22,7 @@ export function createMarketBrowseEmbed({ listings }) {
         (listing) =>
           [
             `**Listing ${listing.listingId} — ${listing.playerName} - ${listing.edition}**`,
-            `${formatRarity(listing.rarityTier)} | Lv${listing.cardLevel} | #${listing.serialNumber} | Card ${listing.cardInstanceId}`,
+            `${formatRarity(listing.rarityCode)} | Lv${listing.cardLevel} | #${listing.serialNumber} | Card ${listing.cardInstanceId}`,
             `${gold(listing.priceGold)} | Seller: ${listing.sellerName}`,
           ].join("\n"),
       )

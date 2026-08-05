@@ -19,7 +19,7 @@ function templateInput(testRunId) {
     season: "2026-27",
     primaryPosition: "SF",
     secondaryPosition: null,
-    rarityTier: 3,
+    rarityCode: "UNCOMMON",
     overall: 85,
     insideScoring: 82,
     midRange: 84,

@@ -37,7 +37,7 @@ function mapCandidate(row) {
     dropSessionId: row.drop_session_id,
     candidatePosition: row.candidate_position,
     cardTemplateId: row.card_template_id,
-    rolledRarityTier: row.rolled_rarity_tier,
+    rolledRarityId: row.rolled_rarity_id,
   });
 }
 
@@ -68,7 +68,7 @@ export const dropSessionRepository = Object.freeze({
         dropSessionId,
         candidate.candidatePosition,
         candidate.cardTemplateId,
-        candidate.rolledRarityTier,
+        candidate.rolledRarityId,
       );
       return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4})`;
     });
@@ -78,14 +78,14 @@ export const dropSessionRepository = Object.freeze({
           drop_session_id,
           candidate_position,
           card_template_id,
-          rolled_rarity_tier
+          rolled_rarity_id
         )
         VALUES ${placeholders.join(", ")}
         RETURNING
           drop_session_id,
           candidate_position,
           card_template_id,
-          rolled_rarity_tier
+          rolled_rarity_id
       `,
       values,
     );
@@ -100,7 +100,7 @@ export const dropSessionRepository = Object.freeze({
           drop_session_id,
           candidate_position,
           card_template_id,
-          rolled_rarity_tier
+          rolled_rarity_id
         FROM drop_session_candidates
         WHERE drop_session_id = $1
         ORDER BY candidate_position

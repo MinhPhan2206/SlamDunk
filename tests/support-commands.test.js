@@ -4,16 +4,16 @@ import test from "node:test";
 import { cooldownsCommand } from "../src/bot/commands/cooldowns.command.js";
 import { rarityCommand } from "../src/bot/commands/rarity.command.js";
 
-function createInteraction({ rarityTier = 5 } = {}) {
+function createInteraction({ rarityCode = "ALL_STAR" } = {}) {
   const replies = [];
 
   return {
     user: { id: "234567890123456789", username: "SupportTester" },
     options: {
-      getInteger(name, required) {
-        assert.equal(name, "tier");
+      getString(name, required) {
+        assert.equal(name, "rarity");
         assert.equal(required, true);
-        return rarityTier;
+        return rarityCode;
       },
     },
     replies,
@@ -81,14 +81,14 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
   );
 });
 
-test("rarity command lists Card Templates for the requested tier", async () => {
-  const interaction = createInteraction({ rarityTier: 7 });
+test("rarity command lists Card Templates for the requested rarity", async () => {
+  const interaction = createInteraction({ rarityCode: "GOAT" });
   const services = {
     cardTemplate: {
-      async listTemplatesByRarity(rarityTier) {
-        assert.equal(rarityTier, 7);
+      async listTemplatesByRarity(rarityCode) {
+        assert.equal(rarityCode, "GOAT");
         return {
-          rarityTier,
+          rarityCode,
           templates: [
             {
               playerName: "Test Legend",
@@ -109,18 +109,17 @@ test("rarity command lists Card Templates for the requested tier", async () => {
 
   assert.equal(interaction.replies[0].type, "defer");
   const embed = interaction.replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.title, /Tier 7/);
   assert.match(embed.title, /Goat/);
   assert.match(embed.description, /Test Legend/);
   assert.match(embed.description, /OVR 99/);
 });
 
-test("rarity command explains when a tier has no Card Templates", async () => {
-  const interaction = createInteraction({ rarityTier: 2 });
+test("rarity command explains when a rarity has no Card Templates", async () => {
+  const interaction = createInteraction({ rarityCode: "COMMON" });
   const services = {
     cardTemplate: {
       async listTemplatesByRarity() {
-        return { rarityTier: 2, templates: [], total: "0" };
+        return { rarityCode: "COMMON", templates: [], total: "0" };
       },
     },
   };

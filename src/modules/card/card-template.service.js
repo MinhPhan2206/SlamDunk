@@ -1,5 +1,6 @@
 import { CardError } from "./card.errors.js";
 import { cardTemplateRepository } from "./card-template.repository.js";
+import { getRarityDefinition } from "../../config/rarity-config.js";
 
 const POSITIONS = new Set(["PG", "SG", "SF", "PF", "C"]);
 const SMALLINT_MAX = 32_767;
@@ -116,7 +117,9 @@ function normalizeTemplateInput(input) {
     season: normalizeOptionalText(input.season, "season"),
     primaryPosition,
     secondaryPosition,
-    rarityTier: normalizeInteger(input.rarityTier, "rarityTier", 1, 7),
+    rarityCode: getRarityDefinition(
+      normalizeRequiredText(input.rarityCode, "rarityCode").toUpperCase(),
+    ).rarityCode,
     overall: normalizeInteger(input.overall, "overall", 60, 99),
     heightCm: normalizeOptionalMeasurement(input.heightCm, "heightCm"),
     weightKg: normalizeOptionalMeasurement(input.weightKg, "weightKg"),
@@ -170,24 +173,21 @@ export function createCardTemplateService({ databasePool }) {
     },
 
     async listTemplatesByRarity(
-      rarityTier,
+      rarityCode,
       { database = databasePool, limit = 20 } = {},
     ) {
-      const normalizedRarityTier = normalizeInteger(
-        rarityTier,
-        "rarityTier",
-        1,
-        7,
-      );
+      const normalizedRarityCode = getRarityDefinition(
+        normalizeRequiredText(rarityCode, "rarityCode").toUpperCase(),
+      ).rarityCode;
       const normalizedLimit = normalizeInteger(limit, "limit", 1, 20);
-      const result = await cardTemplateRepository.findByRarityTier(
+      const result = await cardTemplateRepository.findByRarityCode(
         database,
-        normalizedRarityTier,
+        normalizedRarityCode,
         normalizedLimit,
       );
 
       return Object.freeze({
-        rarityTier: normalizedRarityTier,
+        rarityCode: normalizedRarityCode,
         templates: result.templates,
         total: result.total,
       });

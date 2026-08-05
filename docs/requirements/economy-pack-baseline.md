@@ -274,13 +274,13 @@ Premium packs should provide a clearly noticeable probability improvement.
 
 | Rarity tier | Probability | Approximate frequency |
 | --- | ---: | ---: |
-| Tier 1 — Base | 50.0000% | — |
-| Tier 2 — Common | 32.0000% | — |
-| Tier 3 — Uncommon | 16.0000% | — |
-| Tier 4 — Alpha | 1.8000% | 1 / 56 |
-| Tier 5 — All-Star | 0.1900% | 1 / 526 |
-| Tier 6 — Superstar | 0.0095% | 1 / 10,526 |
-| Tier 7 — Goat | 0.0005% | 1 / 200,000 |
+| Base | 50.0000% | — |
+| Common | 32.0000% | — |
+| Uncommon | 16.0000% | — |
+| Alpha | 1.8000% | 1 / 56 |
+| All-Star | 0.1900% | 1 / 526 |
+| Superstar | 0.0095% | 1 / 10,526 |
+| Goat | 0.0005% | 1 / 200,000 |
 
 The distribution totals 100%. It is a card-supply simulation baseline, not a
 final production probability table.
@@ -291,13 +291,13 @@ The first configured paid Pack product uses the stable code `standard`:
 
 | Rarity tier | Probability |
 | --- | ---: |
-| Tier 1 — Base | 10.0000% |
-| Tier 2 — Common | 35.0000% |
-| Tier 3 — Uncommon | 40.0000% |
-| Tier 4 — Alpha | 12.0000% |
-| Tier 5 — All-Star | 2.7000% |
-| Tier 6 — Superstar | 0.2900% |
-| Tier 7 — Goat | 0.0100% |
+| Base | 10.0000% |
+| Common | 35.0000% |
+| Uncommon | 40.0000% |
+| Alpha | 12.0000% |
+| All-Star | 2.7000% |
+| Superstar | 0.2900% |
+| Goat | 0.0100% |
 
 The Pack catalog is keyed by Pack code. Future Packs must define their own
 display name and rarity distribution instead of changing Standard Pack odds.
@@ -306,8 +306,8 @@ Pack buying and opening behavior is defined separately from the odds table.
 Expected server supply must be calculated across every source:
 
 ```text
-Expected Tier 7 Instances =
-Σ(Open Count by Source × Tier 7 Probability by Source)
+Expected Goat Instances =
+Σ(Open Count by Source × Goat Probability by Source)
 ```
 
 Inputs should include DAU, opens per player, paid packs, Shard Keys, event
@@ -333,13 +333,13 @@ Provisional SlamDunk quicksell values:
 
 | Rarity tier | Shards |
 | --- | ---: |
-| Tier 1 | 1 |
-| Tier 2 | 2 |
-| Tier 3 | 5 |
-| Tier 4 | 30 |
-| Tier 5 | 200 |
-| Tier 6 | 1,500 |
-| Tier 7 | 10,000 |
+| Base | 1 |
+| Common | 2 |
+| Uncommon | 5 |
+| Alpha | 30 |
+| All-Star | 200 |
+| Superstar | 1,500 |
+| Goat | 10,000 |
 
 ```text
 Expected Shard Value =

@@ -14,7 +14,7 @@ export function createOddsEmbed(result) {
       result.odds
         .map(
           (entry) =>
-            `**${entry.name}** (Tier ${entry.rarityTier}) — ${formatProbability(entry.probabilityPercent)}`,
+            `**${entry.name}** — ${formatProbability(entry.probabilityPercent)}`,
         )
         .join("\n"),
     );
@@ -22,7 +22,7 @@ export function createOddsEmbed(result) {
   return embed.setFooter({
     text:
       result.source === "drop"
-        ? `Per candidate roll; /drop shows ${result.candidateCount} candidates. Tiers without packable cards are excluded at roll time.`
+        ? `Per candidate roll; /drop shows ${result.candidateCount} candidates. Rarities without packable cards are excluded at roll time.`
         : `Pack code: ${result.packCode}. Additional Packs can define independent odds.`,
   });
 }

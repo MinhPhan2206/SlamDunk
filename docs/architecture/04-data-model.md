@@ -213,24 +213,37 @@ Multiple editions may exist
 
 ### Rarity
 
-First MVP has 7 tiers.
+The initial catalog has 7 rarities.
+
+```text
+rarity_id       PK
+rarity_code     UNIQUE, stable identity
+display_name    UNIQUE, user-facing name
+rarity_rank     UNIQUE, display/progression order only
+active
+created_at
+updated_at
+```
 
 Final rarity names:
 
 ```text
-Tier 1  BASE       (Base)
-Tier 2  COMMON     (Common)
-Tier 3  UNCOMMON   (Uncommon)
-Tier 4  ALPHA      (Alpha)
-Tier 5  ALL_STAR   (All-Star)
-Tier 6  SUPERSTAR  (Superstar)
-Tier 7  GOAT       (Goat)
+BASE       (Base)
+COMMON     (Common)
+UNCOMMON   (Uncommon)
+ALPHA      (Alpha)
+ALL_STAR   (All-Star)
+SUPERSTAR  (Superstar)
+GOAT       (Goat)
 ```
 
-### M7 Implementation Note
+### Current Implementation Note
 
-The schema stores rarity as numeric `rarity_tier` from 1 through 7. Display
-names and stable codes are centralized in application configuration.
+Rarity is a catalog entity with stable `rarity_code`, editable `display_name`,
+and an ordering-only `rarity_rank`. Card Templates reference `rarities` through
+`rarity_id`; numeric tier is not part of Card Template identity. New rarities
+can be appended without changing the Card Template schema. Drop and Pack odds
+use `rarity_code` and remain independently configurable by source.
 
 Height and weight are stored explicitly as `height_cm` and `weight_kg`. Base
 stats must be non-negative, but no final game-balance maximum is enforced yet.
@@ -446,13 +459,13 @@ updated_at
 ```
 
 `drop_session_candidates` stores each candidate position, Card Template, and
-rolled rarity tier. Candidates are unique within a session, and a partial
+rolled rarity catalog reference. Candidates are unique within a session, and a partial
 unique index permits only one open Free Drop per Player.
 
 An open session has no selected Template or result Card Instance. A completed
 session must reference both. This state consistency is enforced by PostgreSQL.
-M9 intentionally has no expiration column because Drop timeout behavior remains
-TBD; calling `/drop` again reuses the existing open session.
+The selection expiry is persisted. After 10 seconds, candidate 1 is selected
+automatically and the Player can no longer choose another candidate.
 
 ---
 

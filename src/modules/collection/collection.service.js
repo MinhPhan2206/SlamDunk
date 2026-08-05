@@ -12,13 +12,13 @@ function normalizeId(value) {
   return normalized;
 }
 
-function normalizeRarityTier(value) {
+function normalizeRarityCode(value) {
   if (value == null) {
     return null;
   }
 
-  if (!Number.isInteger(value) || value < 1 || value > 7) {
-    throw new TypeError("rarityTier must be an integer from 1 through 7.");
+  if (typeof value !== "string" || !/^[A-Z][A-Z0-9_]*$/.test(value)) {
+    throw new TypeError("rarityCode must be a valid rarity code.");
   }
 
   return value;
@@ -35,13 +35,13 @@ function normalizePage(value) {
 export function createCollectionService({ databasePool }) {
   return Object.freeze({
     async listOwnedCards(
-      { playerId, rarityTier = null, page = 1 },
+      { playerId, rarityCode = null, page = 1 },
       { database = databasePool } = {},
     ) {
       const normalizedPage = normalizePage(page);
       const result = await collectionRepository.listOwnedCards(database, {
         playerId: normalizeId(playerId),
-        rarityTier: normalizeRarityTier(rarityTier),
+        rarityCode: normalizeRarityCode(rarityCode),
         limit: PAGE_SIZE,
         offset: (normalizedPage - 1) * PAGE_SIZE,
       });
@@ -55,7 +55,7 @@ export function createCollectionService({ databasePool }) {
         page: normalizedPage,
         pageSize: PAGE_SIZE,
         totalPages,
-        rarityTier: normalizeRarityTier(rarityTier),
+        rarityCode: normalizeRarityCode(rarityCode),
       });
     },
   });

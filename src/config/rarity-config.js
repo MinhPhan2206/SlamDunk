@@ -1,26 +1,25 @@
 export const rarityDefinitions = Object.freeze([
-  Object.freeze({ rarityTier: 1, rarityCode: "BASE", name: "Base" }),
-  Object.freeze({ rarityTier: 2, rarityCode: "COMMON", name: "Common" }),
-  Object.freeze({ rarityTier: 3, rarityCode: "UNCOMMON", name: "Uncommon" }),
-  Object.freeze({ rarityTier: 4, rarityCode: "ALPHA", name: "Alpha" }),
-  Object.freeze({ rarityTier: 5, rarityCode: "ALL_STAR", name: "All-Star" }),
-  Object.freeze({ rarityTier: 6, rarityCode: "SUPERSTAR", name: "Superstar" }),
-  Object.freeze({ rarityTier: 7, rarityCode: "GOAT", name: "Goat" }),
+  Object.freeze({ rarityCode: "BASE", name: "Base", rank: 1 }),
+  Object.freeze({ rarityCode: "COMMON", name: "Common", rank: 2 }),
+  Object.freeze({ rarityCode: "UNCOMMON", name: "Uncommon", rank: 3 }),
+  Object.freeze({ rarityCode: "ALPHA", name: "Alpha", rank: 4 }),
+  Object.freeze({ rarityCode: "ALL_STAR", name: "All-Star", rank: 5 }),
+  Object.freeze({ rarityCode: "SUPERSTAR", name: "Superstar", rank: 6 }),
+  Object.freeze({ rarityCode: "GOAT", name: "Goat", rank: 7 }),
 ]);
 
-const definitionsByTier = new Map(
-  rarityDefinitions.map((definition) => [definition.rarityTier, definition]),
+const definitionsByCode = new Map(
+  rarityDefinitions.map((definition) => [definition.rarityCode, definition]),
 );
 
-export function getRarityDefinition(rarityTier) {
-  const definition = definitionsByTier.get(rarityTier);
+export function getRarityDefinition(rarityCode) {
+  const definition = definitionsByCode.get(rarityCode);
   if (!definition) {
-    throw new RangeError("rarityTier must be an integer from 1 through 7.");
+    throw new RangeError("rarityCode is not configured.");
   }
   return definition;
 }
 
-export function formatRarity(rarityTier) {
-  const definition = getRarityDefinition(rarityTier);
-  return `${definition.name} (Tier ${definition.rarityTier})`;
+export function formatRarity(rarityCode) {
+  return getRarityDefinition(rarityCode).name;
 }

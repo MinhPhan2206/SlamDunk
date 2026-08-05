@@ -18,7 +18,7 @@ function createTemplateInput(edition) {
     season: "2026-27",
     primaryPosition: "SF",
     secondaryPosition: "PF",
-    rarityTier: 6,
+    rarityCode: "SUPERSTAR",
     overall: 94,
     insideScoring: 88,
     midRange: 90,
@@ -99,17 +99,17 @@ test("Card Instances receive per-template serials and ownership history", async 
     assert.equal(secondMint.ownershipHistory.reason, "EVENT_REWARD");
 
     const collection = await collectionService.listOwnedCards(
-      { playerId, rarityTier: 6 },
+      { playerId, rarityCode: "SUPERSTAR" },
       { database },
     );
     assert.equal(collection.total, "2");
     assert.equal(collection.cards.length, 2);
     assert.equal(collection.cards[0].cardInstanceId, secondMint.instance.cardInstanceId);
     assert.equal(collection.cards[0].playerName, "M8 Test Player");
-    assert.equal(collection.cards[0].rarityTier, 6);
+    assert.equal(collection.cards[0].rarityCode, "SUPERSTAR");
 
     const emptyTier = await collectionService.listOwnedCards(
-      { playerId, rarityTier: 5 },
+      { playerId, rarityCode: "ALL_STAR" },
       { database },
     );
     assert.equal(emptyTier.total, "0");

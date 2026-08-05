@@ -13,7 +13,7 @@ function createTemplateInput(edition) {
     season: "2026-27",
     primaryPosition: "PG",
     secondaryPosition: "SG",
-    rarityTier: 5,
+    rarityCode: "ALL_STAR",
     overall: 91,
     insideScoring: 78,
     midRange: 88,
@@ -58,7 +58,7 @@ test("Card Templates own fixed Trait assignments and tiers", async () => {
       baseTemplate.cardTemplateId,
       playoffTemplate.cardTemplateId,
     );
-    assert.equal(baseTemplate.rarityTier, 5);
+    assert.equal(baseTemplate.rarityCode, "ALL_STAR");
     assert.equal(baseTemplate.overall, 91);
     assert.equal(baseTemplate.primaryPosition, "PG");
     assert.equal(baseTemplate.secondaryPosition, "SG");

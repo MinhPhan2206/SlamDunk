@@ -17,7 +17,7 @@ function mapSlot(row) {
     cardLevel: row.card_level,
     playerName: row.player_name,
     edition: row.edition,
-    rarityTier: row.rarity_tier,
+    rarityCode: row.rarity_code,
     overall: row.overall,
     primaryPosition: row.primary_position,
     secondaryPosition: row.secondary_position,
@@ -50,7 +50,7 @@ export const lineupRepository = Object.freeze({
           ci.card_level,
           ct.player_name,
           ct.edition,
-          ct.rarity_tier,
+          r.rarity_code,
           ct.overall,
           ct.primary_position,
           ct.secondary_position
@@ -59,6 +59,7 @@ export const lineupRepository = Object.freeze({
           ON ci.card_instance_id = ls.card_instance_id
         JOIN card_templates ct
           ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ls.lineup_id = $1
       `,
       [lineupId],

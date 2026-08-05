@@ -14,9 +14,9 @@ function normalizeId(value, fieldName) {
 }
 
 function validateRewards(shardRewards) {
-  for (let rarityTier = 1; rarityTier <= 7; rarityTier += 1) {
-    if (!Number.isSafeInteger(shardRewards?.[rarityTier]) || shardRewards[rarityTier] <= 0) {
-      throw new TypeError(`Missing quicksell reward for rarity Tier ${rarityTier}.`);
+  for (const [rarityCode, reward] of Object.entries(shardRewards ?? {})) {
+    if (!rarityCode || !Number.isSafeInteger(reward) || reward <= 0) {
+      throw new TypeError("Each quicksell rarity reward must be a positive integer.");
     }
   }
 }
@@ -70,7 +70,13 @@ export function createQuicksellService({
           );
         }
 
-        const shardReward = quicksellConfig.shardRewards[card.rarityTier];
+        const shardReward = quicksellConfig.shardRewards[card.rarityCode];
+        if (!shardReward) {
+          throw new QuicksellError(
+            "RARITY_REWARD_NOT_CONFIGURED",
+            "This card rarity cannot be quicksold yet.",
+          );
+        }
         await quicksellRepository.destroyCard(
           transactionDatabase,
           card.cardInstanceId,

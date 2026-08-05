@@ -10,7 +10,7 @@ export function createPackOpeningPayload(result) {
         .setTitle(`${pack.displayName} Opened`)
         .setDescription([
           `**${template.playerName} - ${template.edition}**`,
-          `${formatRarity(template.rarityTier)} | OVR ${template.overall}`,
+          `${formatRarity(template.rarityCode)} | OVR ${template.overall}`,
           `Card Level: **${instance.cardLevel}**`,
           `Serial: **#${instance.serialNumber}**`,
           `Cost: **${pack.priceGold.toLocaleString("en-US")} Gold**`,

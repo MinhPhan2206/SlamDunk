@@ -16,7 +16,7 @@ function mapListing(row) {
     sellerName: row.seller_name,
     playerName: row.player_name,
     edition: row.edition,
-    rarityTier: row.rarity_tier,
+    rarityCode: row.rarity_code,
     serialNumber: row.serial_number,
     cardLevel: row.card_level,
   });
@@ -68,13 +68,14 @@ export const marketRepository = Object.freeze({
           p.username_snapshot AS seller_name,
           ct.player_name,
           ct.edition,
-          ct.rarity_tier,
+          r.rarity_code,
           ci.serial_number,
           ci.card_level
         FROM market_listings ml
         JOIN players p ON p.player_id = ml.seller_player_id
         JOIN card_instances ci ON ci.card_instance_id = ml.card_instance_id
         JOIN card_templates ct ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ml.listing_id = $1
         FOR UPDATE OF ml
       `,
@@ -100,13 +101,14 @@ export const marketRepository = Object.freeze({
           p.username_snapshot AS seller_name,
           ct.player_name,
           ct.edition,
-          ct.rarity_tier,
+          r.rarity_code,
           ci.serial_number,
           ci.card_level
         FROM market_listings ml
         JOIN players p ON p.player_id = ml.seller_player_id
         JOIN card_instances ci ON ci.card_instance_id = ml.card_instance_id
         JOIN card_templates ct ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ml.status = 'ACTIVE'
         ORDER BY ml.created_at DESC, ml.listing_id DESC
         LIMIT $1

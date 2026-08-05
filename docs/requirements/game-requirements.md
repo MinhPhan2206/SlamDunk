@@ -20,9 +20,9 @@
 - `/cooldowns` reports cooldown availability using PostgreSQL time as the source
   of truth. It currently reports `CLAIM` and `FREE_DROP`; Daily and Weekly can
   be added when those reward systems exist.
-- `/rarity` accepts a numeric rarity tier from 1 through 7 and lists Card
-  Templates in that tier. The finalized names are Base, Common, Uncommon,
-  Alpha, All-Star, Superstar, and Goat.
+- `/rarity` accepts a named rarity choice and lists Card Templates in that
+  rarity. The current names are Base, Common, Uncommon, Alpha, All-Star,
+  Superstar, and Goat.
 - `/rarity` lists template definitions, not Card Instances owned by a Player.
 
 ## M9 Free Drop Behavior
@@ -38,7 +38,7 @@
 - An open offer is reused when `/drop` is called again. M9 does not expire or
   reroll an abandoned offer because timeout behavior remains TBD.
 - The current playtest configuration uses a 15-minute Free Drop cooldown, three
-  candidates, and the provisional Tier 1–7 weights in
+  candidates, and the provisional named-rarity weights in
   `economy-pack-baseline.md`. These remain adjustable simulation values rather
   than finalized production balance.
 - Three candidates is the production candidate count.
@@ -68,7 +68,7 @@
   cooldown update are one PostgreSQL transaction.
 - Discord interaction ID provides idempotency. A retry returns the existing
   Pack result and cannot charge Gold or mint another Card.
-- Eligible Card Templates within each of the current seven rarity tiers have
+- Eligible Card Templates within each of the current seven rarities have
   equal probability after the rarity roll.
 - Future Premium, Event, and Shard Packs own separate catalog definitions and odds.
 

@@ -10,7 +10,7 @@ function template(cardTemplateId, playerName) {
     cardTemplateId,
     playerName,
     edition: "Base",
-    rarityTier: 3,
+    rarityCode: "UNCOMMON",
     overall: 82,
     primaryPosition: "SF",
     secondaryPosition: "PF",

@@ -84,7 +84,7 @@ test("market browse command displays active listings", async () => {
               sellerName: "Seller",
               playerName: "Test Guard",
               edition: "Base",
-              rarityTier: 2,
+              rarityCode: "COMMON",
               serialNumber: "3",
               cardLevel: 4,
             },

@@ -17,7 +17,7 @@ function templateInput(edition, primaryPosition, secondaryPosition) {
     season: "2026-27",
     primaryPosition,
     secondaryPosition,
-    rarityTier: 3,
+    rarityCode: "UNCOMMON",
     overall: 88,
     insideScoring: 80,
     midRange: 80,

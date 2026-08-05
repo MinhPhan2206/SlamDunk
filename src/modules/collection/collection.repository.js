@@ -10,7 +10,7 @@ function mapOwnedCard(row) {
     season: row.season,
     primaryPosition: row.primary_position,
     secondaryPosition: row.secondary_position,
-    rarityTier: row.rarity_tier,
+    rarityCode: row.rarity_code,
     overall: row.overall,
   });
 }
@@ -18,13 +18,13 @@ function mapOwnedCard(row) {
 export const collectionRepository = Object.freeze({
   async listOwnedCards(
     database,
-    { playerId, rarityTier, limit, offset },
+    { playerId, rarityCode, limit, offset },
   ) {
-    const parameters = [playerId, rarityTier];
+    const parameters = [playerId, rarityCode];
     const filter = `
       ci.owner_player_id = $1
       AND ci.status = 'ACTIVE'
-      AND ($2::smallint IS NULL OR ct.rarity_tier = $2)
+      AND ($2::text IS NULL OR r.rarity_code = $2)
     `;
     const countResult = await database.query(
       `
@@ -32,6 +32,7 @@ export const collectionRepository = Object.freeze({
         FROM card_instances ci
         JOIN card_templates ct
           ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ${filter}
       `,
       parameters,
@@ -49,11 +50,12 @@ export const collectionRepository = Object.freeze({
           ct.season,
           ct.primary_position,
           ct.secondary_position,
-          ct.rarity_tier,
+          r.rarity_code,
           ct.overall
         FROM card_instances ci
         JOIN card_templates ct
           ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ${filter}
         ORDER BY ci.obtained_at DESC, ci.card_instance_id DESC
         LIMIT $3 OFFSET $4

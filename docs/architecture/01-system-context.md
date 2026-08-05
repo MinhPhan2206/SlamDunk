@@ -308,7 +308,7 @@ The architecture assumes:
 ```text
 Card OVR range: 60–99
 8 base card stats
-7 rarity tiers for first MVP
+7 initial named rarities for first MVP
 Rarities: Base, Common, Uncommon, Alpha, All-Star, Superstar, Goat
 Traits fixed by Card Template
 Trait tiers fixed by Card Template

@@ -34,7 +34,7 @@ function mapTradeCard(row) {
     outcome: row.outcome,
     playerName: row.player_name,
     edition: row.edition,
-    rarityTier: row.rarity_tier,
+    rarityCode: row.rarity_code,
     serialNumber: row.serial_number,
     cardLevel: row.card_level,
   });
@@ -126,12 +126,13 @@ export const tradeRepository = Object.freeze({
           tc.outcome,
           ct.player_name,
           ct.edition,
-          ct.rarity_tier,
+          r.rarity_code,
           ci.serial_number,
           ci.card_level
         FROM trade_cards tc
         JOIN card_instances ci ON ci.card_instance_id = tc.card_instance_id
         JOIN card_templates ct ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE tc.trade_id = $1
           AND (tc.active OR tc.outcome IN ('TRANSFERRED', 'CANCELLED'))
         ORDER BY tc.trade_card_id

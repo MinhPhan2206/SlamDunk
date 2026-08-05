@@ -20,7 +20,7 @@ function candidateLine(candidate) {
 
   return [
     `**${candidate.candidatePosition}. ${templateName(template)}**`,
-    `${formatRarity(template.rarityTier)} | OVR ${template.overall} | ${positions}`,
+    `${formatRarity(template.rarityCode)} | OVR ${template.overall} | ${positions}`,
   ].join("\n");
 }
 
@@ -64,7 +64,7 @@ export function createDropSelectionPayload(result) {
     .setDescription(
       [
         `**${templateName(template)}**`,
-        `${formatRarity(template.rarityTier)} | OVR ${template.overall}`,
+        `${formatRarity(template.rarityCode)} | OVR ${template.overall}`,
         `Card Level: **${instance.cardLevel}**`,
         `Serial: **#${instance.serialNumber}**`,
       ].join("\n"),

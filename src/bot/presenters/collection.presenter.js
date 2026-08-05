@@ -10,7 +10,7 @@ function formatCard(card) {
 
   return [
     `**${card.playerName} - ${card.edition}**`,
-    `${formatRarity(card.rarityTier)} | OVR ${card.overall} | ${positions} | Level ${card.cardLevel} | #${card.serialNumber} | ID ${card.cardInstanceId}`,
+    `${formatRarity(card.rarityCode)} | OVR ${card.overall} | ${positions} | Level ${card.cardLevel} | #${card.serialNumber} | ID ${card.cardInstanceId}`,
   ].join("\n");
 }
 
@@ -21,8 +21,8 @@ export function createCollectionEmbed(result) {
 
   if (result.cards.length === 0) {
     embed.setDescription(
-      result.rarityTier
-        ? `No active cards found in ${formatRarity(result.rarityTier)}.`
+      result.rarityCode
+        ? `No active cards found in ${formatRarity(result.rarityCode)}.`
         : "You do not own any active cards yet.",
     );
   } else {

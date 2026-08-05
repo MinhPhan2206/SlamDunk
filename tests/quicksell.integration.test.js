@@ -51,7 +51,7 @@ test("quicksell atomically destroys a card and credits Shards", async () => {
         season: "2026-27",
         primaryPosition: "SG",
         secondaryPosition: null,
-        rarityTier: 4,
+        rarityCode: "ALPHA",
         overall: 88,
         insideScoring: 80,
         midRange: 85,

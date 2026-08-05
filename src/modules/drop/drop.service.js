@@ -65,25 +65,23 @@ function validateConfig(config) {
     );
   }
 
-  if (!Array.isArray(config.rarityWeights) || config.rarityWeights.length !== 7) {
-    throw new TypeError("dropConfig.rarityWeights must define 7 tiers.");
+  if (!Array.isArray(config.rarityWeights) || config.rarityWeights.length === 0) {
+    throw new TypeError("dropConfig.rarityWeights must define at least one rarity.");
   }
 
-  const seenTiers = new Set();
-  const rarityWeights = config.rarityWeights.map(({ rarityTier, weight }) => {
+  const seenCodes = new Set();
+  const rarityWeights = config.rarityWeights.map(({ rarityCode, weight }) => {
     if (
-      !Number.isInteger(rarityTier) ||
-      rarityTier < 1 ||
-      rarityTier > 7 ||
-      seenTiers.has(rarityTier) ||
+      typeof rarityCode !== "string" ||
+      seenCodes.has(rarityCode) ||
       !Number.isSafeInteger(weight) ||
       weight <= 0
     ) {
-      throw new TypeError("Each rarity weight must have a unique Tier 1–7 and a positive weight.");
+      throw new TypeError("Each rarity weight must have a unique code and positive weight.");
     }
 
-    seenTiers.add(rarityTier);
-    return Object.freeze({ rarityTier, weight });
+    seenCodes.add(rarityCode);
+    return Object.freeze({ rarityCode, weight });
   });
 
   return Object.freeze({
@@ -111,19 +109,19 @@ function selectCandidates(templates, config, rollInteger) {
     );
   }
 
-  const templatesByTier = new Map();
+  const templatesByRarity = new Map();
 
   for (const template of templates) {
-    const tierTemplates = templatesByTier.get(template.rarityTier) ?? [];
-    tierTemplates.push(template);
-    templatesByTier.set(template.rarityTier, tierTemplates);
+    const rarityTemplates = templatesByRarity.get(template.rarityCode) ?? [];
+    rarityTemplates.push(template);
+    templatesByRarity.set(template.rarityCode, rarityTemplates);
   }
 
   const candidates = [];
 
   for (let position = 1; position <= config.candidateCount; position += 1) {
     const availableWeights = config.rarityWeights.filter(
-      ({ rarityTier }) => (templatesByTier.get(rarityTier)?.length ?? 0) > 0,
+      ({ rarityCode }) => (templatesByRarity.get(rarityCode)?.length ?? 0) > 0,
     );
     const totalWeight = availableWeights.reduce(
       (sum, { weight }) => sum + weight,
@@ -131,24 +129,24 @@ function selectCandidates(templates, config, rollInteger) {
     );
     const rarityRoll = rollInteger(0, totalWeight);
     let cumulativeWeight = 0;
-    let selectedRarity = availableWeights.at(-1).rarityTier;
+    let selectedRarity = availableWeights.at(-1).rarityCode;
 
-    for (const { rarityTier, weight } of availableWeights) {
+    for (const { rarityCode, weight } of availableWeights) {
       cumulativeWeight += weight;
       if (rarityRoll < cumulativeWeight) {
-        selectedRarity = rarityTier;
+        selectedRarity = rarityCode;
         break;
       }
     }
 
-    const tierTemplates = templatesByTier.get(selectedRarity);
-    const templateIndex = rollInteger(0, tierTemplates.length);
-    const [template] = tierTemplates.splice(templateIndex, 1);
+    const rarityTemplates = templatesByRarity.get(selectedRarity);
+    const templateIndex = rollInteger(0, rarityTemplates.length);
+    const [template] = rarityTemplates.splice(templateIndex, 1);
     candidates.push(
       Object.freeze({
         candidatePosition: position,
         cardTemplateId: template.cardTemplateId,
-        rolledRarityTier: selectedRarity,
+        rolledRarityId: template.rarityId,
         template,
       }),
     );

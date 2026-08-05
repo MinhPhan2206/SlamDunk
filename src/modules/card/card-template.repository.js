@@ -5,7 +5,10 @@ const CARD_TEMPLATE_COLUMNS = `
   season,
   primary_position,
   secondary_position,
-  rarity_tier,
+  rarity_id,
+  rarity_code,
+  rarity_name,
+  rarity_rank,
   overall,
   inside_scoring,
   mid_range,
@@ -36,7 +39,10 @@ function mapCardTemplate(row) {
     season: row.season,
     primaryPosition: row.primary_position,
     secondaryPosition: row.secondary_position,
-    rarityTier: row.rarity_tier,
+    rarityId: row.rarity_id,
+    rarityCode: row.rarity_code,
+    rarityName: row.rarity_name,
+    rarityRank: row.rarity_rank,
     overall: row.overall,
     insideScoring: row.inside_scoring,
     midRange: row.mid_range,
@@ -61,25 +67,35 @@ export const cardTemplateRepository = Object.freeze({
     const result = await database.query(
       `
         SELECT ${CARD_TEMPLATE_COLUMNS}
-        FROM card_templates
+        FROM (
+          SELECT ct.*, r.rarity_code, r.display_name AS rarity_name,
+            r.rarity_rank
+          FROM card_templates ct
+          JOIN rarities r ON r.rarity_id = ct.rarity_id
+        ) card_templates
         WHERE packable = TRUE AND retired_at IS NULL
-        ORDER BY rarity_tier, card_template_id
+        ORDER BY rarity_rank, card_template_id
       `,
     );
 
     return result.rows.map(mapCardTemplate);
   },
 
-  async findByRarityTier(database, rarityTier, limit) {
+  async findByRarityCode(database, rarityCode, limit) {
     const result = await database.query(
       `
         SELECT ${CARD_TEMPLATE_COLUMNS}, COUNT(*) OVER() AS total_count
-        FROM card_templates
-        WHERE rarity_tier = $1
+        FROM (
+          SELECT ct.*, r.rarity_code, r.display_name AS rarity_name,
+            r.rarity_rank
+          FROM card_templates ct
+          JOIN rarities r ON r.rarity_id = ct.rarity_id
+        ) card_templates
+        WHERE rarity_code = $1
         ORDER BY overall DESC, player_name, edition, card_template_id
         LIMIT $2
       `,
-      [rarityTier, limit],
+      [rarityCode, limit],
     );
 
     return Object.freeze({
@@ -92,7 +108,12 @@ export const cardTemplateRepository = Object.freeze({
     const result = await database.query(
       `
         SELECT ${CARD_TEMPLATE_COLUMNS}
-        FROM card_templates
+        FROM (
+          SELECT ct.*, r.rarity_code, r.display_name AS rarity_name,
+            r.rarity_rank
+          FROM card_templates ct
+          JOIN rarities r ON r.rarity_id = ct.rarity_id
+        ) card_templates
         WHERE card_template_id = $1
       `,
       [cardTemplateId],
@@ -110,7 +131,7 @@ export const cardTemplateRepository = Object.freeze({
           season,
           primary_position,
           secondary_position,
-          rarity_tier,
+          rarity_id,
           overall,
           inside_scoring,
           mid_range,
@@ -126,10 +147,11 @@ export const cardTemplateRepository = Object.freeze({
           release_date
         )
         VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-          $11, $12, $13, $14, $15, $16, $17, $18, $19
+          $1, $2, $3, $4, $5,
+          (SELECT rarity_id FROM rarities WHERE rarity_code = $19),
+          $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
         )
-        RETURNING ${CARD_TEMPLATE_COLUMNS}
+        RETURNING card_template_id
       `,
       [
         template.playerName,
@@ -137,7 +159,6 @@ export const cardTemplateRepository = Object.freeze({
         template.season,
         template.primaryPosition,
         template.secondaryPosition,
-        template.rarityTier,
         template.overall,
         template.insideScoring,
         template.midRange,
@@ -151,9 +172,10 @@ export const cardTemplateRepository = Object.freeze({
         template.weightKg,
         template.packable,
         template.releaseDate,
+        template.rarityCode,
       ],
     );
 
-    return mapCardTemplate(result.rows[0]);
+    return this.findById(database, result.rows[0].card_template_id);
   },
 });

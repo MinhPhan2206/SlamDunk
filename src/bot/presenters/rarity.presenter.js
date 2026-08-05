@@ -20,10 +20,10 @@ function formatTemplate(template) {
   return `• **${identity}** — OVR ${template.overall}, ${positions}`;
 }
 
-export function createRarityEmbed({ rarityTier, templates, total }) {
+export function createRarityEmbed({ rarityCode, templates, total }) {
   const embed = new EmbedBuilder()
     .setColor(RARITY_COLOR)
-    .setTitle(`${formatRarity(rarityTier)} Card Templates`);
+    .setTitle(`${formatRarity(rarityCode)} Card Templates`);
 
   if (templates.length === 0) {
     return embed.setDescription("No Card Templates exist in this rarity yet.");

@@ -13,7 +13,7 @@ function mapCard(row) {
     inLineup: row.in_lineup,
     playerName: row.player_name,
     edition: row.edition,
-    rarityTier: row.rarity_tier,
+    rarityCode: row.rarity_code,
   });
 }
 
@@ -30,7 +30,7 @@ export const quicksellRepository = Object.freeze({
           ci.trade_lock,
           ct.player_name,
           ct.edition,
-          ct.rarity_tier,
+          r.rarity_code,
           EXISTS (
             SELECT 1
             FROM lineup_slots ls
@@ -39,6 +39,7 @@ export const quicksellRepository = Object.freeze({
         FROM card_instances ci
         JOIN card_templates ct
           ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ci.card_instance_id = $1
         FOR UPDATE OF ci
       `,

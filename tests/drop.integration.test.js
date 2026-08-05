@@ -18,7 +18,7 @@ function createTemplateInput(edition, overall) {
     season: "2026-27",
     primaryPosition: "PG",
     secondaryPosition: "SG",
-    rarityTier: 1,
+    rarityCode: "BASE",
     overall,
     insideScoring: 75,
     midRange: 80,

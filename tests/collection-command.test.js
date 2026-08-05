@@ -9,7 +9,10 @@ test("collection command displays active cards for the current Player", async ()
     user: { id: "234567890123456789", username: "CollectionTester" },
     options: {
       getInteger(name) {
-        return name === "tier" ? 6 : 1;
+        return name === "page" ? 1 : null;
+      },
+      getString(name) {
+        return name === "rarity" ? "SUPERSTAR" : null;
       },
     },
     async deferReply() {
@@ -29,7 +32,7 @@ test("collection command displays active cards for the current Player", async ()
       async listOwnedCards(input) {
         assert.deepEqual(input, {
           playerId: "8",
-          rarityTier: 6,
+          rarityCode: "SUPERSTAR",
           page: 1,
         });
         return {
@@ -37,7 +40,7 @@ test("collection command displays active cards for the current Player", async ()
             {
               playerName: "Test Player",
               edition: "Base",
-              rarityTier: 6,
+              rarityCode: "SUPERSTAR",
               overall: 94,
               primaryPosition: "SF",
               secondaryPosition: "PF",
@@ -48,7 +51,7 @@ test("collection command displays active cards for the current Player", async ()
           total: "1",
           page: 1,
           totalPages: 1,
-          rarityTier: 6,
+          rarityCode: "SUPERSTAR",
         };
       },
     },

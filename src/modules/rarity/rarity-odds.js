@@ -1,35 +1,35 @@
 import { getRarityDefinition } from "../../config/rarity-config.js";
 
 export function buildRarityOdds(rarityWeights) {
-  if (!Array.isArray(rarityWeights) || rarityWeights.length !== 7) {
-    throw new TypeError("rarityWeights must define exactly 7 rarity tiers.");
+  if (!Array.isArray(rarityWeights) || rarityWeights.length === 0) {
+    throw new TypeError("rarityWeights must contain at least one rarity.");
   }
   const seen = new Set();
   let totalWeight = 0;
   for (const entry of rarityWeights) {
     if (
-      !Number.isInteger(entry.rarityTier) ||
-      seen.has(entry.rarityTier) ||
+      typeof entry.rarityCode !== "string" ||
+      seen.has(entry.rarityCode) ||
       !Number.isSafeInteger(entry.weight) ||
       entry.weight <= 0
     ) {
-      throw new TypeError("Each rarity tier requires one positive integer weight.");
+      throw new TypeError("Each rarity requires a unique code and positive integer weight.");
     }
-    getRarityDefinition(entry.rarityTier);
-    seen.add(entry.rarityTier);
+    getRarityDefinition(entry.rarityCode);
+    seen.add(entry.rarityCode);
     totalWeight += entry.weight;
   }
 
   return Object.freeze(
     rarityWeights
-      .map(({ rarityTier, weight }) => {
-        const rarity = getRarityDefinition(rarityTier);
+      .map(({ rarityCode, weight }) => {
+        const rarity = getRarityDefinition(rarityCode);
         return Object.freeze({
           ...rarity,
           weight,
           probabilityPercent: (weight / totalWeight) * 100,
         });
       })
-      .sort((left, right) => left.rarityTier - right.rarityTier),
+      .sort((left, right) => left.rank - right.rank),
   );
 }

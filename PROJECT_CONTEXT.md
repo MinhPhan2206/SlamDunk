@@ -643,36 +643,37 @@ Players may personally value low serials in the market.
 First MVP uses:
 
 ```text
-7 rarity tiers
+7 initial rarities
 ```
 
 Final rarity names:
 
 ```text
-Tier 1 — Base
-Tier 2 — Common
-Tier 3 — Uncommon
-Tier 4 — Alpha
-Tier 5 — All-Star
-Tier 6 — Superstar
-Tier 7 — Goat
+Base
+Common
+Uncommon
+Alpha
+All-Star
+Superstar
+Goat
 ```
 
-These names are confirmed. Numeric tiers remain the persisted representation;
-stable codes and display names are centralized in application configuration.
+These names are confirmed. Rarity is persisted through a catalog row with a
+stable code and an ordering rank; Card Templates reference that row by
+`rarity_id`. The rank is only for ordering and is not the rarity's identity.
 
 The intended curve is very steep, inspired by the provided Basketbot rarity reference.
 
 Provisional Free Drop simulation distribution:
 
 ```text
-Tier 1 — Base             50.0000%
-Tier 2 — Common           32.0000%
-Tier 3 — Uncommon         16.0000%
-Tier 4 — Alpha             1.8000%
-Tier 5 — All-Star          0.1900%
-Tier 6 — Superstar         0.0095%
-Tier 7 — Goat              0.0005%
+Base             50.0000%
+Common           32.0000%
+Uncommon         16.0000%
+Alpha             1.8000%
+All-Star          0.1900%
+Superstar         0.0095%
+Goat              0.0005%
 ```
 
 This distribution totals 100% but remains a card-supply simulation baseline.
@@ -1429,13 +1430,13 @@ The configured rarity-based Quicksell Shard values are confirmed for the current
 Provisional simulation values:
 
 ```text
-Tier 1       1 Shard
-Tier 2       2 Shards
-Tier 3       5 Shards
-Tier 4      30 Shards
-Tier 5     200 Shards
-Tier 6   1,500 Shards
-Tier 7  10,000 Shards
+Base          1 Shard
+Common        2 Shards
+Uncommon      5 Shards
+Alpha        30 Shards
+All-Star    200 Shards
+Superstar 1,500 Shards
+Goat      10,000 Shards
 ```
 
 For every Shard Key, expected quicksell value of the result must remain below
@@ -2316,9 +2317,9 @@ card_mint_counters with atomic per-template serial allocation
 card_instances with owner, serial, Card Level, status, obtain method, and locks
 card_ownership_history with an auditable initial ownership event
 Card Instance repository/service and transactional mint operation
-Card Template lookup by numeric rarity tier
+Card Template lookup by stable rarity code
 /cooldowns supporting the current CLAIM cooldown
-/rarity listing Card Templates in Tier 1 through Tier 7
+/rarity listing Card Templates by named rarity
 PostgreSQL integration and Discord command tests using node:test
 ```
 
@@ -2348,10 +2349,10 @@ PostgreSQL integration and Discord command/component tests using node:test
 ```
 
 M9 uses the documented provisional playtest baseline: 15-minute Free Drop
-cooldown, three candidates, and the Tier 1–7 simulation weights. These remain
+cooldown, three candidates, and the named-rarity simulation weights. These remain
 centralized, adjustable configuration rather than final production balance.
-Drop timeout remains TBD, so an open session is reused until the Player selects
-a candidate. M9 did not seed a fictional Card Template catalog and did not
+The current implementation uses a 10-second selection window and automatically
+selects candidate 1 on timeout. M9 did not seed a fictional Card Template catalog and did not
 implement paid Packs, `/collection`, Lineup, Battle, Quicksell, Fusion, Market,
 or Trade.
 
@@ -2365,7 +2366,7 @@ Implemented concepts:
 read-only Collection module
 active Card Instance queries scoped to the owning Player
 Card Template details joined for display
-optional numeric rarity-tier filter
+optional named-rarity filter
 10-card pagination
 /collection guild slash command and embed presenter
 integration and command tests using node:test
@@ -2664,7 +2665,7 @@ max 5
 same Card Instance
 
 First MVP:
-7 rarity tiers
+7 initial rarities
 
 Rarities:
 Base, Common, Uncommon, Alpha, All-Star, Superstar, Goat
@@ -2841,6 +2842,21 @@ M14 Fusion / Upgrade → DONE
 M15 Market        → DONE
 M16 Direct Trade  → DONE
 ```
+
+Current rarity persistence:
+
+```text
+rarities catalog: rarity_code + display_name + rarity_rank
+card_templates reference rarities through rarity_id
+Drop and Pack odds are keyed by rarity_code independently
+rarity_rank is ordering metadata, not Card rarity identity
+```
+
+Migration `015_create_rarity_catalog_and_reset_cards.sql` replaced the old
+numeric Card Template rarity field. As explicitly approved for development,
+it removed existing Card Instances and their dependent operational records,
+preserved battle snapshots, and credited every existing Player 20,000 Gold
+through an auditable EconomyTransaction.
 
 Before defining a new milestone:
 
