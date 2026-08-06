@@ -12,6 +12,7 @@ const CARD_INSTANCE_COLUMNS = `
   games_played,
   market_lock,
   trade_lock,
+  user_lock,
   created_at,
   updated_at
 `;
@@ -35,6 +36,7 @@ function mapCardInstance(row) {
     gamesPlayed: row.games_played,
     marketLock: row.market_lock,
     tradeLock: row.trade_lock,
+    userLock: row.user_lock,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   });
@@ -134,6 +136,19 @@ export const cardInstanceRepository = Object.freeze({
     return mapCardInstance(result.rows[0]);
   },
 
+  async setUserLock(database, { cardInstanceId, userLock }) {
+    const result = await database.query(
+      `
+        UPDATE card_instances
+        SET user_lock = $2, updated_at = CURRENT_TIMESTAMP
+        WHERE card_instance_id = $1
+        RETURNING ${CARD_INSTANCE_COLUMNS}
+      `,
+      [cardInstanceId, userLock],
+    );
+    return mapCardInstance(result.rows[0]);
+  },
+
   async removeFromLineups(database, cardInstanceId) {
     await database.query(
       `DELETE FROM lineup_slots WHERE card_instance_id = $1`,
@@ -152,6 +167,7 @@ export const cardInstanceRepository = Object.freeze({
           owner_player_id = $3,
           ownership_cycles = ownership_cycles + 1,
           market_lock = FALSE,
+          user_lock = FALSE,
           updated_at = CURRENT_TIMESTAMP
         WHERE card_instance_id = $1
           AND owner_player_id = $2
@@ -177,6 +193,7 @@ export const cardInstanceRepository = Object.freeze({
           owner_player_id = $3,
           ownership_cycles = ownership_cycles + 1,
           trade_lock = FALSE,
+          user_lock = FALSE,
           updated_at = CURRENT_TIMESTAMP
         WHERE card_instance_id = $1
           AND owner_player_id = $2

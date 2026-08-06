@@ -298,24 +298,26 @@ reject before consuming item
 ```text
 BEGIN
 
-1. Lock CardInstance
-2. Verify owner
-3. Verify ACTIVE and unlocked
+1. Lock the persisted QuicksellSession
+2. Lock every previewed CardInstance
+3. Verify owner, ACTIVE state, user lock, lineup, Market, and Trade availability
 
-4. Determine Shard reward from configuration
+4. Use the per-card reward snapshots stored by the preview
 
 5. Lock Wallet
-6. Mark card DESTROYED_QUICKSELL
-7. Decrement current_circulation
+6. Mark every card DESTROYED_QUICKSELL
+7. Decrement each template's current_circulation
 
 8. Credit Shards
 9. Write EconomyTransaction
-10. Write card lifecycle/audit event
+10. Write every card lifecycle/audit event
+11. Mark the QuicksellSession COMPLETED
 
 COMMIT
 ```
 
 Card destruction and currency credit must never be separate commits.
+Confirm replay returns the completed session and never credits Shards twice.
 
 ---
 

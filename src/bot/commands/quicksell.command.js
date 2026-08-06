@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from "discord.js";
 
 import { CardError } from "../../modules/card/index.js";
 import { QuicksellError } from "../../modules/quicksell/index.js";
-import { createQuicksellEmbed } from "../presenters/quicksell.presenter.js";
+import { createQuicksellPreviewPayload } from "../presenters/quicksell.presenter.js";
 
 export const quicksellCommand = Object.freeze({
   data: new SlashCommandBuilder()
@@ -10,8 +10,8 @@ export const quicksellCommand = Object.freeze({
     .setDescription("Destroy an unwanted card for Shards.")
     .addStringOption((option) =>
       option
-        .setName("card_id")
-        .setDescription("Public Card ID or number in /collection.")
+        .setName("params")
+        .setDescription("all, rarity, position, public Card ID, or collection number.")
         .setRequired(true),
     ),
 
@@ -23,15 +23,20 @@ export const quicksellCommand = Object.freeze({
     });
 
     try {
-      const cardInstanceId = await services.collection.resolveOwnedCardReference({
+      const params = interaction.options.getString("params", true);
+      const cardInstanceId = /^!?\d+$/.test(params.trim())
+        ? await services.collection.resolveOwnedCardReference({
+            playerId: player.playerId,
+            cardReference: params,
+          })
+        : null;
+      const result = await services.quicksell.createPreview({
         playerId: player.playerId,
-        cardReference: interaction.options.getString("card_id", true),
-      });
-      const result = await services.quicksell.quicksell({
-        playerId: player.playerId,
+        params,
+        interactionId: interaction.id,
         cardInstanceId,
       });
-      await interaction.editReply({ embeds: [createQuicksellEmbed(result)] });
+      await interaction.editReply(createQuicksellPreviewPayload(result));
     } catch (error) {
       if (error instanceof QuicksellError || error instanceof CardError) {
         await interaction.editReply({ content: error.message, embeds: [] });

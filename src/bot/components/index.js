@@ -1,5 +1,6 @@
 import { dropSelectionComponent } from "./drop-selection.component.js";
 import { exchangeComponent } from "./exchange.component.js";
 import { tradeComponent } from "./trade.component.js";
+import { quicksellComponent } from "./quicksell.component.js";
 
-export const components = Object.freeze([dropSelectionComponent, exchangeComponent, tradeComponent]);
+export const components = Object.freeze([dropSelectionComponent, exchangeComponent, tradeComponent, quicksellComponent]);

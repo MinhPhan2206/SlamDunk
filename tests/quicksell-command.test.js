@@ -2,14 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { quicksellCommand } from "../src/bot/commands/quicksell.command.js";
+import { quicksellComponent } from "../src/bot/components/quicksell.component.js";
 
-test("quicksell command destroys the selected card for Shards", async () => {
+test("quicksell command previews the selected cards before destruction", async () => {
   const replies = [];
   const interaction = {
+    id: "777777777777777777",
     user: { id: "234567890123456789", username: "QuicksellTester" },
     options: {
       getString(name) {
-        assert.equal(name, "card_id");
+        assert.equal(name, "params");
         return "42";
       },
     },
@@ -32,17 +34,20 @@ test("quicksell command destroys the selected card for Shards", async () => {
       },
     },
     quicksell: {
-      async quicksell(input) {
-        assert.deepEqual(input, { playerId: "7", cardInstanceId: "42" });
+      async createPreview(input) {
+        assert.deepEqual(input, {
+          playerId: "7",
+          params: "42",
+          interactionId: interaction.id,
+          cardInstanceId: "42",
+        });
         return {
-          card: {
-            cardInstanceId: "42",
-            publicCardId: "123456789",
-            playerName: "Test Guard",
-            edition: "Base",
-          },
-          shardReward: 5,
-          shardBalance: "15",
+          session: { quicksellSessionId: "9", totalShards: "5" },
+          cards: [{
+            cardInstanceId: "42", publicCardId: "123456789",
+            playerName: "Test Guard", edition: "Base",
+            rarityCode: "UNCOMMON", shardReward: 5,
+          }],
         };
       },
     },
@@ -53,6 +58,33 @@ test("quicksell command destroys the selected card for Shards", async () => {
   assert.equal(replies[0].type, "defer");
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.match(embed.description, /Test Guard/);
-  assert.match(embed.fields[0].value, /5 Shards/);
-  assert.equal(embed.fields[1].value, "15");
+  assert.match(embed.description, /5 Shards/);
+  assert.equal(replies[1].payload.components.length, 1);
+});
+
+test("quicksell confirm button completes the persisted preview", async () => {
+  const edits = [];
+  const interaction = {
+    customId: "quicksell:confirm:9",
+    user: { id: "234567890123456789", username: "QuicksellTester" },
+    async deferUpdate() {},
+    async editReply(payload) { edits.push(payload); },
+  };
+  const services = {
+    player: { async getOrCreatePlayer() { return { playerId: "7" }; } },
+    quicksell: {
+      async confirmPreview(input) {
+        assert.deepEqual(input, { playerId: "7", quicksellSessionId: "9" });
+        return {
+          session: { totalShards: "5", shardBalanceAfter: "15" },
+          cards: [{ cardInstanceId: "42" }],
+        };
+      },
+    },
+  };
+
+  await quicksellComponent.execute(interaction, { services });
+
+  assert.equal(edits[0].components.length, 0);
+  assert.match(edits[0].embeds[0].toJSON().title, /Completed/);
 });

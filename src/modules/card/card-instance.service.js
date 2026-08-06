@@ -117,6 +117,56 @@ export function createCardInstanceService({
   }
 
   return Object.freeze({
+    async lockOwnedCard(
+      { ownerPlayerId, cardInstanceId },
+      { database } = {},
+    ) {
+      const normalizedOwnerPlayerId = normalizeId(ownerPlayerId, "ownerPlayerId");
+      const normalizedCardInstanceId = normalizeId(cardInstanceId, "cardInstanceId");
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const instance = await cardInstanceRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedCardInstanceId,
+        );
+        if (!instance || instance.ownerPlayerId !== normalizedOwnerPlayerId) {
+          throw new CardError("CARD_NOT_OWNED", "You do not own this card.");
+        }
+        if (instance.status !== "ACTIVE") {
+          throw new CardError("CARD_NOT_ACTIVE", "Only active cards can be locked.");
+        }
+        if (instance.userLock) return instance;
+        return cardInstanceRepository.setUserLock(transactionDatabase, {
+          cardInstanceId: normalizedCardInstanceId,
+          userLock: true,
+        });
+      });
+    },
+
+    async unlockOwnedCard(
+      { ownerPlayerId, cardInstanceId },
+      { database } = {},
+    ) {
+      const normalizedOwnerPlayerId = normalizeId(ownerPlayerId, "ownerPlayerId");
+      const normalizedCardInstanceId = normalizeId(cardInstanceId, "cardInstanceId");
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const instance = await cardInstanceRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedCardInstanceId,
+        );
+        if (!instance || instance.ownerPlayerId !== normalizedOwnerPlayerId) {
+          throw new CardError("CARD_NOT_OWNED", "You do not own this card.");
+        }
+        if (instance.status !== "ACTIVE") {
+          throw new CardError("CARD_NOT_ACTIVE", "Only active cards can be unlocked.");
+        }
+        if (!instance.userLock) return instance;
+        return cardInstanceRepository.setUserLock(transactionDatabase, {
+          cardInstanceId: normalizedCardInstanceId,
+          userLock: false,
+        });
+      });
+    },
+
     async getInstanceForUpdate(
       cardInstanceId,
       { database = databasePool } = {},

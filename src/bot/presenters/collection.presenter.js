@@ -10,7 +10,7 @@ function formatCard(card) {
 
   return [
     `**${card.collectionPosition}. ${card.playerName} - ${card.edition}**`,
-    `${formatRarity(card.rarityCode)} | OVR ${card.overall} | ${positions} | Level ${card.cardLevel} | #${card.serialNumber} | ID !${card.publicCardId}`,
+    `${card.userLock ? "🔒 | " : ""}${formatRarity(card.rarityCode)} | OVR ${card.overall} | ${positions} | Level ${card.cardLevel} | #${card.serialNumber} | ID !${card.publicCardId}`,
   ].join("\n");
 }
 

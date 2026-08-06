@@ -68,7 +68,9 @@ npm test
 - `/battle` — simulate a persisted PvE match with the active lineup.
 - `/cooldowns` — view the current Claim and Free Drop cooldown status.
 - `/rarity rarity:<name>` — list Card Templates in a named rarity.
-- `/quicksell card_id:<id>` — destroy an unwanted card for Shards.
+- `/lock card_id:<id>` — protect an owned card from Quicksell.
+- `/unlock card_id:<id>` — remove Quicksell protection from an owned card.
+- `/quicksell params:<selector>` — preview and confirm Quicksell by all, rarity, position, public ID, or Collection number.
 - `/upgrade fusion card_a:<id> card_b:<id>` — fuse matching Card Templates.
 - `/upgrade item card_id:<id>` — consume one Level Up item for +1 Level.
 - `/market browse|sell|buy|cancel` — use the fixed-price Card Market.

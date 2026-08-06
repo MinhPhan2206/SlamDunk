@@ -2431,7 +2431,7 @@ Completed.
 Implemented concepts:
 
 ```text
-/quicksell card_id guild slash command
+/quicksell params guild slash command with persisted preview and Confirm/Cancel
 rarity-based Shard reward configuration
 ACTIVE ownership and availability validation
 lineup, market-lock, and trade-lock protection
@@ -2440,6 +2440,13 @@ mint circulation decrement
 atomic Shard credit and immutable EconomyTransaction
 integration and command tests using node:test
 ```
+
+Current Quicksell selectors are `all`, named rarity, primary/secondary position,
+public Card ID, or current Collection position. Preview results are ordered by
+highest Shard value first. User-locked, lineup, Market, and Trade cards are
+excluded. `/lock card_id` protects an owned active card from Quicksell and
+`/unlock card_id` removes that protection. The protection is also cleared when
+ownership changes.
 
 M13 did not implement Fusion, Market, Trade, or Shard exchange.
 

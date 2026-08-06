@@ -128,3 +128,98 @@ test("quicksell atomically destroys a card and credits Shards", async () => {
     await pool.end();
   }
 });
+
+test("lock protects cards and batch Quicksell requires a persisted confirmation", async () => {
+  const pool = createPostgresPool({
+    connectionString: getDatabaseConfig().databaseUrl,
+  });
+  const database = await pool.connect();
+  const economyService = createEconomyService({ databasePool: pool });
+  const playerService = createPlayerService({ databasePool: pool, economyService });
+  const cardTemplateService = createCardTemplateService({ databasePool: pool });
+  const cardInstanceService = createCardInstanceService({
+    databasePool: pool,
+    cardTemplateService,
+    playerService,
+  });
+  const quicksellService = createQuicksellService({
+    databasePool: pool,
+    economyService,
+    quicksellConfig: gameConfig.quicksell,
+  });
+  const testRunId = Date.now().toString();
+
+  try {
+    await database.query("BEGIN");
+    const playerResult = await database.query(
+      `INSERT INTO players (discord_user_id, username_snapshot)
+       VALUES ($1, 'BatchQuicksellPlayer') RETURNING player_id`,
+      [`986${testRunId}`],
+    );
+    const playerId = playerResult.rows[0].player_id;
+    await economyService.ensureWallet(playerId, { database });
+    const template = await cardTemplateService.createTemplate(
+      {
+        playerName: "Batch Test Player", edition: `Batch ${testRunId}`,
+        season: "2026-27", primaryPosition: "PG", secondaryPosition: "SG",
+        rarityCode: "COMMON", overall: 80, insideScoring: 75,
+        midRange: 78, threePoint: 80, playmaking: 84,
+        perimeterDefense: 70, interiorDefense: 40, rebounding: 50,
+        athleticism: 82, heightCm: null, weightKg: null,
+        packable: true, releaseDate: null,
+      },
+      { database },
+    );
+    const first = await cardInstanceService.mintCard({
+      cardTemplateId: template.cardTemplateId, ownerPlayerId: playerId,
+      cardLevel: 1, obtainedMethod: "ADMIN_GRANT",
+    }, { database });
+    const protectedCard = await cardInstanceService.mintCard({
+      cardTemplateId: template.cardTemplateId, ownerPlayerId: playerId,
+      cardLevel: 2, obtainedMethod: "ADMIN_GRANT",
+    }, { database });
+    await cardInstanceService.lockOwnedCard({
+      ownerPlayerId: playerId,
+      cardInstanceId: protectedCard.instance.cardInstanceId,
+    }, { database });
+
+    const preview = await quicksellService.createPreview({
+      playerId, params: "all", interactionId: `${testRunId}01`,
+    }, { database });
+    assert.equal(preview.cards.length, 1);
+    assert.equal(preview.cards[0].cardInstanceId, first.instance.cardInstanceId);
+    assert.equal(preview.session.totalShards, "2");
+
+    const completed = await quicksellService.confirmPreview({
+      playerId,
+      quicksellSessionId: preview.session.quicksellSessionId,
+    }, { database });
+    assert.equal(completed.session.status, "COMPLETED");
+    assert.equal(completed.session.shardBalanceAfter, "2");
+
+    const replayed = await quicksellService.confirmPreview({
+      playerId,
+      quicksellSessionId: preview.session.quicksellSessionId,
+    }, { database });
+    assert.equal(replayed.session.shardBalanceAfter, "2");
+
+    const states = await database.query(
+      `SELECT card_instance_id, status, user_lock FROM card_instances
+       WHERE card_instance_id = ANY($1::BIGINT[]) ORDER BY card_instance_id`,
+      [[first.instance.cardInstanceId, protectedCard.instance.cardInstanceId]],
+    );
+    assert.equal(states.rows[0].status, "DESTROYED_QUICKSELL");
+    assert.equal(states.rows[1].status, "ACTIVE");
+    assert.equal(states.rows[1].user_lock, true);
+
+    const unlocked = await cardInstanceService.unlockOwnedCard({
+      ownerPlayerId: playerId,
+      cardInstanceId: protectedCard.instance.cardInstanceId,
+    }, { database });
+    assert.equal(unlocked.userLock, false);
+  } finally {
+    await database.query("ROLLBACK");
+    database.release();
+    await pool.end();
+  }
+});

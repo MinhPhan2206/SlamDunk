@@ -319,6 +319,7 @@ games_played
 
 market_lock            boolean
 trade_lock             boolean
+user_lock              boolean; protects against Quicksell
 
 created_at
 updated_at
@@ -364,6 +365,9 @@ Migration `016_add_public_card_ids.sql` adds an immutable, unique nine-digit
 Player-facing `card_id` inputs resolve either this public ID (with an optional
 `!` prefix) or the card's current one-based position in the owner's default
 Collection order.
+
+`quicksell_sessions` and `quicksell_session_cards` persist the exact preview,
+per-card reward snapshot, expiry, and final state used by Confirm/Cancel.
 
 `player_collection_preferences` stores one validated `sort_key` per Player.
 Both `/collection` pagination and collection-position card lookup use the same
