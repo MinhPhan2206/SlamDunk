@@ -714,7 +714,13 @@ status
 started_at
 completed_at
 winner_team
-rng_seed            optional
+rng_seed
+engine_version
+ruleset_version
+config_version
+input_snapshot       JSONB
+play_by_play         JSONB array
+possession_count
 ```
 
 Modes remain TBD.

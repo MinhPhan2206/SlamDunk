@@ -444,6 +444,11 @@ COMMIT
 
 This prevents retry/restart from paying the same battle twice.
 
+Battle Engine v2 implements the two short transaction boundaries and persists
+the immutable input snapshot before running the pure seeded simulation. Battle
+rewards remain unimplemented, so the second transaction currently persists the
+result and game counters only.
+
 ---
 
 # 14. Idempotency

@@ -1,4 +1,5 @@
 import { MessageFlags } from "discord.js";
+import { scheduleComponentTimeout } from "../components/component-timeout.js";
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
@@ -58,6 +59,7 @@ export function createInteractionCreateHandler(
 
     try {
       await handler.execute(interaction, context);
+      await scheduleComponentTimeout(interaction);
     } catch (error) {
       console.error(
         `Discord ${interactionLabel} failed: ${getErrorMessage(error)}`,

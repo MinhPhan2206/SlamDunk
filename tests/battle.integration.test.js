@@ -108,6 +108,12 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     );
 
     assert.equal(result.match.status, "COMPLETED");
+    assert.equal(result.match.engineVersion, "2.0.0");
+    assert.equal(result.match.rulesetVersion, "first-to-21-v1");
+    assert.equal(result.match.inputSnapshot.battleConfig.configVersion, "battle-v2-playtest-1");
+    assert.equal(result.match.playByPlay.length, result.match.possessionCount);
+    assert.ok(result.match.possessionCount > 0);
+    assert.ok(result.teams.some((team) => team.finalScore >= 21));
     assert.equal(result.teams.length, 2);
     for (const team of result.teams) {
       assert.equal(team.players.length, 5);
@@ -115,6 +121,11 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
         team.players.reduce((sum, player) => sum + player.points, 0),
         team.finalScore,
       );
+      assert.ok(team.players.every((player) =>
+        player.fieldGoalsMade <= player.fieldGoalsAttempted &&
+        player.threePointersMade <= player.threePointersAttempted &&
+        player.threePointersMade <= player.fieldGoalsMade
+      ));
     }
 
     const replay = await battleService.battle(
@@ -123,6 +134,7 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     );
     assert.equal(replay.match.matchId, result.match.matchId);
     assert.equal(replay.replayed, true);
+    assert.deepEqual(replay.match.playByPlay, result.match.playByPlay);
 
     const playerAfterBattle = await playerService.getPlayerById(playerId, {
       database,

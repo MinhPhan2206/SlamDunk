@@ -2871,16 +2871,22 @@ oldest, player name, position, and implemented individual stats. Calling
 oldest-first so newly obtained Drop/Pack cards appear at the end. Collection
 positions and `card_id` resolution always use the same saved sort.
 
-Battle Engine v0.1 is now an accepted architecture target documented in
+Battle Engine v2 is implemented and documented in
 `docs/architecture/09-battle-engine.md`. It is a seeded, deterministic,
 possession-based first-to-21 simulation with matchup-aware action selection,
 shot quality, turnovers, rebounds, box scores, play-by-play, and explicit Trait
-hook stages. Migration 020 resets incompatible Card data, removes edition,
+hook stages. Migration 022 persists versioned immutable inputs, ordered
+play-by-play, possession counts, and complete player box scores. Trait effects,
+rewards, and PvP remain outside this version. Migration 020 resets incompatible Card data, removes edition,
 season, rebounding, athleticism, weight, and release date, and renames
-`inside_scoring` to `finishing`. The transitional M12 aggregate engine now uses
-the simplified fields. The 68-card playtest catalog and its sourcing rules are
+`inside_scoring` to `finishing`. The 68-card playtest catalog and its sourcing rules are
 documented in `docs/requirements/card-rating-data.md`. Collection and Market
 browse responses support owner-scoped Previous/Next page buttons.
+
+All interactive Discord responses with components use a shared 10-second
+inactivity timeout. A valid component interaction resets the timer; expiration
+disables the components. Drop keeps its existing timeout behavior and chooses
+candidate 1 when no selection is made.
 
 Migration 021 changes Card Template uniqueness to case-insensitive player name
 plus rarity and compensates every existing Player with 20,000 Gold through one

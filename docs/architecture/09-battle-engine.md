@@ -2,9 +2,9 @@
 
 ## Status
 
-This document defines the target Battle Engine v0.1. The existing M12 engine is
-still a deterministic aggregate-score PvE implementation and is not claimed to
-implement the possession model below.
+This document defines the implemented Battle Engine v2 playtest architecture.
+Migration 022 replaces the transitional M12 aggregate-score runtime with the
+deterministic possession model below.
 
 The design is accepted because it keeps lineup construction, basketball
 matchups, action selection, and controlled randomness meaningful without
@@ -18,7 +18,8 @@ points for Traits later.
 First team to reach at least 21 points wins
 3PT = 3 points
 Mid Range / Finish = 2 points
-No bench, fatigue, substitutions, free throws, tactics, or Traits in v0.1
+No bench, fatigue, substitutions, free throws, tactics, rewards, or active
+Trait effects in v2
 ```
 
 A Card may occupy its primary or secondary position. Invalid positions are not
@@ -44,7 +45,7 @@ engine_version
 ruleset_version
 ```
 
-Battle v0.1 derives rebounding from height, strength, and interior defense
+Battle v2 derives rebounding from height, strength, and interior defense
 instead of requiring displayed Rebounding or Athleticism ratings.
 
 ## Possession Pipeline
@@ -69,7 +70,7 @@ states are `OPEN`, `LIGHTLY_CONTESTED`, `CONTESTED`, and
 
 ## MVP Actions
 
-The complete v0.1 target supports:
+The v2 runtime supports:
 
 ```text
 THREE_POINT
@@ -80,11 +81,9 @@ PICK_AND_ROLL
 DRIVE_AND_KICK
 ```
 
-Implementation should be incremental:
-
-1. Three-point, mid-range, drive, turnover, rebound, box score, play-by-play.
-2. Post-up, pick-and-roll, drive-and-kick, and help defense.
-3. Trait modifiers after the stat-only engine is balanced.
+All six actions, turnovers, rebounds, shot quality, box scores, and ordered
+play-by-play are implemented. Trait data remains snapshotted, but configured
+Trait effects wait for approved coefficients.
 
 Different narration may represent the same underlying action. Presentation
 variation must not create additional simulation rules.
@@ -169,11 +168,12 @@ snapshots. It returns bounded modifiers; it does not mutate Card Template data.
 
 ## Determinism and Versioning
 
-The simulation core must be a pure function over a frozen match snapshot and a
+The simulation core is a pure function over a frozen match snapshot and a
 seed. The same snapshot, seed, `engine_version`, `ruleset_version`, and config
 version must produce the same result.
 
-Historical Match records retain the versions and stat snapshots used. Later
+Historical Match records retain frozen lineup and Battle configuration input
+snapshots, play-by-play, engine, ruleset, and config versions. Later
 rating edits must not rewrite historical results.
 
 ## Persistence Boundary
@@ -184,7 +184,7 @@ short transaction: validate and snapshot match inputs
 → short transaction: persist result, counters, and idempotent reward
 ```
 
-The engine must not hold database locks while simulating. Discord rendering is
+The production service does not hold database locks while simulating. Discord rendering is
 outside the engine and consumes the structured Match result.
 
 ## Match Output
@@ -217,7 +217,7 @@ higher progression-oriented win rates. No winner is pre-rolled.
 
 ## Still TBD
 
-Final coefficients, height normalization, help defense, action-selection
+Final coefficients, deeper help-defense rules, action-selection
 temperature, opponent pools, reward coefficients/caps, Match history retention,
-and PvP matchmaking remain playtest decisions. Traits, fatigue, substitutions,
-bench, free throws, and coaching are outside Battle v0.1.
+and PvP matchmaking remain playtest decisions. Trait effects, rewards, fatigue,
+substitutions, bench, free throws, and coaching are outside Battle v2.

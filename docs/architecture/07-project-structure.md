@@ -126,6 +126,9 @@ src/bot/
 
 Contains Discord-specific code only.
 
+Shared interaction infrastructure, such as the 10-second inactivity timeout
+that disables message components, belongs in `src/bot/components/`.
+
 ### Example
 
 ```text
@@ -172,6 +175,9 @@ change card owner directly
 run battle formulas
 write SQL
 ```
+
+Each successful component interaction resets the message inactivity timer.
+When it expires, the Discord layer edits the response with disabled components.
 
 ---
 
