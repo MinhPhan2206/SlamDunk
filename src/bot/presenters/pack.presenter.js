@@ -9,7 +9,7 @@ export function createPackOpeningPayload(result) {
         .setColor(0xf5c542)
         .setTitle(`${pack.displayName} Opened`)
         .setDescription([
-          `**${template.playerName} - ${template.edition}**`,
+          `**${template.playerName}**`,
           `${formatRarity(template.rarityCode)} | OVR ${template.overall}`,
           `Card Level: **${instance.cardLevel}**`,
           `Serial: **#${instance.serialNumber}**`,

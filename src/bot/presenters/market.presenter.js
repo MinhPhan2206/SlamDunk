@@ -1,4 +1,9 @@
-import { EmbedBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+} from "discord.js";
 import { formatRarity } from "../../config/rarity-config.js";
 
 const MARKET_COLOR = 0x22c55e;
@@ -7,7 +12,7 @@ function gold(value) {
   return `${BigInt(value).toLocaleString("en-US")} Gold`;
 }
 
-export function createMarketBrowseEmbed({ listings }) {
+export function createMarketBrowseEmbed({ listings, page = 1, totalPages = 0, total = "0" }) {
   const embed = new EmbedBuilder()
     .setColor(MARKET_COLOR)
     .setTitle("SlamDunk Market");
@@ -21,13 +26,36 @@ export function createMarketBrowseEmbed({ listings }) {
       .map(
         (listing) =>
           [
-            `**Listing ${listing.listingId} — ${listing.playerName} - ${listing.edition}**`,
+            `**Listing ${listing.listingId} — ${listing.playerName}**`,
             `${formatRarity(listing.rarityCode)} | Lv${listing.cardLevel} | #${listing.serialNumber} | ID !${listing.publicCardId}`,
             `${gold(listing.priceGold)} | Seller: ${listing.sellerName}`,
           ].join("\n"),
       )
       .join("\n\n"),
-  );
+  ).setFooter({
+    text: `Page ${page}/${Math.max(totalPages, 1)} | ${total} active listings`,
+  });
+}
+
+export function createMarketBrowsePayload(result, { discordUserId }) {
+  const components = [];
+  if (result.totalPages > 1) {
+    components.push(
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`market-page:${discordUserId}:${result.page - 1}`)
+          .setLabel("Previous")
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(result.page <= 1),
+        new ButtonBuilder()
+          .setCustomId(`market-page:${discordUserId}:${result.page + 1}`)
+          .setLabel("Next")
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(result.page >= result.totalPages),
+      ),
+    );
+  }
+  return { embeds: [createMarketBrowseEmbed(result)], components };
 }
 
 export function createMarketListingEmbed({ listing, card }) {

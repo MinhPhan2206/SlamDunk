@@ -15,22 +15,21 @@ STRENGTH
 HEIGHT (physical centimeters, not a rating)
 ```
 
-`FINISHING` currently maps to the database field `inside_scoring`. The legacy
-`rebounding` and `athleticism` fields remain populated while the M12 aggregate
-engine is still active.
+`FINISHING` maps directly to the database field `finishing`. Rebounding is
+derived from height, strength, and interior defense.
 
 ## 2026 Playtest Catalog
 
-`data/card-templates-2026.json` contains:
+`data/card-templates.json` contains:
 
 ```text
 5 Goat
 10 Superstar
 10 All-Star
 7 Alpha
-7 Uncommon
-7 Common
-7 Base
+12 Uncommon
+12 Common
+12 Base
 ```
 
 The 25 Goat/Superstar/All-Star profiles start from the user-provided
@@ -55,8 +54,8 @@ ratings, but the conversion to 0–99 is a SlamDunk balancing decision.
 
 ## Data Maintenance
 
-Each edition is a separate Card Template, so the 2026 playtest edition does not
-replace existing Starter, Elite, Alpha, All-Star, Superstar Legacy, or GOAT
-Legacy cards. `npm run db:seed:cards` upserts an existing Template by player
-name, edition, and season, allowing later rating corrections without creating a
-duplicate edition.
+The current schema allows one Card Template per case-insensitive player name and
+rarity pair. The same player may appear in different rarities, but not twice in
+one rarity. `npm run db:seed:cards` upserts by player name plus rarity. Multiple
+variants inside the same rarity later require an explicit `variant_code` or
+`card_set` schema change.

@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 
-import { createCollectionEmbed } from "../presenters/collection.presenter.js";
+import { createCollectionPayload } from "../presenters/collection.presenter.js";
 
 export const collectionCommand = Object.freeze({
   data: new SlashCommandBuilder()
@@ -25,8 +25,11 @@ export const collectionCommand = Object.freeze({
       page: interaction.options.getInteger("page") ?? 1,
     });
 
-    await interaction.editReply({
-      embeds: [createCollectionEmbed(collection)],
-    });
+    await interaction.editReply(
+      createCollectionPayload(collection, {
+        discordUserId: interaction.user.id,
+        playerId: player.playerId,
+      }),
+    );
   },
 });

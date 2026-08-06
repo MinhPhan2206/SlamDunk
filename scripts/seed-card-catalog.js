@@ -5,16 +5,10 @@ import { createPostgresPool } from "../src/database/connection/postgres.js";
 import { withTransaction } from "../src/database/transaction/transaction-manager.js";
 import { createCardTemplateService } from "../src/modules/card/index.js";
 
-const catalogUrls = [
-  new URL("../data/card-templates.json", import.meta.url),
-  new URL("../data/card-templates-2026.json", import.meta.url),
-];
+const catalogUrl = new URL("../data/card-templates.json", import.meta.url);
 
 async function seedCatalog() {
-  const catalogs = await Promise.all(
-    catalogUrls.map(async (catalogUrl) => JSON.parse(await readFile(catalogUrl, "utf8"))),
-  );
-  const templates = catalogs.flat();
+  const templates = JSON.parse(await readFile(catalogUrl, "utf8"));
   const pool = createPostgresPool({
     connectionString: getDatabaseConfig().databaseUrl,
   });
@@ -30,11 +24,12 @@ async function seedCatalog() {
           `
           SELECT card_template_id
             FROM card_templates
-            WHERE player_name = $1
-              AND edition = $2
-              AND season IS NOT DISTINCT FROM $3
+            WHERE LOWER(player_name) = LOWER($1)
+              AND rarity_id = (
+                SELECT rarity_id FROM rarities WHERE rarity_code = $2
+              )
           `,
-          [template.playerName, template.edition, template.season],
+          [template.playerName, template.rarityCode],
         );
 
         if (existing.rowCount > 0) {

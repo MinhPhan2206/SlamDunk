@@ -16,25 +16,20 @@ import {
 
 function templateInput(testRunId) {
   return {
-    playerName: "M14 Test Player",
-    edition: `Upgrade ${testRunId}`,
-    season: "2026-27",
+    playerName: `M14 Test Player ${testRunId}`,
     primaryPosition: "PF",
     secondaryPosition: null,
     rarityCode: "UNCOMMON",
     overall: 86,
-    insideScoring: 84,
+    finishing: 84,
     midRange: 81,
     threePoint: 74,
     playmaking: 72,
     perimeterDefense: 76,
     interiorDefense: 85,
-    rebounding: 88,
-    athleticism: 82,
+    strength: 86,
     heightCm: null,
-    weightKg: null,
     packable: true,
-    releaseDate: null,
   };
 }
 

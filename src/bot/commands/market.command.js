@@ -3,7 +3,7 @@ import { SlashCommandBuilder } from "discord.js";
 import { CardError } from "../../modules/card/index.js";
 import { MarketError } from "../../modules/market/index.js";
 import {
-  createMarketBrowseEmbed,
+  createMarketBrowsePayload,
   createMarketCancellationEmbed,
   createMarketListingEmbed,
   createMarketPurchaseEmbed,
@@ -21,7 +21,15 @@ export const marketCommand = Object.freeze({
     .setName("market")
     .setDescription("Browse and use the SlamDunk card Market.")
     .addSubcommand((subcommand) =>
-      subcommand.setName("browse").setDescription("View active listings."),
+      subcommand
+        .setName("browse")
+        .setDescription("View active listings.")
+        .addIntegerOption((option) =>
+          option
+            .setName("page")
+            .setDescription("Market page number.")
+            .setMinValue(1),
+        ),
     )
     .addSubcommand((subcommand) =>
       subcommand
@@ -89,8 +97,15 @@ export const marketCommand = Object.freeze({
         });
         embed = createMarketCancellationEmbed(result);
       } else {
-        result = await services.market.listActiveListings();
-        embed = createMarketBrowseEmbed(result);
+        result = await services.market.listActiveListings({
+          page: interaction.options.getInteger("page") ?? 1,
+        });
+        await interaction.editReply(
+          createMarketBrowsePayload(result, {
+            discordUserId: interaction.user.id,
+          }),
+        );
+        return;
       }
 
       await interaction.editReply({ embeds: [embed] });

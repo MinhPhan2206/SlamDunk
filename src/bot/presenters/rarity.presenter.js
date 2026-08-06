@@ -8,11 +8,7 @@ function singleLine(value) {
 }
 
 function formatTemplate(template) {
-  const identity = singleLine(
-    `${template.playerName} — ${template.edition}${
-      template.season ? ` (${template.season})` : ""
-    }`,
-  ).slice(0, 150);
+  const identity = singleLine(template.playerName).slice(0, 150);
   const positions = [template.primaryPosition, template.secondaryPosition]
     .filter(Boolean)
     .join("/");

@@ -45,7 +45,7 @@ test("quicksell command previews the selected cards before destruction", async (
           session: { quicksellSessionId: "9", totalShards: "5" },
           cards: [{
             cardInstanceId: "42", publicCardId: "123456789",
-            playerName: "Test Guard", edition: "Base",
+            playerName: "Test Guard",
             rarityCode: "UNCOMMON", shardReward: 5,
           }],
         };

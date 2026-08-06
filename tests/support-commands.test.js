@@ -92,8 +92,6 @@ test("rarity command lists Card Templates for the requested rarity", async () =>
           templates: [
             {
               playerName: "Test Legend",
-              edition: "Goat",
-              season: null,
               overall: 99,
               primaryPosition: "SG",
               secondaryPosition: null,

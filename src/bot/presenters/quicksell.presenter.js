@@ -9,7 +9,7 @@ import { formatRarity } from "../../config/rarity-config.js";
 const MAX_VISIBLE_CARDS = 20;
 
 function cardLine(card) {
-  return `**${card.playerName} - ${card.edition}** | !${card.publicCardId} | ${formatRarity(card.rarityCode)} | ${card.shardReward} Shards`;
+  return `**${card.playerName}** | !${card.publicCardId} | ${formatRarity(card.rarityCode)} | ${card.shardReward} Shards`;
 }
 
 export function createQuicksellPreviewPayload({ session, cards }) {
@@ -66,7 +66,7 @@ export function createQuicksellEmbed({ card, shardReward, shardBalance }) {
   return new EmbedBuilder()
     .setColor(0x8b5cf6)
     .setTitle("Card Quicksold")
-    .setDescription(`**${card.playerName} - ${card.edition}**`)
+    .setDescription(`**${card.playerName}**`)
     .addFields(
       { name: "Received", value: `${shardReward} Shards`, inline: true },
       { name: "Shard Balance", value: shardBalance, inline: true },

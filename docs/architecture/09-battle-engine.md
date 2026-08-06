@@ -32,7 +32,7 @@ The target engine consumes an immutable snapshot containing:
 positions
 three_point
 mid_range
-finishing (currently stored as inside_scoring)
+finishing
 playmaking
 interior_defense
 perimeter_defense
@@ -44,9 +44,8 @@ engine_version
 ruleset_version
 ```
 
-`rebounding` and `athleticism` remain in the current schema for M12
-compatibility. Battle v0.1 derives rebounding from height, strength, and
-interior defense instead of requiring a displayed Rebounding rating.
+Battle v0.1 derives rebounding from height, strength, and interior defense
+instead of requiring displayed Rebounding or Athleticism ratings.
 
 ## Possession Pipeline
 

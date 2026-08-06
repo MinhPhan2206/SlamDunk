@@ -8,25 +8,20 @@ import { TraitError, createTraitService } from "../src/modules/trait/index.js";
 
 function createTemplateInput(edition) {
   return {
-    playerName: "M7 Test Player",
-    edition,
-    season: "2026-27",
+    playerName: `M7 Test Player ${edition}`,
     primaryPosition: "PG",
     secondaryPosition: "SG",
     rarityCode: "ALL_STAR",
     overall: 91,
-    insideScoring: 78,
+    finishing: 78,
     midRange: 88,
     threePoint: 95,
     playmaking: 92,
     perimeterDefense: 76,
     interiorDefense: 40,
-    rebounding: 52,
-    athleticism: 84,
+    strength: 75,
     heightCm: 191,
-    weightKg: 84,
     packable: true,
-    releaseDate: "2026-08-04",
   };
 }
 
@@ -62,6 +57,39 @@ test("Card Templates own fixed Trait assignments and tiers", async () => {
     assert.equal(baseTemplate.overall, 91);
     assert.equal(baseTemplate.primaryPosition, "PG");
     assert.equal(baseTemplate.secondaryPosition, "SG");
+
+    const sharedPlayerName = `M7 Cross Rarity ${testRunId}`;
+    const sharedAllStar = await cardTemplateService.createTemplate(
+      {
+        ...createTemplateInput(`Cross All-Star ${testRunId}`),
+        playerName: sharedPlayerName,
+        rarityCode: "ALL_STAR",
+      },
+      { database },
+    );
+    const sharedCommon = await cardTemplateService.createTemplate(
+      {
+        ...createTemplateInput(`Cross Common ${testRunId}`),
+        playerName: sharedPlayerName,
+        rarityCode: "COMMON",
+      },
+      { database },
+    );
+    assert.notEqual(sharedAllStar.cardTemplateId, sharedCommon.cardTemplateId);
+
+    await database.query("SAVEPOINT duplicate_player_rarity");
+    await assert.rejects(
+      cardTemplateService.createTemplate(
+        {
+          ...createTemplateInput(`Cross Duplicate ${testRunId}`),
+          playerName: sharedPlayerName.toUpperCase(),
+          rarityCode: "COMMON",
+        },
+        { database },
+      ),
+      (error) => error?.code === "23505",
+    );
+    await database.query("ROLLBACK TO SAVEPOINT duplicate_player_rarity");
 
     const rangeSpecialist = await traitService.createDefinition(
       {
@@ -193,7 +221,7 @@ test("Card Templates own fixed Trait assignments and tiers", async () => {
         SELECT COUNT(*) AS template_count
         FROM card_templates
         WHERE player_name = 'M7 Test Player'
-          AND edition LIKE $1
+          AND player_name LIKE $1
       `,
       [`%${testRunId}`],
     );

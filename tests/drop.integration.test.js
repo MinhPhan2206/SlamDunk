@@ -13,25 +13,20 @@ import { createPlayerService } from "../src/modules/player/index.js";
 
 function createTemplateInput(edition, overall) {
   return {
-    playerName: "M9 Test Player",
-    edition,
-    season: "2026-27",
+    playerName: `M9 Test Player ${edition}`,
     primaryPosition: "PG",
     secondaryPosition: "SG",
     rarityCode: "BASE",
     overall,
-    insideScoring: 75,
+    finishing: 75,
     midRange: 80,
     threePoint: 85,
     playmaking: 88,
     perimeterDefense: 76,
     interiorDefense: 35,
-    rebounding: 45,
-    athleticism: 82,
+    strength: 72,
     heightCm: 190,
-    weightKg: 83,
     packable: true,
-    releaseDate: "2026-08-04",
   };
 }
 

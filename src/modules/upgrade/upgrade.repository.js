@@ -10,7 +10,6 @@ function mapCard(row) {
     tradeLock: row.trade_lock,
     inLineup: row.in_lineup,
     playerName: row.player_name,
-    edition: row.edition,
   });
 }
 
@@ -28,7 +27,6 @@ export const upgradeRepository = Object.freeze({
           ci.market_lock,
           ci.trade_lock,
           ct.player_name,
-          ct.edition,
           EXISTS (
             SELECT 1 FROM lineup_slots ls
             WHERE ls.card_instance_id = ci.card_instance_id

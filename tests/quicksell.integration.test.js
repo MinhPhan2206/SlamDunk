@@ -46,25 +46,20 @@ test("quicksell atomically destroys a card and credits Shards", async () => {
     await economyService.ensureWallet(playerId, { database });
     const template = await cardTemplateService.createTemplate(
       {
-        playerName: "M13 Test Player",
-        edition: `Quicksell ${testRunId}`,
-        season: "2026-27",
+        playerName: `M13 Test Player ${testRunId}`,
         primaryPosition: "SG",
         secondaryPosition: null,
         rarityCode: "ALPHA",
         overall: 88,
-        insideScoring: 80,
+        finishing: 80,
         midRange: 85,
         threePoint: 87,
         playmaking: 78,
         perimeterDefense: 82,
         interiorDefense: 55,
-        rebounding: 60,
-        athleticism: 84,
+        strength: 75,
         heightCm: null,
-        weightKg: null,
         packable: true,
-        releaseDate: null,
       },
       { database },
     );
@@ -160,13 +155,12 @@ test("lock protects cards and batch Quicksell requires a persisted confirmation"
     await economyService.ensureWallet(playerId, { database });
     const template = await cardTemplateService.createTemplate(
       {
-        playerName: "Batch Test Player", edition: `Batch ${testRunId}`,
-        season: "2026-27", primaryPosition: "PG", secondaryPosition: "SG",
-        rarityCode: "COMMON", overall: 80, insideScoring: 75,
+        playerName: `Batch Test Player ${testRunId}`,
+        primaryPosition: "PG", secondaryPosition: "SG",
+        rarityCode: "COMMON", overall: 80, finishing: 75,
         midRange: 78, threePoint: 80, playmaking: 84,
-        perimeterDefense: 70, interiorDefense: 40, rebounding: 50,
-        athleticism: 82, heightCm: null, weightKg: null,
-        packable: true, releaseDate: null,
+        perimeterDefense: 70, interiorDefense: 40, strength: 70,
+        heightCm: null, packable: true,
       },
       { database },
     );

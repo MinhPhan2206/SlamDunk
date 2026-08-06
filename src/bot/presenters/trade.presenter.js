@@ -12,7 +12,7 @@ function participantField(participant, cards) {
   );
   const visibleCards = offeredCards.slice(0, 8).map(
     (card) =>
-      `${card.playerName} - ${card.edition} | Lv${card.cardLevel} | #${card.serialNumber} | ID !${card.publicCardId}`,
+      `${card.playerName} | Lv${card.cardLevel} | #${card.serialNumber} | ID !${card.publicCardId}`,
   );
   if (offeredCards.length > visibleCards.length) {
     visibleCards.push(`…and ${offeredCards.length - visibleCards.length} more card(s)`);

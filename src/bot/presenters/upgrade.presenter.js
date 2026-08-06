@@ -7,7 +7,7 @@ export function createFusionEmbed({ sourceCards, resultCard }) {
   return new EmbedBuilder()
     .setColor(UPGRADE_COLOR)
     .setTitle("Fusion Complete")
-    .setDescription(`**${template.playerName} - ${template.edition}**`)
+    .setDescription(`**${template.playerName}**`)
     .addFields(
       {
         name: "Sources",
@@ -32,7 +32,7 @@ export function createLevelUpEmbed({
   return new EmbedBuilder()
     .setColor(UPGRADE_COLOR)
     .setTitle("Card Upgraded")
-    .setDescription(`**${card.playerName} - ${card.edition}**`)
+    .setDescription(`**${card.playerName}**`)
     .addFields(
       { name: "Level", value: `${previousLevel} → ${newLevel}`, inline: true },
       {

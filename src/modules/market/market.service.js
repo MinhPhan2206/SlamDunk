@@ -5,6 +5,7 @@ import { MarketError } from "./market.errors.js";
 import { marketRepository } from "./market.repository.js";
 
 const MAX_BIGINT = 9_223_372_036_854_775_807n;
+const MARKET_PAGE_SIZE = 10;
 
 function normalizeId(value, fieldName) {
   const normalized = String(value);
@@ -140,14 +141,27 @@ export function createMarketService({
     },
 
     async listActiveListings(
-      { limit = 10 } = {},
+      { page = 1 } = {},
       { database = databasePool } = {},
     ) {
-      if (!Number.isInteger(limit) || limit < 1 || limit > 25) {
-        throw new TypeError("limit must be an integer from 1 through 25.");
+      if (!Number.isSafeInteger(page) || page < 1 || page > 1_000_000) {
+        throw new TypeError("page must be a positive safe integer.");
       }
-      const listings = await marketRepository.listActive(database, limit);
-      return Object.freeze({ listings: Object.freeze(listings) });
+      const result = await marketRepository.listActive(database, {
+        limit: MARKET_PAGE_SIZE,
+        offset: (page - 1) * MARKET_PAGE_SIZE,
+      });
+      const totalPages = Number(
+        (BigInt(result.total) + BigInt(MARKET_PAGE_SIZE) - 1n) /
+          BigInt(MARKET_PAGE_SIZE),
+      );
+      return Object.freeze({
+        listings: Object.freeze(result.listings),
+        total: result.total,
+        page,
+        pageSize: MARKET_PAGE_SIZE,
+        totalPages,
+      });
     },
 
     async buyListing({ buyerPlayerId, listingId }, { database } = {}) {

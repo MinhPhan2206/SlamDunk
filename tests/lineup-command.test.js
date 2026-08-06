@@ -49,7 +49,6 @@ test("lineup set command assigns a Card Instance to a slot", async () => {
               cardInstanceId: "42",
               publicCardId: "123456789",
               playerName: "Test Guard",
-              edition: "Base",
               rarityCode: "COMMON",
               overall: 85,
               cardLevel: 3,

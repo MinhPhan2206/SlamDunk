@@ -9,7 +9,7 @@ import { formatRarity } from "../../config/rarity-config.js";
 const DROP_COLOR = 0xf28c28;
 
 function templateName(template) {
-  return `${template.playerName} - ${template.edition}`;
+  return template.playerName;
 }
 
 function candidateLine(candidate) {

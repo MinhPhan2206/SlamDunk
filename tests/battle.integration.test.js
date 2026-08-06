@@ -17,25 +17,20 @@ const SLOTS = ["PG", "SG", "SF", "PF", "C"];
 
 function templateInput(slot, index, testRunId) {
   return {
-    playerName: `M12 ${slot} Player`,
-    edition: `Battle ${index} ${testRunId}`,
-    season: "2026-27",
+    playerName: `M12 ${slot} Player ${testRunId}`,
     primaryPosition: slot,
     secondaryPosition: null,
     rarityCode: "COMMON",
     overall: 82 + index,
-    insideScoring: 75 + index,
+    finishing: 75 + index,
     midRange: 76 + index,
     threePoint: 74 + index,
     playmaking: 77 + index,
     perimeterDefense: 75 + index,
     interiorDefense: 73 + index,
-    rebounding: 74 + index,
-    athleticism: 78 + index,
+    strength: 76 + index,
     heightCm: null,
-    weightKg: null,
     packable: true,
-    releaseDate: null,
   };
 }
 

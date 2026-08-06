@@ -453,14 +453,13 @@ Do not merge them.
 
 # 12. Card Template
 
-A Card Template defines a specific version/edition of a player.
+A Card Template defines the current collectible representation of one player.
 
 Example:
 
 ```text
 Stephen Curry
-2026 Base Edition
-Legendary
+Goat
 PG
 ```
 
@@ -468,8 +467,6 @@ Shared Template-level properties include:
 
 ```text
 player_name
-edition
-season
 rarity
 positions
 overall
@@ -478,16 +475,10 @@ traits
 trait tiers
 ```
 
-Multiple editions of the same NBA player may exist.
-
-Example:
-
-```text
-Stephen Curry — Base Edition
-Stephen Curry — Playoffs Edition
-```
-
-Those are separate Card Templates.
+The current schema permits one Card Template for the same player in each
+rarity. The same player may exist in different rarities, but duplicate Templates
+for the same player and rarity are forbidden. Supporting multiple variants in
+one rarity later requires an explicit `variant_code` or `card_set`.
 
 ---
 
@@ -2652,9 +2643,9 @@ Discord
 Card Template != Card Instance
 
 OVR range: 60–99
-8 base stats
+7 Battle ratings plus physical height
 
-Multiple player editions may exist
+One Card Template per player and rarity pair in the current schema
 
 Card Level: 1–5
 Initial Pack Level: random 1–5
@@ -2884,11 +2875,16 @@ Battle Engine v0.1 is now an accepted architecture target documented in
 `docs/architecture/09-battle-engine.md`. It is a seeded, deterministic,
 possession-based first-to-21 simulation with matchup-aware action selection,
 shot quality, turnovers, rebounds, box scores, play-by-play, and explicit Trait
-hook stages. The current M12 aggregate PvE engine remains transitional and has
-not yet been replaced. `FINISHING` maps to `inside_scoring`; migration 019 adds
-the 0–99 `strength` rating while `rebounding` and `athleticism` remain for M12
-compatibility. New 2026 playtest data and its sourcing rules are documented in
-`docs/requirements/card-rating-data.md`.
+hook stages. Migration 020 resets incompatible Card data, removes edition,
+season, rebounding, athleticism, weight, and release date, and renames
+`inside_scoring` to `finishing`. The transitional M12 aggregate engine now uses
+the simplified fields. The 68-card playtest catalog and its sourcing rules are
+documented in `docs/requirements/card-rating-data.md`. Collection and Market
+browse responses support owner-scoped Previous/Next page buttons.
+
+Migration 021 changes Card Template uniqueness to case-insensitive player name
+plus rarity and compensates every existing Player with 20,000 Gold through one
+immutable `CARD_RESET_COMPENSATION` EconomyTransaction.
 
 Before defining a new milestone:
 

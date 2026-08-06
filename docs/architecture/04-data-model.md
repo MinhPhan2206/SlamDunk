@@ -174,8 +174,6 @@ Suggested fields:
 card_template_id       PK
 
 player_name
-edition
-season
 
 primary_position
 secondary_position
@@ -183,21 +181,17 @@ secondary_position
 rarity
 overall
 
-inside_scoring
+finishing
 mid_range
 three_point
 playmaking
 perimeter_defense
 interior_defense
 strength
-rebounding
-athleticism
 
 height
-weight
 
 packable
-release_date
 retired_at
 
 created_at
@@ -208,9 +202,9 @@ updated_at
 
 ```text
 OVR range: 60–99
-7 target Battle ratings, with `inside_scoring` representing FINISHING
-2 transitional M12 fields: rebounding and athleticism
-Multiple editions may exist
+7 Battle ratings: finishing, mid range, 3 point, playmaking,
+perimeter defense, interior defense, and strength
+One Card Template per case-insensitive player name and rarity pair
 ```
 
 ### Rarity
@@ -247,10 +241,15 @@ and an ordering-only `rarity_rank`. Card Templates reference `rarities` through
 can be appended without changing the Card Template schema. Drop and Pack odds
 use `rarity_code` and remain independently configurable by source.
 
-Height and weight are stored explicitly as `height_cm` and `weight_kg`.
-`strength` is constrained to 0–99. The older base-stat columns remain
-non-negative without a final maximum until the Battle Engine migration is
-completed. Battle snapshots must include stat and engine/ruleset versions.
+Height is stored explicitly as `height_cm`. All seven Battle ratings are
+non-negative; `strength` is currently constrained to 0–99. `edition`, `season`,
+`rebounding`, `athleticism`, `weight_kg`, and `release_date` were removed by
+migration 020. Battle snapshots must include stat and engine/ruleset versions.
+
+The same player may have Templates in different rarities. The pair of
+case-insensitive player name and `rarity_id` is unique, so one rarity cannot
+contain two Templates for that player. Multiple variants inside one rarity
+would require a future stable `variant_code` or `card_set`.
 
 ---
 

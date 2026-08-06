@@ -13,25 +13,20 @@ import { createPlayerService } from "../src/modules/player/index.js";
 
 function templateInput(testRunId) {
   return {
-    playerName: "M15 Test Player",
-    edition: `Market ${testRunId}`,
-    season: "2026-27",
+    playerName: `M15 Test Player ${testRunId}`,
     primaryPosition: "SF",
     secondaryPosition: null,
     rarityCode: "UNCOMMON",
     overall: 85,
-    insideScoring: 82,
+    finishing: 82,
     midRange: 84,
     threePoint: 81,
     playmaking: 76,
     perimeterDefense: 83,
     interiorDefense: 68,
-    rebounding: 72,
-    athleticism: 86,
+    strength: 80,
     heightCm: null,
-    weightKg: null,
     packable: true,
-    releaseDate: null,
   };
 }
 

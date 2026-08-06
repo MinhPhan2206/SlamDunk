@@ -13,25 +13,20 @@ import { createCollectionService } from "../src/modules/collection/index.js";
 
 function createTemplateInput(edition) {
   return {
-    playerName: "M8 Test Player",
-    edition,
-    season: "2026-27",
+    playerName: `M8 Test Player ${edition}`,
     primaryPosition: "SF",
     secondaryPosition: "PF",
     rarityCode: "SUPERSTAR",
     overall: 94,
-    insideScoring: 88,
+    finishing: 88,
     midRange: 90,
     threePoint: 87,
     playmaking: 82,
     perimeterDefense: 89,
     interiorDefense: 78,
-    rebounding: 84,
-    athleticism: 91,
+    strength: 86,
     heightCm: 203,
-    weightKg: 102,
     packable: true,
-    releaseDate: "2026-08-04",
   };
 }
 
@@ -109,7 +104,7 @@ test("Card Instances receive per-template serials and ownership history", async 
     assert.equal(collection.cards[0].cardInstanceId, firstMint.instance.cardInstanceId);
     assert.equal(collection.cards[0].collectionPosition, 1);
     assert.match(collection.cards[0].publicCardId, /^\d{9}$/);
-    assert.equal(collection.cards[0].playerName, "M8 Test Player");
+    assert.equal(collection.cards[0].playerName, template.playerName);
     assert.equal(collection.cards[0].rarityCode, "SUPERSTAR");
 
     assert.equal(
@@ -246,8 +241,7 @@ test("Card Instances receive per-template serials and ownership history", async 
         FROM card_instances ci
         JOIN card_templates ct
           ON ct.card_template_id = ci.card_template_id
-        WHERE ct.player_name = 'M8 Test Player'
-          AND ct.edition LIKE $1
+        WHERE ct.player_name LIKE $1
       `,
       [`%${testRunId}`],
     );

@@ -12,25 +12,20 @@ import { createPlayerService } from "../src/modules/player/index.js";
 
 function templateInput(edition, primaryPosition, secondaryPosition) {
   return {
-    playerName: "M11 Test Player",
-    edition,
-    season: "2026-27",
+    playerName: `M11 Test Player ${edition}`,
     primaryPosition,
     secondaryPosition,
     rarityCode: "UNCOMMON",
     overall: 88,
-    insideScoring: 80,
+    finishing: 80,
     midRange: 80,
     threePoint: 80,
     playmaking: 80,
     perimeterDefense: 80,
     interiorDefense: 80,
-    rebounding: 80,
-    athleticism: 80,
+    strength: 80,
     heightCm: null,
-    weightKg: null,
     packable: false,
-    releaseDate: null,
   };
 }
 

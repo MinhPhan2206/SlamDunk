@@ -38,7 +38,6 @@ test("collection command displays active cards for the current Player", async ()
           cards: [
             {
               playerName: "Test Player",
-              edition: "Base",
               collectionPosition: 1,
               publicCardId: "123456789",
               rarityCode: "SUPERSTAR",

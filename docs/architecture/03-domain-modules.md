@@ -160,7 +160,6 @@ validateOwnership()
 
 ```text
 player identity
-edition
 rarity
 base stats
 positions

@@ -34,7 +34,6 @@ function mapTradeCard(row) {
     active: row.active,
     outcome: row.outcome,
     playerName: row.player_name,
-    edition: row.edition,
     rarityCode: row.rarity_code,
     serialNumber: row.serial_number,
     cardLevel: row.card_level,
@@ -127,7 +126,6 @@ export const tradeRepository = Object.freeze({
           tc.active,
           tc.outcome,
           ct.player_name,
-          ct.edition,
           r.rarity_code,
           ci.serial_number,
           ci.card_level
