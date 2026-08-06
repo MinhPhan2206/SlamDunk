@@ -16,24 +16,28 @@ function createSeededRandom(seed) {
 function playerRatings(player, config) {
   const stats = player.stats;
   const levelBonus = (player.cardLevel - 1) * config.levelRatingBonus;
+  const heightRating = clamp(
+    50 + ((stats.heightCm ?? 198) - 180) * 1.5,
+    40,
+    99,
+  );
   const offense =
-    (stats.insideScoring +
+    (stats.finishing +
       stats.midRange +
       stats.threePoint +
-      stats.playmaking +
-      stats.athleticism) /
-      5 +
+      stats.playmaking) /
+      4 +
     levelBonus;
   const defense =
     (stats.perimeterDefense +
       stats.interiorDefense +
-      stats.rebounding +
-      stats.athleticism) /
+      stats.strength +
+      heightRating) /
       4 +
     levelBonus;
   const scoringWeight = Math.max(
     1,
-    stats.insideScoring + stats.midRange + stats.threePoint,
+    stats.finishing + stats.midRange + stats.threePoint,
   );
 
   return { offense, defense, scoringWeight };

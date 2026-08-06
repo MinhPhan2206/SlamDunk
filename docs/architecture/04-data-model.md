@@ -189,6 +189,7 @@ three_point
 playmaking
 perimeter_defense
 interior_defense
+strength
 rebounding
 athleticism
 
@@ -207,7 +208,8 @@ updated_at
 
 ```text
 OVR range: 60–99
-8 base stats
+7 target Battle ratings, with `inside_scoring` representing FINISHING
+2 transitional M12 fields: rebounding and athleticism
 Multiple editions may exist
 ```
 
@@ -245,8 +247,10 @@ and an ordering-only `rarity_rank`. Card Templates reference `rarities` through
 can be appended without changing the Card Template schema. Drop and Pack odds
 use `rarity_code` and remain independently configurable by source.
 
-Height and weight are stored explicitly as `height_cm` and `weight_kg`. Base
-stats must be non-negative, but no final game-balance maximum is enforced yet.
+Height and weight are stored explicitly as `height_cm` and `weight_kg`.
+`strength` is constrained to 0–99. The older base-stat columns remain
+non-negative without a final maximum until the Battle Engine migration is
+completed. Battle snapshots must include stat and engine/ruleset versions.
 
 ---
 

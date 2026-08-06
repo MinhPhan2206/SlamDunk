@@ -5,14 +5,13 @@ import { getRarityDefinition } from "../../config/rarity-config.js";
 const POSITIONS = new Set(["PG", "SG", "SF", "PF", "C"]);
 const SMALLINT_MAX = 32_767;
 const STAT_FIELDS = [
-  "insideScoring",
+  "finishing",
   "midRange",
   "threePoint",
   "playmaking",
   "perimeterDefense",
   "interiorDefense",
-  "rebounding",
-  "athleticism",
+  "strength",
 ];
 
 function normalizeId(value, fieldName) {
@@ -31,14 +30,6 @@ function normalizeRequiredText(value, fieldName) {
   }
 
   return value.trim();
-}
-
-function normalizeOptionalText(value, fieldName) {
-  if (value == null) {
-    return null;
-  }
-
-  return normalizeRequiredText(value, fieldName);
 }
 
 function normalizeInteger(value, fieldName, minimum, maximum) {
@@ -71,27 +62,6 @@ function normalizeOptionalMeasurement(value, fieldName) {
   return normalizeInteger(value, fieldName, 1, SMALLINT_MAX);
 }
 
-function normalizeReleaseDate(value) {
-  if (value == null) {
-    return null;
-  }
-
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw new TypeError("releaseDate must use YYYY-MM-DD format.");
-  }
-
-  const parsedDate = new Date(`${value}T00:00:00.000Z`);
-
-  if (
-    Number.isNaN(parsedDate.getTime()) ||
-    parsedDate.toISOString().slice(0, 10) !== value
-  ) {
-    throw new TypeError("releaseDate must be a valid calendar date.");
-  }
-
-  return value;
-}
-
 function normalizeTemplateInput(input) {
   if (!input || typeof input !== "object") {
     throw new TypeError("Card Template input is required.");
@@ -113,8 +83,6 @@ function normalizeTemplateInput(input) {
 
   const normalized = {
     playerName: normalizeRequiredText(input.playerName, "playerName"),
-    edition: normalizeRequiredText(input.edition, "edition"),
-    season: normalizeOptionalText(input.season, "season"),
     primaryPosition,
     secondaryPosition,
     rarityCode: getRarityDefinition(
@@ -122,9 +90,7 @@ function normalizeTemplateInput(input) {
     ).rarityCode,
     overall: normalizeInteger(input.overall, "overall", 60, 99),
     heightCm: normalizeOptionalMeasurement(input.heightCm, "heightCm"),
-    weightKg: normalizeOptionalMeasurement(input.weightKg, "weightKg"),
     packable: input.packable ?? true,
-    releaseDate: normalizeReleaseDate(input.releaseDate),
   };
 
   if (typeof normalized.packable !== "boolean") {
@@ -132,8 +98,11 @@ function normalizeTemplateInput(input) {
   }
 
   for (const fieldName of STAT_FIELDS) {
+    const value = fieldName === "strength" && input[fieldName] == null
+      ? 50
+      : input[fieldName];
     normalized[fieldName] = normalizeInteger(
-      input[fieldName],
+      value,
       fieldName,
       0,
       SMALLINT_MAX,
@@ -152,6 +121,14 @@ export function createCardTemplateService({ databasePool }) {
     async createTemplate(input, { database = databasePool } = {}) {
       return cardTemplateRepository.create(
         database,
+        normalizeTemplateInput(input),
+      );
+    },
+
+    async updateTemplate(cardTemplateId, input, { database = databasePool } = {}) {
+      return cardTemplateRepository.update(
+        database,
+        normalizeId(cardTemplateId, "cardTemplateId"),
         normalizeTemplateInput(input),
       );
     },

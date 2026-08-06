@@ -2880,6 +2880,16 @@ oldest, player name, position, and implemented individual stats. Calling
 oldest-first so newly obtained Drop/Pack cards appear at the end. Collection
 positions and `card_id` resolution always use the same saved sort.
 
+Battle Engine v0.1 is now an accepted architecture target documented in
+`docs/architecture/09-battle-engine.md`. It is a seeded, deterministic,
+possession-based first-to-21 simulation with matchup-aware action selection,
+shot quality, turnovers, rebounds, box scores, play-by-play, and explicit Trait
+hook stages. The current M12 aggregate PvE engine remains transitional and has
+not yet been replaced. `FINISHING` maps to `inside_scoring`; migration 019 adds
+the 0–99 `strength` rating while `rebounding` and `athleticism` remain for M12
+compatibility. New 2026 playtest data and its sourcing rules are documented in
+`docs/requirements/card-rating-data.md`.
+
 Before defining a new milestone:
 
 ```text

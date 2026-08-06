@@ -50,14 +50,14 @@ function validateConfig(config) {
 
 function statsFromTemplate(template) {
   return Object.freeze({
-    insideScoring: template.insideScoring,
+    finishing: template.finishing,
     midRange: template.midRange,
     threePoint: template.threePoint,
     playmaking: template.playmaking,
     perimeterDefense: template.perimeterDefense,
     interiorDefense: template.interiorDefense,
-    rebounding: template.rebounding,
-    athleticism: template.athleticism,
+    strength: template.strength,
+    heightCm: template.heightCm,
   });
 }
 
@@ -136,7 +136,7 @@ export function createBattleService({
           cardInstanceId: instance.cardInstanceId,
           cardTemplateId: template.cardTemplateId,
           cardLevel: instance.cardLevel,
-          cardName: `${template.playerName} - ${template.edition}`,
+          cardName: template.playerName,
           stats: statsFromTemplate(template),
           traits,
         }),
@@ -160,7 +160,7 @@ export function createBattleService({
           cardInstanceId: null,
           cardTemplateId: template.cardTemplateId,
           cardLevel: config.aiCardLevel,
-          cardName: `${template.playerName} - ${template.edition}`,
+          cardName: template.playerName,
           stats: statsFromTemplate(template),
           traits,
         }),

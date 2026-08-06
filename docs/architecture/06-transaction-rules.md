@@ -417,6 +417,18 @@ Cooldown and reward credit must commit together.
 
 The battle result should be finalized before reward credit.
 
+The possession simulation must not run while database row locks are held:
+
+```text
+short transaction: validate and persist immutable input snapshot
+COMMIT
+
+pure deterministic simulation outside PostgreSQL
+
+short transaction: persist result and idempotent reward
+COMMIT
+```
+
 ```text
 BEGIN
 

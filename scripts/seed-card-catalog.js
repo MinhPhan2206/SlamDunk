@@ -5,10 +5,16 @@ import { createPostgresPool } from "../src/database/connection/postgres.js";
 import { withTransaction } from "../src/database/transaction/transaction-manager.js";
 import { createCardTemplateService } from "../src/modules/card/index.js";
 
-const catalogUrl = new URL("../data/card-templates.json", import.meta.url);
+const catalogUrls = [
+  new URL("../data/card-templates.json", import.meta.url),
+  new URL("../data/card-templates-2026.json", import.meta.url),
+];
 
 async function seedCatalog() {
-  const templates = JSON.parse(await readFile(catalogUrl, "utf8"));
+  const catalogs = await Promise.all(
+    catalogUrls.map(async (catalogUrl) => JSON.parse(await readFile(catalogUrl, "utf8"))),
+  );
+  const templates = catalogs.flat();
   const pool = createPostgresPool({
     connectionString: getDatabaseConfig().databaseUrl,
   });
@@ -17,12 +23,12 @@ async function seedCatalog() {
   try {
     const result = await withTransaction(pool, async (database) => {
       let created = 0;
-      let skipped = 0;
+      let updated = 0;
 
       for (const template of templates) {
         const existing = await database.query(
           `
-            SELECT card_template_id
+          SELECT card_template_id
             FROM card_templates
             WHERE player_name = $1
               AND edition = $2
@@ -32,7 +38,12 @@ async function seedCatalog() {
         );
 
         if (existing.rowCount > 0) {
-          skipped += 1;
+          await cardTemplateService.updateTemplate(
+            existing.rows[0].card_template_id,
+            template,
+            { database },
+          );
+          updated += 1;
           continue;
         }
 
@@ -40,11 +51,11 @@ async function seedCatalog() {
         created += 1;
       }
 
-      return { created, skipped, total: templates.length };
+      return { created, updated, total: templates.length };
     });
 
     console.log(
-      `Card catalog seed complete: ${result.created} created, ${result.skipped} skipped, ${result.total} total.`,
+      `Card catalog seed complete: ${result.created} created, ${result.updated} updated, ${result.total} total.`,
     );
   } finally {
     await pool.end();

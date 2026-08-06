@@ -551,6 +551,11 @@ Battle code must not permanently alter Card Template base stats.
 
 Card Level is applied as a runtime battle modifier.
 
+The accepted possession-based target, provisional formulas, deterministic
+contract, and future Trait hooks are defined in
+[`09-battle-engine.md`](09-battle-engine.md). The current M12 aggregate engine
+remains a transitional implementation.
+
 ---
 
 ## 15. Shared / Infrastructure Module
