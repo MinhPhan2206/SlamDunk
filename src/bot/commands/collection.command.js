@@ -47,6 +47,7 @@ export const collectionCommand = Object.freeze({
         title: viewingSelf
           ? "Your Collection"
           : `${targetUser.globalName ?? targetUser.username}'s Collection`,
+        thumbnailUrl: targetUser.displayAvatarURL?.({ extension: "png", size: 128 }),
       }),
     );
   },

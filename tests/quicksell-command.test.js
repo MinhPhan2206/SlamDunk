@@ -86,5 +86,5 @@ test("quicksell confirm button completes the persisted preview", async () => {
   await quicksellComponent.execute(interaction, { services });
 
   assert.equal(edits[0].components.length, 0);
-  assert.match(edits[0].embeds[0].toJSON().title, /Completed/);
+  assert.equal(edits[0].embeds[0].toJSON().title, "Quicksell Complete");
 });

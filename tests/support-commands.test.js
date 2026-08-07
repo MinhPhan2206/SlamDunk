@@ -72,11 +72,12 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
   await cooldownsCommand.execute(interaction, { services });
 
   assert.equal(interaction.replies[0].type, "defer");
-  assert.match(interaction.replies[1].payload.content, /Cooldowns/);
-  assert.match(interaction.replies[1].payload.content, /Claim/);
-  assert.match(interaction.replies[1].payload.content, /Free Drop/);
+  const embed = interaction.replies[1].payload.embeds[0].toJSON();
+  assert.equal(embed.title, "Cooldowns");
+  assert.equal(embed.fields[0].name, "Claim");
+  assert.equal(embed.fields[2].name, "Free Drop");
   assert.match(
-    interaction.replies[1].payload.content,
+    embed.fields[0].value,
     new RegExp(`<t:${Math.floor(availableAt.getTime() / 1_000)}:R>`),
   );
 });
@@ -109,7 +110,8 @@ test("rarity command lists Card Templates for the requested rarity", async () =>
   const embed = interaction.replies[1].payload.embeds[0].toJSON();
   assert.match(embed.title, /Goat/);
   assert.match(embed.description, /Test Legend/);
-  assert.match(embed.description, /OVR 99/);
+  assert.doesNotMatch(embed.description, /OVR/);
+  assert.match(embed.description, /SG/);
 });
 
 test("rarity command explains when a rarity has no Card Templates", async () => {

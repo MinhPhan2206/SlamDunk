@@ -1,6 +1,7 @@
 function mapCard(row) {
   return Object.freeze({
     cardInstanceId: row.card_instance_id,
+    publicCardId: row.public_card_id,
     cardTemplateId: row.card_template_id,
     ownerPlayerId: row.owner_player_id,
     serialNumber: row.serial_number,
@@ -19,6 +20,7 @@ export const upgradeRepository = Object.freeze({
       `
         SELECT
           ci.card_instance_id,
+          ci.public_card_id,
           ci.card_template_id,
           ci.owner_player_id,
           ci.serial_number,

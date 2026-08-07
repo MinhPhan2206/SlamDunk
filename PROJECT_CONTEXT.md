@@ -469,7 +469,7 @@ Shared Template-level properties include:
 player_name
 rarity
 positions
-overall
+overall (temporary internal Battle/AI-selection field; never shown in UI)
 base stats
 traits
 trait tiers
@@ -484,28 +484,27 @@ one rarity later requires an explicit `variant_code` or `card_set`.
 
 # 13. Card Stats
 
-Confirmed OVR range:
+Keep 7 displayed battle stats:
 
-```text
-60–99
-```
-
-Keep 8 base stats:
-
-1. Inside Scoring
+1. Finishing
 2. Mid Range
 3. Three Point
 4. Playmaking
 5. Perimeter Defense
 6. Interior Defense
-7. Rebounding
-8. Athleticism
+7. Strength
 
-OVR does not have to be a simple arithmetic mean.
+Card Template stats are the Level 5 values. Runtime Actual Stats are derived
+without duplicating them on Card Instances:
 
-Position-based weighting may later be used.
+```text
+Actual Stat = Template Stat - (5 - Card Level)
+```
 
-Exact formulas are TBD.
+The legacy `overall` column is retained temporarily only because the current
+Battle AI-selection query still depends on it. It must not be displayed or
+used as a Player-facing sort choice. Remove it from the schema after AI
+selection is based on the approved stat model.
 
 ---
 
@@ -577,9 +576,7 @@ Card Level belongs to Card Instance.
 
 It does not modify Template identity, rarity, traits, or Trait Tier.
 
-Exact battle effect of Card Level is still TBD.
-
-Do not hard-code a final level coefficient yet.
+Battle and lineup averages use the derived Actual Stats defined above.
 
 ---
 
@@ -1247,7 +1244,7 @@ This is the intended interpretation of rarity Trait budgets.
 
 The strongest lineup should not automatically be:
 
-the five cards with the highest OVR
+the five cards with the highest raw ratings
 
 Instead, lineup strength should depend on:
 
@@ -1265,12 +1262,12 @@ Synergy
 +
 Opponent matchup
 
-For example, a slightly lower-OVR defender with:
+For example, a defender with lower offensive ratings but stronger defensive Traits:
 
 Screen Navigator III
 Point-of-Attack Defender III
 
-may be a better choice against an elite perimeter guard than a higher-OVR offensive card.
+may be a better choice against an elite perimeter guard than a stronger offensive card.
 
 Similarly:
 
@@ -1286,7 +1283,7 @@ The Trait system should make players ask:
 
 rather than only:
 
-"Which five cards have the highest OVR?"
+"Which five cards have the highest individual ratings?"
 
 # 20. Pack System
 
@@ -2650,7 +2647,7 @@ Discord
 
 Card Template != Card Instance
 
-OVR range: 60–99
+Legacy overall: temporarily retained for internal Battle AI selection only
 7 Battle ratings plus physical height
 
 One Card Template per player and rarity pair in the current schema
@@ -2873,11 +2870,13 @@ prefix) or the card's current one-based position in `/collection`. The default C
 oldest to newest, so newly obtained Drop/Pack cards appear at the end.
 
 Migration `017_create_collection_preferences.sql` and `/sort` persist a Player's
-Collection ordering. Supported choices include rarity, OVR, Card Level, newest,
+Collection ordering. Supported choices include rarity, Card Level, newest,
 oldest, player name, position, and implemented individual stats. Calling
 `/sort` without `sort_by` selects Rarity. A Player with no preference remains
 oldest-first so newly obtained Drop/Pack cards appear at the end. Collection
 positions and `card_id` resolution always use the same saved sort.
+Migration `024_remove_overall_collection_sort.sql` converts legacy OVERALL
+preferences to RARITY and removes OVERALL from the allowed sort values.
 
 Battle Engine v2 is implemented and documented in
 `docs/architecture/09-battle-engine.md`. It is a seeded, deterministic,
@@ -2906,7 +2905,7 @@ and records primary/help shot matchup participants in structured PBP.
 
 The accepted Game Display prototype remains a layout reference for native
 Discord embeds; no PNG is rendered every possession. Game Display omits the
-`Your Starting 5` subtitle. `YOUR MATCHUP` renders the five AI opponents as one
+`Your Starting 5` subtitle. `Your Matchup` renders the five AI opponents as one
 horizontal PNG; missing artwork repeats the generic fallback image. Game Display
 derives its aligned PTS/REB/AST tables only from fully revealed possessions.
 `GAME STATS` is sent separately after natural completion or Simulate as one
@@ -2923,7 +2922,7 @@ to the user who opened the view.
 Matches retain numeric `match_id` for internal PostgreSQL relationships and add
 a unique lowercase 32-character hexadecimal `public_match_id`. New public IDs
 come from 16 random bytes. Discord shows this public ID immediately before
-`YOUR MATCHUP` and uses it in Battle component identifiers. Migration 023
+`Your Matchup` and uses it in Battle component identifiers. Migration 023
 backfills existing Matches and enforces the public ID format.
 
 All interactive Discord responses with components use a shared 10-second
@@ -2935,6 +2934,15 @@ candidate 1 when no selection is made.
 Migration 021 changes Card Template uniqueness to case-insensitive player name
 plus rarity and compensates every existing Player with 20,000 Gold through one
 immutable `CARD_RESET_COMPENSATION` EconomyTransaction.
+
+The Discord UI follows one shared visual system: amber primary actions, blue
+secondary navigation, green success, red destructive/error, and neutral slate
+for inactive state. Player-facing card rows use one compact format with Player,
+rarity, positions, Card Level, and public Card ID; OVR and serial are omitted.
+Collection uses 10 rows per page and icon-only pagination. Profile and
+Collection use the viewed Discord user's avatar. Lineup, Drop, Pack, and Battle
+reuse transient artwork composites with `unknown-player.png` as the fallback.
+All component timeouts disable controls and show `Interaction Expired`.
 
 Before defining a new milestone:
 

@@ -21,11 +21,13 @@ export const collectionPageComponent = Object.freeze({
       page: Number(pageValue),
     });
     const title = interaction.message?.embeds?.[0]?.title ?? "Your Collection";
+    const thumbnailUrl = interaction.message?.embeds?.[0]?.thumbnail?.url;
     await interaction.editReply(
       createCollectionPayload(result, {
         discordUserId: viewerDiscordUserId,
         playerId,
         title,
+        thumbnailUrl,
       }),
     );
   },

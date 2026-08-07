@@ -31,7 +31,12 @@ test("lineup set command assigns a Card Instance to a slot", async () => {
     },
     player: {
       async getOrCreatePlayer() {
-        return { playerId: "7" };
+        return {
+          playerId: "7",
+          gamesPlayed: 10,
+          gamesWon: 6,
+          gamesLost: 4,
+        };
       },
     },
     lineup: {
@@ -50,9 +55,17 @@ test("lineup set command assigns a Card Instance to a slot", async () => {
               publicCardId: "123456789",
               playerName: "Test Guard",
               rarityCode: "COMMON",
-              overall: 85,
               cardLevel: 3,
               serialNumber: "4",
+              actualStats: {
+                threePoint: 80,
+                midRange: 79,
+                finishing: 82,
+                playmaking: 84,
+                perimeterDefense: 78,
+                interiorDefense: 70,
+                strength: 75,
+              },
             },
             ...["SG", "SF", "PF", "C"].map((slot) => ({
               slot,
@@ -70,4 +83,7 @@ test("lineup set command assigns a Card Instance to a slot", async () => {
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.match(embed.description, /Test Guard/);
   assert.match(embed.footer.text, /1\/5/);
+  assert.match(embed.fields[0].value, /80\.0/);
+  assert.match(embed.fields[2].value, /60\.0% Win Rate/);
+  assert.equal(replies[1].payload.files[0].name, "lineup.png");
 });

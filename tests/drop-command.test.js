@@ -70,6 +70,8 @@ test("drop command displays three persisted choices", async () => {
     replies[1].payload.components[0].components[1].data.custom_id,
     "drop:select:10:2",
   );
+  assert.equal(replies[1].payload.files[0].name, "drop-candidates.png");
+  assert.equal(replies[1].payload.files[0].attachment.readUInt32BE(16), 800);
 });
 
 test("drop selection component edits the offer with the minted card", async () => {
@@ -110,7 +112,11 @@ test("drop selection component edits the offer with the minted card", async () =
               template: selectedTemplate,
             },
           ],
-          resultInstance: { cardLevel: 4, serialNumber: "12" },
+          resultInstance: {
+            cardLevel: 4,
+            serialNumber: "12",
+            publicCardId: "123456789",
+          },
         };
       },
     },
@@ -121,8 +127,9 @@ test("drop selection component edits the offer with the minted card", async () =
   assert.equal(replies[0].type, "deferUpdate");
   assert.equal(replies[1].payload.components.length, 0);
   const embed = replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.description, /Card Level: \*\*4\*\*/);
-  assert.match(embed.description, /Serial: \*\*#12\*\*/);
+  assert.match(embed.description, /Lv\.4/);
+  assert.match(embed.description, /!123456789/);
+  assert.doesNotMatch(embed.description, /OVR|Serial/);
 });
 
 test("interaction router dispatches Drop button interactions by namespace", async () => {

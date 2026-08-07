@@ -47,11 +47,7 @@ function validateConfig(config) {
   positiveInteger(config, "aiCardLevel");
   positiveInteger(config, "targetScore");
   positiveInteger(config, "maximumPossessions");
-  if (
-    config.aiCardLevel > 5 ||
-    !Number.isSafeInteger(config.levelRatingBonus) ||
-    config.levelRatingBonus < 0
-  ) {
+  if (config.aiCardLevel > 5) {
     throw new TypeError("Battle Card Level configuration is invalid.");
   }
   for (const field of [

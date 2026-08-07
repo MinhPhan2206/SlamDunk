@@ -32,7 +32,7 @@ export const dropSelectionComponent = Object.freeze({
         candidatePosition: Number(match[2]),
       });
 
-      await interaction.editReply(createDropSelectionPayload(result));
+      await interaction.editReply(await createDropSelectionPayload(result));
     } catch (error) {
       if (
         error instanceof DropError &&

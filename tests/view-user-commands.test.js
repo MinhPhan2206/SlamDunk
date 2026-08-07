@@ -65,7 +65,7 @@ test("profile user option displays another existing Player", async () => {
 
   assert.equal(
     commandInteraction.replies[0].embeds[0].toJSON().title,
-    "Target User's SlamDunk Profile",
+    "Target User's Profile",
   );
 });
 

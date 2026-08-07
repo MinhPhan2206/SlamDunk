@@ -21,6 +21,17 @@ function disabledRows(rows) {
   });
 }
 
+function expiredEmbeds(embeds) {
+  return embeds.map((embed, index) => {
+    const data = typeof embed.toJSON === "function"
+      ? embed.toJSON()
+      : { ...(embed.data ?? embed) };
+    return index === embeds.length - 1
+      ? { ...data, footer: { text: "Interaction Expired" } }
+      : data;
+  });
+}
+
 async function resolveMessage(interaction) {
   if (typeof interaction.fetchReply === "function") {
     try {
@@ -55,7 +66,11 @@ export async function scheduleComponentTimeout(
         ? await message.fetch()
         : message;
       if (!current.components?.length) return;
-      await current.edit({ components: disabledRows(current.components) });
+      const update = { components: disabledRows(current.components) };
+      if (current.embeds?.length) {
+        update.embeds = expiredEmbeds(current.embeds);
+      }
+      await current.edit(update);
     } catch (error) {
       console.warn(`Component timeout update failed: ${error.message}`);
     }

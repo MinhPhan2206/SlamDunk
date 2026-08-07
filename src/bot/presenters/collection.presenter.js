@@ -4,44 +4,37 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from "discord.js";
-import { formatRarity } from "../../config/rarity-config.js";
+import { formatCardLine } from "../ui/formatters.js";
+import { UI_COLORS } from "../ui/theme.js";
 
-const COLLECTION_COLOR = 0xf28c28;
-
-function formatCard(card) {
-  const positions = [card.primaryPosition, card.secondaryPosition]
-    .filter(Boolean)
-    .join("/");
-
-  return [
-    `**${card.collectionPosition}. ${card.playerName}**`,
-    `${card.userLock ? "🔒 | " : ""}${formatRarity(card.rarityCode)} | OVR ${card.overall} | ${positions} | Level ${card.cardLevel} | #${card.serialNumber} | ID !${card.publicCardId}`,
-  ].join("\n");
-}
-
-export function createCollectionEmbed(result, { title = "Your Collection" } = {}) {
+export function createCollectionEmbed(
+  result,
+  { title = "Your Collection", thumbnailUrl } = {},
+) {
   const embed = new EmbedBuilder()
-    .setColor(COLLECTION_COLOR)
+    .setColor(UI_COLORS.primary)
     .setTitle(title);
-
+  if (thumbnailUrl) embed.setThumbnail(thumbnailUrl);
   if (result.cards.length === 0) {
     embed.setDescription(
       title === "Your Collection"
-        ? "You do not own any active cards yet."
+        ? "You do not own any active cards yet. Use `/drop` or `/pack` to get started."
         : "This Player does not own any active cards yet.",
     );
   } else {
-    embed.setDescription(result.cards.map(formatCard).join("\n\n"));
+    embed.setDescription(result.cards.map((card) =>
+      formatCardLine(card, { position: card.collectionPosition })
+    ).join("\n"));
   }
-
   return embed.setFooter({
-    text: `Page ${result.page}/${Math.max(result.totalPages, 1)} | ${result.total} cards | Sort: ${result.sortLabel}`,
+    text: `Page ${result.page}/${Math.max(result.totalPages, 1)} • ` +
+      `${result.total} Cards • Sort: ${result.sortLabel}`,
   });
 }
 
 export function createCollectionPayload(
   result,
-  { discordUserId, playerId, title = "Your Collection" },
+  { discordUserId, playerId, title = "Your Collection", thumbnailUrl },
 ) {
   const components = [];
   if (result.totalPages > 1) {
@@ -49,16 +42,19 @@ export function createCollectionPayload(
       new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`collection-page:${discordUserId}:${playerId}:${result.page - 1}`)
-          .setLabel("Previous")
+          .setEmoji("◀️")
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(result.page <= 1),
         new ButtonBuilder()
           .setCustomId(`collection-page:${discordUserId}:${playerId}:${result.page + 1}`)
-          .setLabel("Next")
-          .setStyle(ButtonStyle.Primary)
+          .setEmoji("▶️")
+          .setStyle(ButtonStyle.Secondary)
           .setDisabled(result.page >= result.totalPages),
       ),
     );
   }
-  return { embeds: [createCollectionEmbed(result, { title })], components };
+  return {
+    embeds: [createCollectionEmbed(result, { title, thumbnailUrl })],
+    components,
+  };
 }

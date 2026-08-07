@@ -1,7 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { formatRarity } from "../../config/rarity-config.js";
-
-const RARITY_COLOR = 0xf28c28;
+import { rarityColor } from "../ui/theme.js";
 
 function singleLine(value) {
   return value.replace(/\s+/g, " ").trim();
@@ -13,12 +12,12 @@ function formatTemplate(template) {
     .filter(Boolean)
     .join("/");
 
-  return `• **${identity}** — OVR ${template.overall}, ${positions}`;
+  return `• **${identity}** • ${positions}`;
 }
 
 export function createRarityEmbed({ rarityCode, templates, total }) {
   const embed = new EmbedBuilder()
-    .setColor(RARITY_COLOR)
+    .setColor(rarityColor(rarityCode))
     .setTitle(`${formatRarity(rarityCode)} Card Templates`);
 
   if (templates.length === 0) {

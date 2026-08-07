@@ -13,6 +13,6 @@ test("Battle matchup renderer creates one horizontal image for five AI players",
   const output = await createMatchupImage(lineup);
 
   assert.deepEqual([...output.subarray(1, 4)], [80, 78, 71]);
-  assert.equal(output.readUInt32BE(16), 962);
-  assert.equal(output.readUInt32BE(20), 296);
+  assert.equal(output.readUInt32BE(16), 954);
+  assert.equal(output.readUInt32BE(20), 314);
 });

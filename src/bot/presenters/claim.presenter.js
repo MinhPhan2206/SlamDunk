@@ -1,15 +1,37 @@
-function discordRelativeTimestamp(date) {
+import { EmbedBuilder } from "discord.js";
+import { formatNumber } from "../ui/formatters.js";
+import { UI_COLORS } from "../ui/theme.js";
+
+function relative(date) {
   return `<t:${Math.floor(date.getTime() / 1_000)}:R>`;
 }
 
-export function createClaimSuccessMessage(claim) {
-  return [
-    `You claimed **${claim.rewardGold} Gold**!`,
-    `Balance: **${claim.balanceAfter} Gold**.`,
-    `Next claim available ${discordRelativeTimestamp(claim.availableAt)}.`,
-  ].join("\n");
+export function createClaimSuccessPayload(claim) {
+  return {
+    embeds: [new EmbedBuilder()
+      .setColor(UI_COLORS.success)
+      .setTitle("Claim Complete")
+      .setDescription(`Next Claim: ${relative(claim.availableAt)}`)
+      .addFields(
+        {
+          name: "Reward",
+          value: `${formatNumber(claim.rewardGold)} Gold`,
+          inline: true,
+        },
+        {
+          name: "Gold Balance",
+          value: formatNumber(claim.balanceAfter),
+          inline: true,
+        },
+      )],
+  };
 }
 
-export function createClaimCooldownMessage(availableAt) {
-  return `Your \`/claim\` is on cooldown. Try again ${discordRelativeTimestamp(availableAt)}.`;
+export function createClaimCooldownPayload(availableAt) {
+  return {
+    embeds: [new EmbedBuilder()
+      .setColor(UI_COLORS.warning)
+      .setTitle("Claim Cooldown")
+      .setDescription(`Available ${relative(availableAt)}.`)],
+  };
 }

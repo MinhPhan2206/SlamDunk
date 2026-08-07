@@ -1,3 +1,5 @@
+import { getActualCardStat } from "../card/card-stats.js";
+
 const ACTIONS = Object.freeze({
   THREE_POINT: "THREE_POINT",
   MID_RANGE: "MID_RANGE",
@@ -48,14 +50,11 @@ function heightRating(heightCm) {
 }
 
 function rating(player, field, config) {
-  const base = field === "height"
-    ? heightRating(player.stats.heightCm)
-    : player.stats[field];
-  return clamp(
-    base + (player.cardLevel - 1) * config.levelRatingBonus,
-    0,
-    99,
-  );
+  if (field === "height") return heightRating(player.stats.heightCm);
+  return clamp(getActualCardStat(
+    player.stats[field],
+    player.cardLevel,
+  ), 0, 99);
 }
 
 function boxPlayer(player) {

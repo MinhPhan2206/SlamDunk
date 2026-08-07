@@ -54,11 +54,17 @@ test("upgrade fusion command combines two Card Instances", async () => {
           sourceCards: [
             {
               cardInstanceId: "41",
+              publicCardId: "111111111",
               serialNumber: "1",
               cardLevel: 2,
               playerName: "Test Guard",
             },
-            { cardInstanceId: "42", serialNumber: "2", cardLevel: 4 },
+            {
+              cardInstanceId: "42",
+              publicCardId: "222222222",
+              serialNumber: "2",
+              cardLevel: 4,
+            },
           ],
           resultCard: {
             cardInstanceId: "43",
@@ -76,7 +82,7 @@ test("upgrade fusion command combines two Card Instances", async () => {
   assert.equal(replies[0].type, "defer");
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.match(embed.title, /Fusion Complete/);
-  assert.match(embed.fields[1].value, /Lv5/);
+  assert.match(embed.fields[1].value, /Lv\.5/);
 });
 
 test("upgrade item command consumes one Level Up item", async () => {

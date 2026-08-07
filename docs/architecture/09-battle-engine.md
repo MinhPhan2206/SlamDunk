@@ -64,6 +64,16 @@ engine_version
 ruleset_version
 ```
 
+Template ratings are the Level 5 values. Before any Battle formula is applied,
+the engine derives each runtime rating with:
+
+```text
+Actual Stat = Template Stat - (5 - Card Level)
+```
+
+This calculation is shared with Lineup presentation and Collection stat sorting;
+derived ratings are not stored on Card Instances.
+
 Battle v2 derives rebounding from height, strength, and interior defense
 instead of requiring displayed Rebounding or Athleticism ratings.
 
@@ -253,7 +263,7 @@ display names are truncated to preserve the table layout. The report does not
 show engine version, possession count, or reward metadata.
 
 Game Display uses native Discord embeds and omits the prototype's
-`Your Starting 5` subtitle. `YOUR MATCHUP` renders the
+`Your Starting 5` subtitle. `Your Matchup` renders the
 five AI opponents as one horizontal PNG. Each opponent without individual
 artwork uses the project-local generic image with a rarity-colored border.
 Game Stats follows its accepted raster prototype and is sent as a separate PNG
@@ -263,7 +273,7 @@ PostgreSQL keeps its numeric `match_id` as the internal primary/foreign key.
 Each Match also owns a unique lowercase 32-character hexadecimal
 `public_match_id`, generated from 16 cryptographically random bytes for new
 Matches. Discord displays that public ID in inline code immediately before the
-`YOUR MATCHUP` embed and uses it in Battle component identifiers.
+`Your Matchup` embed and uses it in Battle component identifiers.
 
 ## Balance Validation
 

@@ -1,23 +1,22 @@
 import { EmbedBuilder } from "discord.js";
-
-const UPGRADE_COLOR = 0xf59e0b;
+import { UI_COLORS } from "../ui/theme.js";
 
 export function createFusionEmbed({ sourceCards, resultCard }) {
   const template = sourceCards[0];
   return new EmbedBuilder()
-    .setColor(UPGRADE_COLOR)
+    .setColor(UI_COLORS.success)
     .setTitle("Fusion Complete")
     .setDescription(`**${template.playerName}**`)
     .addFields(
       {
         name: "Sources",
         value: sourceCards
-          .map((card) => `#${card.serialNumber} Lv${card.cardLevel}`)
+          .map((card) => `\`!${card.publicCardId}\` Lv.${card.cardLevel}`)
           .join(" + "),
       },
       {
         name: "Result",
-        value: `Card !${resultCard.publicCardId} | #${resultCard.serialNumber} | Lv${resultCard.cardLevel}`,
+        value: `Card \`!${resultCard.publicCardId}\` • Lv.${resultCard.cardLevel}`,
       },
     );
 }
@@ -30,7 +29,7 @@ export function createLevelUpEmbed({
   remainingItems,
 }) {
   return new EmbedBuilder()
-    .setColor(UPGRADE_COLOR)
+    .setColor(UI_COLORS.success)
     .setTitle("Card Upgraded")
     .setDescription(`**${card.playerName}**`)
     .addFields(

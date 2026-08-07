@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from "discord.js";
 
 import { CardError } from "../../modules/card/index.js";
 import { LineupError } from "../../modules/lineup/index.js";
-import { createLineupEmbed } from "../presenters/lineup.presenter.js";
+import { createLineupPayload } from "../presenters/lineup.presenter.js";
 
 const SLOT_CHOICES = ["PG", "SG", "SF", "PF", "C"].map((slot) => ({
   name: slot,
@@ -94,13 +94,14 @@ export const lineupCommand = Object.freeze({
         result = await services.lineup.getLineup(player.playerId);
       }
 
-      await interaction.editReply({
-        embeds: [createLineupEmbed(result, {
+      await interaction.editReply(
+        await createLineupPayload(result, {
           title: viewingSelf
             ? "Active Lineup"
             : `${targetUser.globalName ?? targetUser.username}'s Active Lineup`,
-        })],
-      });
+          player,
+        }),
+      );
     } catch (error) {
       if (error instanceof LineupError || error instanceof CardError) {
         await interaction.editReply({ content: error.message, embeds: [] });

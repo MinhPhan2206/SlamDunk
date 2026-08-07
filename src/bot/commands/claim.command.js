@@ -2,8 +2,8 @@ import { SlashCommandBuilder } from "discord.js";
 
 import { RewardError } from "../../modules/reward/index.js";
 import {
-  createClaimCooldownMessage,
-  createClaimSuccessMessage,
+  createClaimCooldownPayload,
+  createClaimSuccessPayload,
 } from "../presenters/claim.presenter.js";
 
 export const claimCommand = Object.freeze({
@@ -25,15 +25,15 @@ export const claimCommand = Object.freeze({
         interactionId: interaction.id,
       });
 
-      await interaction.editReply({ content: createClaimSuccessMessage(claim) });
+      await interaction.editReply(createClaimSuccessPayload(claim));
     } catch (error) {
       if (
         error instanceof RewardError &&
         error.code === "CLAIM_COOLDOWN_ACTIVE"
       ) {
-        await interaction.editReply({
-          content: createClaimCooldownMessage(error.details.availableAt),
-        });
+        await interaction.editReply(
+          createClaimCooldownPayload(error.details.availableAt),
+        );
         return;
       }
 

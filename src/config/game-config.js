@@ -74,7 +74,6 @@ export const gameConfig = Object.freeze({
     rulesetVersion: "first-to-21-v1",
     configVersion: "battle-v2-playtest-1",
     aiCardLevel: 3,
-    levelRatingBonus: 1,
     targetScore: 21,
     maximumPossessions: 200,
     threePointBaseProbability: 0.34,

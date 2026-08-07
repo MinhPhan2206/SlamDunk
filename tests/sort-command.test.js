@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { sortCommand } from "../src/bot/commands/sort.command.js";
+import { collectionSortDefinitions } from "../src/modules/collection/index.js";
 
 function interactionFor(sortBy) {
   const replies = [];
@@ -33,4 +34,15 @@ test("sort command defaults to rarity when sort_by is omitted", async () => {
     payload: { ephemeral: true },
   });
   assert.match(interaction.replies[1].payload, /Rarity/);
+});
+
+test("Collection sort omits Overall and uses level-adjusted Card stats", () => {
+  assert.equal(
+    collectionSortDefinitions.some((definition) => definition.key === "OVERALL"),
+    false,
+  );
+  const threePoint = collectionSortDefinitions.find(
+    (definition) => definition.key === "THREE_POINT",
+  );
+  assert.match(threePoint.orderBy, /ct\.three_point - \(5 - ci\.card_level\)/);
 });

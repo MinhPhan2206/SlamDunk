@@ -1,18 +1,25 @@
-function discordRelativeTimestamp(date) {
-  return `<t:${Math.floor(date.getTime() / 1_000)}:R>`;
-}
+import { EmbedBuilder } from "discord.js";
+import { UI_COLORS } from "../ui/theme.js";
 
-function cooldownStatus(cooldown) {
+function status(cooldown) {
   return cooldown.available
-    ? "Ready now"
-    : `Available ${discordRelativeTimestamp(cooldown.availableAt)}`;
+    ? "Ready"
+    : `<t:${Math.floor(cooldown.availableAt.getTime() / 1_000)}:R>`;
 }
 
-export function createCooldownsMessage(claimCooldown, dailyCooldown, freeDropCooldown) {
-  return [
-    `**Cooldowns**`,
-    `Claim: **${cooldownStatus(claimCooldown)}**`,
-    `Daily: **${cooldownStatus(dailyCooldown)}**`,
-    `Free Drop: **${cooldownStatus(freeDropCooldown)}**`,
-  ].join("\n");
+export function createCooldownsPayload(
+  claimCooldown,
+  dailyCooldown,
+  freeDropCooldown,
+) {
+  return {
+    embeds: [new EmbedBuilder()
+      .setColor(UI_COLORS.secondary)
+      .setTitle("Cooldowns")
+      .addFields(
+        { name: "Claim", value: status(claimCooldown), inline: true },
+        { name: "Daily", value: status(dailyCooldown), inline: true },
+        { name: "Free Drop", value: status(freeDropCooldown), inline: true },
+      )],
+  };
 }

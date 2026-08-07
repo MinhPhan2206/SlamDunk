@@ -65,6 +65,6 @@ test("collection command displays active cards for the current Player", async ()
   assert.equal(replies[0].type, "defer");
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.match(embed.description, /Test Player/);
-  assert.match(embed.description, /Level 3/);
-  assert.match(embed.description, /#12/);
+  assert.match(embed.description, /Lv\.3/);
+  assert.doesNotMatch(embed.description, /OVR|#12/);
 });

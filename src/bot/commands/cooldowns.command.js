@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 
-import { createCooldownsMessage } from "../presenters/cooldowns.presenter.js";
+import { createCooldownsPayload } from "../presenters/cooldowns.presenter.js";
 
 export const cooldownsCommand = Object.freeze({
   data: new SlashCommandBuilder()
@@ -20,8 +20,8 @@ export const cooldownsCommand = Object.freeze({
       services.drop.getCooldown(player.playerId),
     ]);
 
-    await interaction.editReply({
-      content: createCooldownsMessage(claimCooldown, dailyCooldown, freeDropCooldown),
-    });
+    await interaction.editReply(
+      createCooldownsPayload(claimCooldown, dailyCooldown, freeDropCooldown),
+    );
   },
 });

@@ -26,7 +26,7 @@
 - `/rarity` lists template definitions, not Card Instances owned by a Player.
 - `/sort` persists each Player's `/collection` ordering. If `sort_by` is
   omitted, it defaults to Rarity. Supported choices are oldest, newest, rarity,
-  OVR, Card Level, player name, position, and implemented Card stats.
+  Card Level, player name, position, and implemented Card stats.
 - A Player without a saved preference uses oldest-first order so newly obtained
   Drop/Pack cards appear at the end of `/collection`.
 - `/profile`, `/collection`, and `/lineup view` accept an optional Discord
@@ -47,8 +47,7 @@
   DropSession completion, and cooldown update are atomic in PostgreSQL.
 - Replaying the same selection must return the existing result and must not mint
   another Card Instance.
-- An open offer is reused when `/drop` is called again. M9 does not expire or
-  reroll an abandoned offer because timeout behavior remains TBD.
+- An open offer is reused when `/drop` is called again until it is resolved.
 - The current playtest configuration uses a 15-minute Free Drop cooldown, three
   candidates, and the provisional named-rarity weights in
   `economy-pack-baseline.md`. These remain adjustable simulation values rather
@@ -84,6 +83,29 @@
 - Eligible Card Templates within each of the current seven rarities have
   equal probability after the rarity roll.
 - Future Premium, Event, and Shard Packs own separate catalog definitions and odds.
+
+## Card Stat Derivation
+
+- Card Template stats represent the Card at Level 5.
+- Runtime Actual Stat is `Template Stat - (5 - Card Level)` for every displayed
+  battle stat.
+- Card Instances store only their Level; derived stats are not duplicated.
+- Battle calculations, lineup averages, and stat sorting use Actual Stats.
+- `overall` is temporarily retained only for current Battle AI selection. It is
+  hidden from Player-facing UI and is not a Collection sort option.
+
+## Discord Presentation
+
+- Titles, colors, status states, Card rows, artwork fallback, and pagination
+  follow the shared bot UI modules.
+- Player-facing Card rows omit OVR and serial number.
+- Collection displays 10 Cards per page with icon-only Previous/Next controls
+  and the viewed Discord user's avatar.
+- Lineup displays a five-Card artwork strip, Actual Stat averages, and Battle
+  record/win rate. Profile omits Collection size and Lineup status.
+- Drop and Pack results are artwork-led. Odds use aligned text columns.
+- Interactive messages disable their controls and show `Interaction Expired`
+  after their configured inactivity timeout.
 
 ## Daily Reward
 

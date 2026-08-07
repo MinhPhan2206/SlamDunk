@@ -28,8 +28,8 @@ export const dropCommand = Object.freeze({
       });
       const payload =
         result.session.status === "COMPLETED"
-          ? createDropSelectionPayload(result)
-          : createDropOfferPayload(result);
+          ? await createDropSelectionPayload(result)
+          : await createDropOfferPayload(result);
 
       await interaction.editReply(payload);
 
@@ -45,7 +45,9 @@ export const dropCommand = Object.freeze({
               dropSessionId: result.session.dropSessionId,
               candidatePosition: 1,
             });
-            await interaction.editReply(createDropSelectionPayload(completed));
+            await interaction.editReply(
+              await createDropSelectionPayload(completed),
+            );
           } catch (error) {
             if (!(error instanceof DropError)) {
               console.error(`Drop timeout completion failed: ${error.message}`);

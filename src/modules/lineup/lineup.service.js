@@ -1,4 +1,5 @@
 import { withTransaction } from "../../database/transaction/transaction-manager.js";
+import { getActualCardStats } from "../card/card-stats.js";
 import { LineupError } from "./lineup.errors.js";
 import { lineupRepository } from "./lineup.repository.js";
 
@@ -25,7 +26,13 @@ function normalizeSlot(slot) {
 async function loadLineup(database, playerId) {
   const lineup = await lineupRepository.getOrCreate(database, playerId);
   const storedSlots = await lineupRepository.findSlots(database, lineup.lineupId);
-  const slotsByName = new Map(storedSlots.map((slot) => [slot.slot, slot]));
+  const slotsByName = new Map(storedSlots.map((slot) => [
+    slot.slot,
+    Object.freeze({
+      ...slot,
+      actualStats: getActualCardStats(slot, slot.cardLevel),
+    }),
+  ]));
   const slots = SLOTS.map((slot) => slotsByName.get(slot) ?? Object.freeze({ slot, cardInstanceId: null }));
 
   return Object.freeze({

@@ -1,21 +1,25 @@
 import { EmbedBuilder } from "discord.js";
 import { formatRarity } from "../../config/rarity-config.js";
+import { createCardStripImage } from "../ui/card-strip-image.js";
+import { formatNumber, formatPositions } from "../ui/formatters.js";
+import { rarityColor } from "../ui/theme.js";
 
-export function createPackOpeningPayload(result) {
+const PACK_IMAGE_NAME = "pack-result.png";
+
+export async function createPackOpeningPayload(result) {
   const { pack, template, instance } = result;
+  const image = await createCardStripImage([template]);
   return {
-    embeds: [
-      new EmbedBuilder()
-        .setColor(0xf5c542)
-        .setTitle(`${pack.displayName} Opened`)
-        .setDescription([
-          `**${template.playerName}**`,
-          `${formatRarity(template.rarityCode)} | OVR ${template.overall}`,
-          `Card Level: **${instance.cardLevel}**`,
-          `Serial: **#${instance.serialNumber}**`,
-          `Card ID: **!${instance.publicCardId}**`,
-          `Cost: **${pack.priceGold.toLocaleString("en-US")} Gold**`,
-        ].join("\n")),
-    ],
+    embeds: [new EmbedBuilder()
+      .setColor(rarityColor(template.rarityCode))
+      .setTitle(`${pack.displayName} Result`)
+      .setDescription(
+        `**${template.playerName}** • ${formatRarity(template.rarityCode)} • ` +
+        `${formatPositions(template)} • Lv.${instance.cardLevel} • ` +
+        `\`!${instance.publicCardId}\``,
+      )
+      .setImage(`attachment://${PACK_IMAGE_NAME}`)
+      .setFooter({ text: `Cost: ${formatNumber(pack.priceGold)} Gold` })],
+    files: [{ attachment: image, name: PACK_IMAGE_NAME }],
   };
 }

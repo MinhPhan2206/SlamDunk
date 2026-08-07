@@ -17,6 +17,8 @@ function mapListing(row) {
     sellerName: row.seller_name,
     playerName: row.player_name,
     rarityCode: row.rarity_code,
+    primaryPosition: row.primary_position,
+    secondaryPosition: row.secondary_position,
     serialNumber: row.serial_number,
     cardLevel: row.card_level,
   });
@@ -68,6 +70,8 @@ export const marketRepository = Object.freeze({
           ml.cancelled_at,
           p.username_snapshot AS seller_name,
           ct.player_name,
+          ct.primary_position,
+          ct.secondary_position,
           r.rarity_code,
           ci.serial_number,
           ci.card_level
@@ -104,6 +108,8 @@ export const marketRepository = Object.freeze({
           ml.cancelled_at,
           p.username_snapshot AS seller_name,
           ct.player_name,
+          ct.primary_position,
+          ct.secondary_position,
           r.rarity_code,
           ci.serial_number,
           ci.card_level

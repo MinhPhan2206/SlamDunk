@@ -5,10 +5,11 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { createBattleTimeline } from "../battle/battle-timeline.js";
+import { UI_COLORS } from "../ui/theme.js";
 
-const TEAM_ONE_COLOR = 0xf59e0b;
-const TEAM_TWO_COLOR = 0x3b82f6;
-const TIE_COLOR = 0x94a3b8;
+const TEAM_ONE_COLOR = UI_COLORS.primary;
+const TEAM_TWO_COLOR = UI_COLORS.secondary;
+const TIE_COLOR = UI_COLORS.tie;
 const MATCHUP_IMAGE_NAME = "battle-matchup.png";
 
 function publicMatchId(result) {
@@ -162,13 +163,13 @@ function createGameEmbeds(
   );
   const lineupEmbed = new EmbedBuilder()
     .setColor(leadingTeamColor(score))
-    .setTitle("YOUR MATCHUP");
+    .setTitle("Your Matchup");
   if (hasMatchupImage) {
     lineupEmbed.setImage(`attachment://${MATCHUP_IMAGE_NAME}`);
   }
   const gameEmbed = new EmbedBuilder()
     .setColor(leadingTeamColor(score))
-    .setTitle(`GAME · ${ownerDisplayName} vs AI Challenge`)
+    .setTitle(`Game · ${ownerDisplayName} vs AI Challenge`)
     .setDescription(
       playLines(visibleLines.slice(-9), "Tip-off is about to begin..."),
     )

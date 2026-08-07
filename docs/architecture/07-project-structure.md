@@ -137,6 +137,11 @@ Reusable static Discord artwork belongs under `assets/images/`. The current
 Battle fallback is `assets/images/unknown-player.png`; it contains no real
 player, team, or league identity.
 
+Shared Discord presentation primitives belong in `src/bot/ui/`. This directory
+owns semantic colors, compact Card formatting, artwork lookup, and transient
+Card-strip composition. Command presenters reuse these primitives instead of
+defining independent visual conventions.
+
 `src/bot/battle/matchup-image.js` uses `sharp` to compose the five snapshotted
 AI opponents into a transient PNG attachment. The buffer is sent to Discord and
 is not persisted on disk or in PostgreSQL.
@@ -144,6 +149,10 @@ is not persisted on disk or in PostgreSQL.
 `src/bot/battle/battle-report-image.js` renders the completed box score as a
 fixed 824 x 1024 SVG and converts it to a transient PNG with `sharp`. Long
 Player and Discord display names are truncated before rendering.
+
+`src/modules/card/card-stats.js` is the single source for deriving Actual Stats
+from Level 5 Card Template values and Card Instance Level. Derived stats are not
+persisted on Card Instances.
 
 ### Example
 

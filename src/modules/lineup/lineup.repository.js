@@ -18,9 +18,15 @@ function mapSlot(row) {
     cardLevel: row.card_level,
     playerName: row.player_name,
     rarityCode: row.rarity_code,
-    overall: row.overall,
     primaryPosition: row.primary_position,
     secondaryPosition: row.secondary_position,
+    finishing: row.finishing,
+    midRange: row.mid_range,
+    threePoint: row.three_point,
+    playmaking: row.playmaking,
+    perimeterDefense: row.perimeter_defense,
+    interiorDefense: row.interior_defense,
+    strength: row.strength,
   });
 }
 
@@ -51,9 +57,15 @@ export const lineupRepository = Object.freeze({
           ci.card_level,
           ct.player_name,
           r.rarity_code,
-          ct.overall,
           ct.primary_position,
-          ct.secondary_position
+          ct.secondary_position,
+          ct.finishing,
+          ct.mid_range,
+          ct.three_point,
+          ct.playmaking,
+          ct.perimeter_defense,
+          ct.interior_defense,
+          ct.strength
         FROM lineup_slots ls
         JOIN card_instances ci
           ON ci.card_instance_id = ls.card_instance_id

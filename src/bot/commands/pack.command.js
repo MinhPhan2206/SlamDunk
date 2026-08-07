@@ -33,7 +33,7 @@ export const packCommand = Object.freeze({
         packCode: interaction.options.getString("pack_type", true),
         interactionId: interaction.id,
       });
-      await interaction.editReply(createPackOpeningPayload(result));
+      await interaction.editReply(await createPackOpeningPayload(result));
     } catch (error) {
       if (error instanceof PackError) {
         await interaction.editReply({ content: error.message, embeds: [] });

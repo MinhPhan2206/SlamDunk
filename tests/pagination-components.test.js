@@ -37,7 +37,7 @@ test("Collection page button loads the requested owner page", async () => {
     },
   });
   assert.equal(calls[0], "defer");
-  assert.equal(calls[1].embeds[0].toJSON().footer.text, "Page 2/2 | 11 cards | Sort: Rarity");
+  assert.equal(calls[1].embeds[0].toJSON().footer.text, "Page 2/2 • 11 Cards • Sort: Rarity");
   assert.equal(calls[1].embeds[0].toJSON().title, "Viewed User's Collection");
 });
 

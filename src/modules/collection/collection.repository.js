@@ -12,7 +12,6 @@ function mapOwnedCard(row) {
     primaryPosition: row.primary_position,
     secondaryPosition: row.secondary_position,
     rarityCode: row.rarity_code,
-    overall: row.overall,
   });
 }
 
@@ -108,8 +107,7 @@ export const collectionRepository = Object.freeze({
           ct.player_name,
           ct.primary_position,
           ct.secondary_position,
-          r.rarity_code,
-          ct.overall
+          r.rarity_code
         FROM card_instances ci
         JOIN card_templates ct
           ON ct.card_template_id = ci.card_template_id

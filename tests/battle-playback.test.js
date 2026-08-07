@@ -113,7 +113,7 @@ test("Battle playback renders live possessions and then a postgame report", asyn
     ownerDiscordUserId: "99",
     ownerDisplayName: "haackzz",
   });
-  assert.equal(edits[0].embeds[0].toJSON().title, "YOUR MATCHUP");
+  assert.equal(edits[0].embeds[0].toJSON().title, "Your Matchup");
   assert.equal(edits[0].content, `\`${PUBLIC_MATCH_ID}\``);
   assert.equal(edits[0].embeds[0].toJSON().description, undefined);
   assert.equal(edits[0].files[0].name, "battle-matchup.png");
@@ -135,7 +135,7 @@ test("Battle playback renders live possessions and then a postgame report", asyn
   assert.match(edits[3].embeds[1].toJSON().fields[1].value, /P\. PG\s+2\s+0\s+0/);
   assert.equal(edits[3].embeds[1].toJSON().color, 0xf59e0b);
   for (let line = 4; line <= 12; line += 1) await scheduled.shift()();
-  assert.equal(edits[12].embeds[0].toJSON().title, "YOUR MATCHUP");
+  assert.equal(edits[12].embeds[0].toJSON().title, "Your Matchup");
   assert.match(edits[12].embeds[1].toJSON().footer.text, /Game complete/);
   assert.equal(edits[12].components.length, 0);
   assert.equal(reports[0].files[0].name, `game-stats-${PUBLIC_MATCH_ID}.png`);
@@ -188,7 +188,7 @@ test("Battle Simulate button skips playback and is owner-only", async () => {
   };
   await battleComponent.execute(interaction, { battlePlayback: playback });
   assert.equal(cancelled, true);
-  assert.equal(edits[0].embeds[0].toJSON().title, "YOUR MATCHUP");
+  assert.equal(edits[0].embeds[0].toJSON().title, "Your Matchup");
   assert.match(edits[0].embeds[1].toJSON().footer.text, /simulated/);
   assert.equal(replies[0].files[0].name, `game-stats-${PUBLIC_MATCH_ID}.png`);
 

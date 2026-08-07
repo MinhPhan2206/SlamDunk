@@ -11,6 +11,7 @@ test("interactive message components disable after inactivity", async () => {
       type: 1,
       components: [{ type: 2, custom_id: "test:button", style: 1 }],
     }],
+    embeds: [{ toJSON() { return { title: "Menu" }; } }],
     async edit(payload) { edits.push(payload); },
   };
   await scheduleComponentTimeout(
@@ -20,6 +21,7 @@ test("interactive message components disable after inactivity", async () => {
   await new Promise((resolve) => setTimeout(resolve, 20));
   assert.equal(edits.length, 1);
   assert.equal(edits[0].components[0].components[0].disabled, true);
+  assert.equal(edits[0].embeds[0].footer.text, "Interaction Expired");
 });
 
 test("new component interaction resets the inactivity timeout", async () => {

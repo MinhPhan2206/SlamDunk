@@ -39,6 +39,7 @@ export const profileCommand = Object.freeze({
       player,
       wallet,
       displayName: targetUser.globalName ?? targetUser.username,
+      thumbnailUrl: targetUser.displayAvatarURL?.({ extension: "png", size: 128 }),
     });
     await interaction.editReply({ embeds: [embed] });
   },

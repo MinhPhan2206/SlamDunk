@@ -38,5 +38,5 @@ test("trade command creates an interactive Direct Trade", async () => {
 
   assert.equal(replies[0], "defer");
   assert.equal(replies[1].components[0].components.length, 4);
-  assert.match(replies[1].embeds[0].toJSON().description, /Trade 9/);
+  assert.match(replies[1].embeds[0].toJSON().description, /Trade `9`/);
 });

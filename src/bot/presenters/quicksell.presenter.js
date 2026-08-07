@@ -4,26 +4,27 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from "discord.js";
-import { formatRarity } from "../../config/rarity-config.js";
+import { formatCardLine, formatNumber } from "../ui/formatters.js";
+import { UI_COLORS } from "../ui/theme.js";
 
 const MAX_VISIBLE_CARDS = 20;
 
 function cardLine(card) {
-  return `**${card.playerName}** | !${card.publicCardId} | ${formatRarity(card.rarityCode)} | ${card.shardReward} Shards`;
+  return `${formatCardLine(card)} • ${formatNumber(card.shardReward)} Shards`;
 }
 
 export function createQuicksellPreviewPayload({ session, cards }) {
   const visible = cards.slice(0, MAX_VISIBLE_CARDS).map(cardLine);
   if (cards.length > visible.length) {
-    visible.push(`…and ${cards.length - visible.length} more card(s).`);
+    visible.push(`...and ${cards.length - visible.length} more cards.`);
   }
   const embed = new EmbedBuilder()
-    .setColor(0xf59e0b)
-    .setTitle("Removal / Quicksell List")
+    .setColor(UI_COLORS.danger)
+    .setTitle("Quicksell Preview")
     .setDescription([
-      `Permanently destroy **${cards.length} card(s)** for **${session.totalShards} Shards**?`,
-      "Locked, listed, traded, and lineup cards are excluded.",
-      "This action cannot be undone.",
+      `Destroy **${cards.length} Cards** for **${formatNumber(session.totalShards)} Shards**?`,
+      "Listed, traded, locked, and lineup cards are excluded.",
+      "**This action cannot be undone.**",
       "",
       ...visible,
     ].join("\n"));
@@ -31,11 +32,11 @@ export function createQuicksellPreviewPayload({ session, cards }) {
     new ButtonBuilder()
       .setCustomId(`quicksell:confirm:${session.quicksellSessionId}`)
       .setLabel("Confirm")
-      .setStyle(ButtonStyle.Success),
+      .setStyle(ButtonStyle.Danger),
     new ButtonBuilder()
       .setCustomId(`quicksell:cancel:${session.quicksellSessionId}`)
       .setLabel("Cancel")
-      .setStyle(ButtonStyle.Danger),
+      .setStyle(ButtonStyle.Secondary),
   );
   return { embeds: [embed], components: [buttons] };
 }
@@ -43,10 +44,11 @@ export function createQuicksellPreviewPayload({ session, cards }) {
 export function createQuicksellCompletedPayload({ session, cards }) {
   return {
     embeds: [new EmbedBuilder()
-      .setColor(0x22c55e)
-      .setTitle("Quicksell Completed")
+      .setColor(UI_COLORS.success)
+      .setTitle("Quicksell Complete")
       .setDescription(
-        `Destroyed **${cards.length} card(s)** for **${session.totalShards} Shards**.\nShard balance: **${session.shardBalanceAfter}**`,
+        `Destroyed **${cards.length} Cards** for **${formatNumber(session.totalShards)} Shards**.\n` +
+        `Shard Balance: **${formatNumber(session.shardBalanceAfter)}**`,
       )],
     components: [],
   };
@@ -55,7 +57,7 @@ export function createQuicksellCompletedPayload({ session, cards }) {
 export function createQuicksellCancelledPayload() {
   return {
     embeds: [new EmbedBuilder()
-      .setColor(0x6b7280)
+      .setColor(UI_COLORS.neutral)
       .setTitle("Quicksell Cancelled")
       .setDescription("No cards were destroyed.")],
     components: [],
@@ -64,12 +66,11 @@ export function createQuicksellCancelledPayload() {
 
 export function createQuicksellEmbed({ card, shardReward, shardBalance }) {
   return new EmbedBuilder()
-    .setColor(0x8b5cf6)
-    .setTitle("Card Quicksold")
-    .setDescription(`**${card.playerName}**`)
+    .setColor(UI_COLORS.success)
+    .setTitle("Quicksell Complete")
+    .setDescription(formatCardLine(card))
     .addFields(
-      { name: "Received", value: `${shardReward} Shards`, inline: true },
-      { name: "Shard Balance", value: shardBalance, inline: true },
-    )
-    .setFooter({ text: `Card !${card.publicCardId} was destroyed.` });
+      { name: "Received", value: `${formatNumber(shardReward)} Shards`, inline: true },
+      { name: "Shard Balance", value: formatNumber(shardBalance), inline: true },
+    );
 }

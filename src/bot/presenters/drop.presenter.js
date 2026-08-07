@@ -5,73 +5,70 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { formatRarity } from "../../config/rarity-config.js";
+import { createCardStripImage } from "../ui/card-strip-image.js";
+import { formatPositions } from "../ui/formatters.js";
+import { rarityColor, UI_COLORS } from "../ui/theme.js";
 
-const DROP_COLOR = 0xf28c28;
-
-function templateName(template) {
-  return template.playerName;
-}
-
-function candidateLine(candidate) {
-  const { template } = candidate;
-  const positions = [template.primaryPosition, template.secondaryPosition]
-    .filter(Boolean)
-    .join("/");
-
-  return [
-    `**${candidate.candidatePosition}. ${templateName(template)}**`,
-    `${formatRarity(template.rarityCode)} | OVR ${template.overall} | ${positions}`,
-  ].join("\n");
-}
+const DROP_IMAGE_NAME = "drop-candidates.png";
+const REVEAL_IMAGE_NAME = "drop-result.png";
 
 function selectionCustomId(dropSessionId, candidatePosition) {
   return `drop:select:${dropSessionId}:${candidatePosition}`;
 }
 
-export function createDropOfferPayload({ session, candidates }) {
+export async function createDropOfferPayload({ session, candidates }) {
+  const image = await createCardStripImage(
+    candidates.map((candidate) => candidate.template),
+    { labels: candidates.map((candidate) => candidate.candidatePosition) },
+  );
   const embed = new EmbedBuilder()
-    .setColor(DROP_COLOR)
+    .setColor(UI_COLORS.primary)
     .setTitle("Free Drop")
-    .setDescription(candidates.map(candidateLine).join("\n\n"))
-    .setFooter({ text: "Choose within 10 seconds. Timeout automatically selects card 1." });
+    .setDescription("Choose one card.")
+    .setImage(`attachment://${DROP_IMAGE_NAME}`)
+    .setFooter({
+      text: "10 Seconds • Timeout Selects Card 1",
+    });
   const row = new ActionRowBuilder().addComponents(
     candidates.map((candidate) =>
       new ButtonBuilder()
-        .setCustomId(
-          selectionCustomId(
-            session.dropSessionId,
-            candidate.candidatePosition,
-          ),
-        )
-        .setLabel(`Choose ${candidate.candidatePosition}`)
+        .setCustomId(selectionCustomId(
+          session.dropSessionId,
+          candidate.candidatePosition,
+        ))
+        .setLabel(String(candidate.candidatePosition))
         .setStyle(ButtonStyle.Primary),
     ),
   );
-
-  return { embeds: [embed], components: [row] };
+  return {
+    embeds: [embed],
+    components: [row],
+    files: [{ attachment: image, name: DROP_IMAGE_NAME }],
+  };
 }
 
-export function createDropSelectionPayload(result) {
-  const selectedCandidate = result.candidates.find(
-    (candidate) =>
-      candidate.cardTemplateId === result.session.selectedTemplateId,
+export async function createDropSelectionPayload(result) {
+  const selectedCandidate = result.candidates.find((candidate) =>
+    candidate.cardTemplateId === result.session.selectedTemplateId
   );
   const template = selectedCandidate.template;
   const instance = result.resultInstance;
+  const image = await createCardStripImage([template]);
   const embed = new EmbedBuilder()
-    .setColor(DROP_COLOR)
-    .setTitle("Free Drop Selected")
+    .setColor(rarityColor(template.rarityCode))
+    .setTitle("Free Drop Result")
     .setDescription(
-      [
-        `**${templateName(template)}**`,
-        `${formatRarity(template.rarityCode)} | OVR ${template.overall}`,
-        `Card Level: **${instance.cardLevel}**`,
-        `Serial: **#${instance.serialNumber}**`,
-        `Card ID: **!${instance.publicCardId}**`,
-      ].join("\n"),
-    );
-
-  return { embeds: [embed], components: [] };
+      `**${template.playerName}** • ${formatRarity(template.rarityCode)} • ` +
+      `${formatPositions(template)} • Lv.${instance.cardLevel} • ` +
+      `\`!${instance.publicCardId}\``,
+    )
+    .setImage(`attachment://${REVEAL_IMAGE_NAME}`);
+  return {
+    embeds: [embed],
+    components: [],
+    attachments: [],
+    files: [{ attachment: image, name: REVEAL_IMAGE_NAME }],
+  };
 }
 
 export function createDropCooldownMessage(availableAt) {
