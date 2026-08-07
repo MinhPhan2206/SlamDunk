@@ -560,11 +560,18 @@ Card Level range = 1–5
 Maximum Card Level = 5
 ```
 
-Cards received directly from pack/drop get:
+Cards received directly from Pack/Drop use weighted initial Levels:
 
 ```text
-random integer level from 1 to 5
+Level 1 = 45%
+Level 2 = 28%
+Level 3 = 14%
+Level 4 = 8%
+Level 5 = 5%
 ```
+
+Drop and each Pack definition own separate Level weight configuration so future
+Pack products may use different odds.
 
 Card Level belongs to Card Instance.
 
@@ -1344,8 +1351,9 @@ Goat        0.0100%
 ```
 
 Future Packs must be added as independent Pack catalog entries with their own
-stable code, display name, and rarity weights. `/odds drop` and `/odds pack`
-display configured odds. Pack purchase/opening is implemented independently of Drop.
+stable code, display name, and rarity weights. `/odds pack_type:<code>` is one
+command for Free Drop and configured Pack odds; omitting `pack_type` defaults
+to Free Drop. Pack purchase/opening is implemented independently of Drop.
 
 Confirmed Standard Pack behavior:
 
@@ -2648,7 +2656,7 @@ OVR range: 60–99
 One Card Template per player and rarity pair in the current schema
 
 Card Level: 1–5
-Initial Pack Level: random 1–5
+Initial Drop/Pack Level: weighted 45% / 28% / 14% / 8% / 5%
 Max Card Level: 5
 
 Fusion:
@@ -2883,9 +2891,45 @@ season, rebounding, athleticism, weight, and release date, and renames
 documented in `docs/requirements/card-rating-data.md`. Collection and Market
 browse responses support owner-scoped Previous/Next page buttons.
 
+Battle runtime presentation expands persisted possessions into short setup,
+shot-result, and rebound lines and reveals one line every 1.5 seconds instead
+of immediately displaying the final score. Timeline lines omit timestamps,
+box every Player name with Discord inline code, and use compact `🔸`/`🔹`
+markers to identify the team controlling the event. Shot attempts and their
+results are separate. The live embed omits play/possession progress text; its
+left border is amber for a Team 1 lead, blue for a Team 2 lead, and slate for a
+tie.
+The owner-only `Simulate` button skips playback and
+finishes the game immediately. The game message and postgame report are
+separate Discord messages. The engine resolves direct defenders by position
+and records primary/help shot matchup participants in structured PBP.
+
+The accepted Game Display prototype remains a layout reference for native
+Discord embeds; no PNG is rendered every possession. Game Display omits the
+`Your Starting 5` subtitle. `YOUR MATCHUP` renders the five AI opponents as one
+horizontal PNG; missing artwork repeats the generic fallback image. Game Display
+derives its aligned PTS/REB/AST tables only from fully revealed possessions.
+`GAME STATS` is sent separately after natural completion or Simulate as one
+transient 824 x 1024 PNG with the final score, complete two-Team box score, and
+totals. Long Player and Discord names are truncated to preserve table layout.
+The report omits engine, possession, and reward metadata.
+
+`/profile`, `/collection`, and `/lineup view` accept an optional Discord `user`
+for read-only viewing of another existing Player. Omitting `user` retains the
+self-view behavior. Looking up someone else never creates their Player record;
+Lineup set/remove stay self-only, and Collection page buttons remain restricted
+to the user who opened the view.
+
+Matches retain numeric `match_id` for internal PostgreSQL relationships and add
+a unique lowercase 32-character hexadecimal `public_match_id`. New public IDs
+come from 16 random bytes. Discord shows this public ID immediately before
+`YOUR MATCHUP` and uses it in Battle component identifiers. Migration 023
+backfills existing Matches and enforces the public ID format.
+
 All interactive Discord responses with components use a shared 10-second
 inactivity timeout. A valid component interaction resets the timer; expiration
-disables the components. Drop keeps its existing timeout behavior and chooses
+disables the components. Battle overrides this with a 60-second Simulate button
+lifetime. Drop keeps its existing timeout behavior and chooses
 candidate 1 when no selection is made.
 
 Migration 021 changes Card Template uniqueness to case-insensitive player name

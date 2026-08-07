@@ -45,6 +45,12 @@ test("Battle Engine v2 is deterministic and produces a valid first-to-21 result"
 
   const validActions = new Set([...Object.values(ACTIONS), "TURNOVER"]);
   assert.ok(first.playByPlay.every((event) => validActions.has(event.action)));
+  assert.ok(first.playByPlay.every((event) =>
+    event.handler?.slot && event.primaryDefender?.slot
+  ));
+  assert.ok(first.playByPlay
+    .filter((event) => event.action !== "TURNOVER")
+    .every((event) => event.shooter?.slot && event.shotDefender?.slot));
 
   for (const [players, score] of [
     [first.playerTeam, first.playerScore],

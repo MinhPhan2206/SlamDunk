@@ -1,6 +1,7 @@
 import { Events } from "discord.js";
 
 import { createDiscordClient } from "./bot/client/discord-client.js";
+import { createBattlePlayback } from "./bot/battle/battle-playback.js";
 import { commands } from "./bot/commands/index.js";
 import { components } from "./bot/components/index.js";
 import { createInteractionCreateHandler } from "./bot/events/interaction-create.event.js";
@@ -76,6 +77,9 @@ export function createApplication({ discordToken, databaseUrl }) {
     playerService,
     battleConfig: gameConfig.battle,
   });
+  const battlePlayback = createBattlePlayback({
+    playbackConfig: gameConfig.battlePlayback,
+  });
   const quicksellService = createQuicksellService({
     databasePool,
     economyService,
@@ -138,7 +142,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     Events.InteractionCreate,
     createInteractionCreateHandler(
       commandRegistry,
-      { services },
+      { services, battlePlayback },
       componentRegistry,
     ),
   );
@@ -160,6 +164,7 @@ export function createApplication({ discordToken, databaseUrl }) {
       }
 
       isStopped = true;
+      battlePlayback.stop();
       client.destroy();
       await databasePool.end();
     },

@@ -19,13 +19,17 @@ function formatCard(card) {
   ].join("\n");
 }
 
-export function createCollectionEmbed(result) {
+export function createCollectionEmbed(result, { title = "Your Collection" } = {}) {
   const embed = new EmbedBuilder()
     .setColor(COLLECTION_COLOR)
-    .setTitle("Your Collection");
+    .setTitle(title);
 
   if (result.cards.length === 0) {
-    embed.setDescription("You do not own any active cards yet.");
+    embed.setDescription(
+      title === "Your Collection"
+        ? "You do not own any active cards yet."
+        : "This Player does not own any active cards yet.",
+    );
   } else {
     embed.setDescription(result.cards.map(formatCard).join("\n\n"));
   }
@@ -35,7 +39,10 @@ export function createCollectionEmbed(result) {
   });
 }
 
-export function createCollectionPayload(result, { discordUserId, playerId }) {
+export function createCollectionPayload(
+  result,
+  { discordUserId, playerId, title = "Your Collection" },
+) {
   const components = [];
   if (result.totalPages > 1) {
     components.push(
@@ -53,5 +60,5 @@ export function createCollectionPayload(result, { discordUserId, playerId }) {
       ),
     );
   }
-  return { embeds: [createCollectionEmbed(result)], components };
+  return { embeds: [createCollectionEmbed(result, { title })], components };
 }

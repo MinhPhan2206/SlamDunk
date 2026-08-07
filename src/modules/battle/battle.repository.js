@@ -1,6 +1,7 @@
 function mapMatch(row) {
   return Object.freeze({
     matchId: row.match_id,
+    publicMatchId: row.public_match_id,
     playerId: row.player_id,
     requestInteractionId: row.request_interaction_id,
     mode: row.mode,
@@ -45,6 +46,7 @@ export const battleRepository = Object.freeze({
     database,
     {
       playerId,
+      publicMatchId,
       interactionId,
       rngSeed,
       engineVersion,
@@ -57,6 +59,7 @@ export const battleRepository = Object.freeze({
       `
         INSERT INTO matches (
           player_id,
+          public_match_id,
           request_interaction_id,
           mode,
           rng_seed,
@@ -65,11 +68,12 @@ export const battleRepository = Object.freeze({
           config_version,
           input_snapshot
         )
-        VALUES ($1, $2, 'PVE_5V5', $3, $4, $5, $6, $7::jsonb)
+        VALUES ($1, $2, $3, 'PVE_5V5', $4, $5, $6, $7, $8::jsonb)
         RETURNING *
       `,
       [
         playerId,
+        publicMatchId,
         interactionId,
         rngSeed,
         engineVersion,

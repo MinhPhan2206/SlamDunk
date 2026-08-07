@@ -59,7 +59,9 @@ export function createInteractionCreateHandler(
 
     try {
       await handler.execute(interaction, context);
-      await scheduleComponentTimeout(interaction);
+      await scheduleComponentTimeout(interaction, handler.componentInactivityTimeoutMs
+        ? { timeoutMs: handler.componentInactivityTimeoutMs }
+        : undefined);
     } catch (error) {
       console.error(
         `Discord ${interactionLabel} failed: ${getErrorMessage(error)}`,

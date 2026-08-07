@@ -25,6 +25,25 @@ Trait effects in v2
 A Card may occupy its primary or secondary position. Invalid positions are not
 allowed; v0.1 does not apply an out-of-position penalty.
 
+## Matchup Assignment
+
+Every lineup slot owns a primary one-to-one matchup:
+
+```text
+PG vs PG
+SG vs SG
+SF vs SF
+PF vs PF
+C  vs C
+```
+
+The primary matchup supplies the perimeter defender for ball pressure and
+ordinary jump shots. Drives may bring the strongest interior help defender;
+pick-and-roll may use that help defender against the roller; drive-and-kick
+returns to the receiving shooter's positional defender. Post-up uses the
+direct positional matchup. Each play-by-play event stores the handler, primary
+defender, shooter, actual shot defender, assister, and rebounder when present.
+
 ## Battle Inputs
 
 The target engine consumes an immutable snapshot containing:
@@ -202,6 +221,49 @@ reward and streak references
 
 Persist structured data; generate Discord embeds or images on demand. Do not
 permanently store every rendered image.
+
+## Discord Runtime Playback
+
+The pure engine completes and persists the deterministic result before Discord
+presentation begins. The Discord adapter expands each stored possession into
+short presentation events (action setup, shot result, and rebound when present)
+and reveals exactly one line every 1.5 seconds. This avoids holding database locks or adding wall-clock
+delays to the simulation itself.
+
+Timeline lines do not display timestamps. The compact `🔸` marker identifies
+Team 1 events and `🔹` identifies Team 2 events; every player name uses a
+Discord inline-code box. Shot
+creation and its result are separate lines, so the attempt appears before the
+later make, miss, or block.
+
+The live response uses separate native embeds for the AI matchup and game
+panel. It shows current score, recent event lines, and aligned partial
+PTS/REB/AST tables derived only from fully revealed possessions. Its owner-only
+`Simulate` button skips the remaining playback
+and immediately renders the final report. Battle overrides the general
+component timeout and disables Simulate after 60 seconds. Natural completion and Simulate
+both remove all components from the game message. The game message remains a
+separate final scoreboard/feed, while the bot sends a new `GAME STATS` message.
+The live embed has no play/possession progress footer. Its left border is amber
+when Team 1 leads, blue when Team 2 leads, and slate when the score is tied.
+The postgame report is a single transient 824 x 1024 PNG containing the score,
+both five-Player box scores, and team totals. It is rendered locally from SVG
+with `sharp`; it is never persisted in PostgreSQL. Long Player and Discord
+display names are truncated to preserve the table layout. The report does not
+show engine version, possession count, or reward metadata.
+
+Game Display uses native Discord embeds and omits the prototype's
+`Your Starting 5` subtitle. `YOUR MATCHUP` renders the
+five AI opponents as one horizontal PNG. Each opponent without individual
+artwork uses the project-local generic image with a rarity-colored border.
+Game Stats follows its accepted raster prototype and is sent as a separate PNG
+after the game completes or the owner uses Simulate.
+
+PostgreSQL keeps its numeric `match_id` as the internal primary/foreign key.
+Each Match also owns a unique lowercase 32-character hexadecimal
+`public_match_id`, generated from 16 cryptographically random bytes for new
+Matches. Discord displays that public ID in inline code immediately before the
+`YOUR MATCHUP` embed and uses it in Battle component identifiers.
 
 ## Balance Validation
 

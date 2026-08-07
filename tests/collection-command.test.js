@@ -8,6 +8,9 @@ test("collection command displays active cards for the current Player", async ()
   const interaction = {
     user: { id: "234567890123456789", username: "CollectionTester" },
     options: {
+      getUser() {
+        return null;
+      },
       getInteger(name) {
         return name === "page" ? 1 : null;
       },

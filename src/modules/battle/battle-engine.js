@@ -326,6 +326,16 @@ function frozenPlayer(player) {
   return Object.freeze({ ...player });
 }
 
+function eventPlayer(player) {
+  if (!player) return null;
+  return Object.freeze({
+    slot: player.slot,
+    cardName: player.cardName,
+    cardInstanceId: player.cardInstanceId,
+    cardTemplateId: player.cardTemplateId,
+  });
+}
+
 function eventDescription({ action, handler, plan, made, quality, blocked, rebound }) {
   if (action === "TURNOVER") {
     return `${handler.cardName} turns the ball over.`;
@@ -382,13 +392,17 @@ export function simulateBattle({
 
     if (random() < clamp(turnoverProbability, 0.03, 0.18)) {
       handler.turnovers += 1;
-      if (random() < 0.75) primary.steals += 1;
+      const stealBy = random() < 0.75 ? primary : null;
+      if (stealBy) stealBy.steals += 1;
       events.push(Object.freeze({
         sequence: events.length + 1,
         possession: possessionCount,
         offenseTeam,
         action: "TURNOVER",
         result: "TURNOVER",
+        handler: eventPlayer(handler),
+        primaryDefender: eventPlayer(primary),
+        stealBy: eventPlayer(stealBy),
         score: Object.freeze({ ...scores }),
         description: eventDescription({ action: "TURNOVER", handler }),
       }));
@@ -441,6 +455,15 @@ export function simulateBattle({
       shotQuality: quality,
       result: made ? "MAKE" : blocked ? "BLOCK" : "MISS",
       points: made ? plan.points : 0,
+      handler: eventPlayer(handler),
+      shooter: eventPlayer(plan.shooter),
+      primaryDefender: eventPlayer(primary),
+      shotDefender: eventPlayer(plan.defender),
+      assister: eventPlayer(plan.assister),
+      rebounder: eventPlayer(rebound?.rebounder),
+      reboundTeam: rebound
+        ? rebound.offensive ? actingTeam : defenseTeam
+        : null,
       score: Object.freeze({ ...scores }),
       description: eventDescription({
         action: actionOption.action,

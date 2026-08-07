@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { battleCommand } from "../src/bot/commands/battle.command.js";
 
-test("battle command displays the Battle v2 score, box score, and recent plays", async () => {
+test("battle command starts the runtime Battle playback", async () => {
   const replies = [];
   const interaction = {
     id: "123456789012345678",
@@ -60,14 +60,20 @@ test("battle command displays the Battle v2 score, box score, and recent plays",
       },
     },
   };
+  const playbackCalls = [];
+  const battlePlayback = {
+    async start(input) {
+      playbackCalls.push(input);
+    },
+  };
 
-  await battleCommand.execute(interaction, { services });
+  await battleCommand.execute(interaction, { services, battlePlayback });
 
   assert.equal(replies[0].type, "defer");
-  const embed = replies[1].payload.embeds[0].toJSON();
-  assert.equal(embed.title, "Victory!");
-  assert.match(embed.description, /21/);
-  assert.match(embed.fields[0].value, /FG 2\/4/);
-  assert.match(embed.fields[2].value, /makes the three/);
-  assert.match(embed.footer.text, /Engine 2\.0\.0/);
+  assert.equal(playbackCalls.length, 1);
+  assert.equal(playbackCalls[0].interaction, interaction);
+  assert.equal(playbackCalls[0].ownerDiscordUserId, interaction.user.id);
+  assert.equal(playbackCalls[0].ownerDisplayName, interaction.user.username);
+  assert.equal(playbackCalls[0].result.match.matchId, "12");
+  assert.equal(battleCommand.componentInactivityTimeoutMs, 60_000);
 });

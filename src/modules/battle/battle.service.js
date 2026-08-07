@@ -1,4 +1,4 @@
-import { randomInt } from "node:crypto";
+import { randomBytes, randomInt } from "node:crypto";
 
 import { withTransaction } from "../../database/transaction/transaction-manager.js";
 import { BattleError } from "./battle.errors.js";
@@ -128,6 +128,7 @@ export function createBattleService({
   playerService,
   battleConfig,
   generateSeed = () => randomInt(1, 2_147_483_647),
+  generateMatchId = () => randomBytes(16).toString("hex"),
   resolveTraitModifier = () => 0,
 }) {
   const config = validateConfig(battleConfig);
@@ -165,6 +166,9 @@ export function createBattleService({
         cardTemplateId: template.cardTemplateId,
         cardLevel: instance.cardLevel,
         cardName: template.playerName,
+        overall: template.overall,
+        rarityCode: template.rarityCode,
+        rarityName: template.rarityName,
         stats: statsFromTemplate(template),
         traits,
       }));
@@ -186,6 +190,9 @@ export function createBattleService({
         cardTemplateId: template.cardTemplateId,
         cardLevel: config.aiCardLevel,
         cardName: template.playerName,
+        overall: template.overall,
+        rarityCode: template.rarityCode,
+        rarityName: template.rarityName,
         stats: statsFromTemplate(template),
         traits,
       }));
@@ -218,9 +225,14 @@ export function createBattleService({
     const playerTeam = await snapshotPlayerLineup(database, playerId);
     const aiTeam = await snapshotAiLineup(database);
     const rngSeed = generateSeed();
+    const publicMatchId = generateMatchId();
+    if (!/^[0-9a-f]{32}$/.test(publicMatchId)) {
+      throw new TypeError("Generated Battle Match ID must be 32 lowercase hexadecimal characters.");
+    }
     const inputSnapshot = { playerTeam, aiTeam, battleConfig: config };
     const match = await battleRepository.createMatch(database, {
       playerId,
+      publicMatchId,
       interactionId,
       rngSeed,
       engineVersion: config.engineVersion,

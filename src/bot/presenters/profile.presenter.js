@@ -6,10 +6,14 @@ function formatWholeNumber(value) {
   return BigInt(value).toLocaleString("en-US");
 }
 
-export function createProfileEmbed({ player, wallet }) {
+export function createProfileEmbed({
+  player,
+  wallet,
+  displayName = player.usernameSnapshot,
+}) {
   return new EmbedBuilder()
     .setColor(PROFILE_COLOR)
-    .setTitle(`${player.usernameSnapshot}'s SlamDunk Profile`)
+    .setTitle(`${displayName}'s SlamDunk Profile`)
     .addFields(
       {
         name: "Progression",

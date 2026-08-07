@@ -1,6 +1,10 @@
 import { randomInt } from "node:crypto";
 
 import { withTransaction } from "../../database/transaction/transaction-manager.js";
+import {
+  normalizeCardLevelWeights,
+  rollCardLevel,
+} from "../card/card-level-roll.js";
 import { cooldownRepository } from "../reward/cooldown.repository.js";
 import { buildRarityOdds } from "../rarity/rarity-odds.js";
 import { DropError } from "./drop.errors.js";
@@ -88,6 +92,7 @@ function validateConfig(config) {
     cooldownMinutes: config.cooldownMinutes,
     candidateCount: config.candidateCount,
     selectionSeconds: config.selectionSeconds,
+    levelWeights: normalizeCardLevelWeights(config.levelWeights),
     rarityWeights: Object.freeze(rarityWeights),
   });
 }
@@ -376,7 +381,7 @@ export function createDropService({
           return hydrateSession(transactionDatabase, session, { replayed: true });
         }
 
-        const cardLevel = rollInteger(1, 6);
+        const cardLevel = rollCardLevel(config.levelWeights, rollInteger);
         const mint = await cardInstanceService.mintCard(
           {
             cardTemplateId: selectedCandidate.cardTemplateId,

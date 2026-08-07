@@ -29,13 +29,20 @@
   OVR, Card Level, player name, position, and implemented Card stats.
 - A Player without a saved preference uses oldest-first order so newly obtained
   Drop/Pack cards appear at the end of `/collection`.
+- `/profile`, `/collection`, and `/lineup view` accept an optional Discord
+  `user`. Omitting it views the caller. Viewing another Discord user is
+  read-only and does not create a Player record for someone who has never used
+  SlamDunk. `/lineup set` and `/lineup remove` remain self-only. Collection
+  pagination remains controlled by the user who opened the response.
 
 ## M9 Free Drop Behavior
 
 - `/drop` creates a persisted Free Drop offer containing three distinct,
   packable, non-retired Card Templates.
 - The Player chooses one candidate; only that candidate becomes a Card Instance.
-- The new Card Instance receives a random initial Card Level from 1 through 5.
+- The new Card Instance receives a weighted initial Card Level: Level 1 45%,
+  Level 2 28%, Level 3 14%, Level 4 8%, and Level 5 5%. Drop and each Pack
+  product keep separate configuration for these weights.
 - Candidate selection, Card Instance minting, ownership history, mint counters,
   DropSession completion, and cooldown update are atomic in PostgreSQL.
 - Replaying the same selection must return the existing result and must not mint
@@ -54,9 +61,10 @@
 ## Drop and Pack Odds
 
 - Free Drop and Pack are separate modules and separate product sources.
-- `/odds drop` displays the configured per-candidate Free Drop distribution.
-- `/odds pack` displays the Standard Pack distribution by default; an optional
-  `pack_code` selects another configured Pack when more products are added.
+- `/odds pack_type:<code>` displays Free Drop or configured Pack odds through
+  one command. Omitting `pack_type` defaults to Free Drop. Current choices are
+  Free Drop and Standard Pack; future Pack catalog entries become additional
+  choices.
 - Standard Pack odds are: Base 10%, Common 35%, Uncommon 40%, Alpha 12%,
   All-Star 2.7%, Superstar 0.29%, and Goat 0.01%.
 - Pack definitions are keyed by stable Pack codes so each future Pack can own

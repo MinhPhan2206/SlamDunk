@@ -6,17 +6,15 @@ import { gameConfig } from "../src/config/game-config.js";
 import { buildRarityOdds } from "../src/modules/rarity/rarity-odds.js";
 import { createPackService } from "../src/modules/pack/index.js";
 
-function createInteraction(subcommand, packCode = null) {
+function createInteraction(packType = null) {
   const replies = [];
   return {
     replies,
     interaction: {
       options: {
-        getSubcommand() {
-          return subcommand;
-        },
-        getString() {
-          return packCode;
+        getString(name) {
+          assert.equal(name, "pack_type");
+          return packType;
         },
       },
       async deferReply() {
@@ -29,8 +27,8 @@ function createInteraction(subcommand, packCode = null) {
   };
 }
 
-test("odds drop command shows the finalized rarity names", async () => {
-  const { interaction, replies } = createInteraction("drop");
+test("odds defaults to Free Drop and shows the finalized rarity names", async () => {
+  const { interaction, replies } = createInteraction();
   const services = {
     drop: {
       getOdds() {
@@ -49,10 +47,11 @@ test("odds drop command shows the finalized rarity names", async () => {
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.match(embed.description, /Base.*50\.0000%/);
   assert.match(embed.description, /Goat.*0\.0005%/);
+  assert.equal(embed.footer, undefined);
 });
 
-test("odds pack command resolves a Pack by its scalable pack code", async () => {
-  const { interaction, replies } = createInteraction("pack", "standard");
+test("odds pack_type resolves a Pack by its scalable pack code", async () => {
+  const { interaction, replies } = createInteraction("standard");
   const services = {
     pack: createPackService({ packCatalog: gameConfig.packs }),
   };
@@ -63,5 +62,5 @@ test("odds pack command resolves a Pack by its scalable pack code", async () => 
   assert.equal(embed.title, "Standard Pack Odds");
   assert.match(embed.description, /Base.*10\.0000%/);
   assert.match(embed.description, /Goat.*0\.0100%/);
-  assert.match(embed.footer.text, /standard/);
+  assert.equal(embed.footer, undefined);
 });

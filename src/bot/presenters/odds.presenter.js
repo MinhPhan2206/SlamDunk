@@ -7,7 +7,7 @@ function formatProbability(probabilityPercent) {
 }
 
 export function createOddsEmbed(result) {
-  const embed = new EmbedBuilder()
+  return new EmbedBuilder()
     .setColor(ODDS_COLOR)
     .setTitle(`${result.displayName} Odds`)
     .setDescription(
@@ -18,11 +18,4 @@ export function createOddsEmbed(result) {
         )
         .join("\n"),
     );
-
-  return embed.setFooter({
-    text:
-      result.source === "drop"
-        ? `Per candidate roll; /drop shows ${result.candidateCount} candidates. Rarities without packable cards are excluded at roll time.`
-        : `Pack code: ${result.packCode}. Additional Packs can define independent odds.`,
-  });
 }

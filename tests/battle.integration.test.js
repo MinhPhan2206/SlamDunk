@@ -101,6 +101,7 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
       playerService,
       battleConfig: gameConfig.battle,
       generateSeed: () => 123456,
+      generateMatchId: () => "0a038642a1404d938a3dc5b401f17c23",
     });
     const result = await battleService.battle(
       { playerId, interactionId },
@@ -108,9 +109,13 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     );
 
     assert.equal(result.match.status, "COMPLETED");
+    assert.equal(result.match.publicMatchId, "0a038642a1404d938a3dc5b401f17c23");
     assert.equal(result.match.engineVersion, "2.0.0");
     assert.equal(result.match.rulesetVersion, "first-to-21-v1");
     assert.equal(result.match.inputSnapshot.battleConfig.configVersion, "battle-v2-playtest-1");
+    assert.ok(result.match.inputSnapshot.playerTeam.every((player) =>
+      player.overall && player.rarityCode && player.rarityName
+    ));
     assert.equal(result.match.playByPlay.length, result.match.possessionCount);
     assert.ok(result.match.possessionCount > 0);
     assert.ok(result.teams.some((team) => team.finalScore >= 21));

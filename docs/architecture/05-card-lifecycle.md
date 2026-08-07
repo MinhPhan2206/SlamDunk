@@ -173,7 +173,7 @@ Lock / validate pack session
         ↓
 Determine selected Card Template
         ↓
-Roll initial Level 1–5
+Roll weighted initial Level 1–5 from the source's configured Level table
         ↓
 Allocate next serial
         ↓

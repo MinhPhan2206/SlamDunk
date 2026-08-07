@@ -8,6 +8,13 @@ export const gameConfig = Object.freeze({
     cooldownMinutes: 15,
     candidateCount: 3,
     selectionSeconds: 10,
+    levelWeights: Object.freeze([
+      Object.freeze({ level: 1, weight: 45 }),
+      Object.freeze({ level: 2, weight: 28 }),
+      Object.freeze({ level: 3, weight: 14 }),
+      Object.freeze({ level: 4, weight: 8 }),
+      Object.freeze({ level: 5, weight: 5 }),
+    ]),
     rarityWeights: Object.freeze([
       Object.freeze({ rarityCode: "BASE", weight: 500_000 }),
       Object.freeze({ rarityCode: "COMMON", weight: 320_000 }),
@@ -26,6 +33,13 @@ export const gameConfig = Object.freeze({
       priceGold: 1_000,
       cooldownSeconds: 1,
       cardCount: 1,
+      levelWeights: Object.freeze([
+        Object.freeze({ level: 1, weight: 45 }),
+        Object.freeze({ level: 2, weight: 28 }),
+        Object.freeze({ level: 3, weight: 14 }),
+        Object.freeze({ level: 4, weight: 8 }),
+        Object.freeze({ level: 5, weight: 5 }),
+      ]),
       rarityWeights: Object.freeze([
         Object.freeze({ rarityCode: "BASE", weight: 100_000 }),
         Object.freeze({ rarityCode: "COMMON", weight: 350_000 }),
@@ -78,6 +92,11 @@ export const gameConfig = Object.freeze({
       CONTESTED: -0.06,
       HEAVILY_CONTESTED: -0.13,
     }),
+  }),
+  battlePlayback: Object.freeze({
+    tickMilliseconds: 1_500,
+    linesPerTick: 1,
+    simulateButtonLifetimeMilliseconds: 60_000,
   }),
   quicksell: Object.freeze({
     shardRewards: Object.freeze({

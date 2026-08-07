@@ -14,10 +14,10 @@ function formatSlot(slot) {
   ].join("\n");
 }
 
-export function createLineupEmbed(result) {
+export function createLineupEmbed(result, { title = "Active Lineup" } = {}) {
   return new EmbedBuilder()
     .setColor(LINEUP_COLOR)
-    .setTitle("Active Lineup")
+    .setTitle(title)
     .setDescription(result.slots.map(formatSlot).join("\n\n"))
     .setFooter({
       text: result.complete ? "Lineup complete: 5/5" : `${result.slots.filter((slot) => slot.cardInstanceId).length}/5 slots filled`,

@@ -1,6 +1,10 @@
 import { randomInt } from "node:crypto";
 
 import { withTransaction } from "../../database/transaction/transaction-manager.js";
+import {
+  normalizeCardLevelWeights,
+  rollCardLevel,
+} from "../card/card-level-roll.js";
 import { EconomyCurrency, EconomyError } from "../economy/index.js";
 import { buildRarityOdds } from "../rarity/rarity-odds.js";
 import { cooldownRepository } from "../reward/cooldown.repository.js";
@@ -30,6 +34,7 @@ function normalizeCatalog(packCatalog) {
       priceGold: definition.priceGold,
       cooldownSeconds: definition.cooldownSeconds,
       cardCount: definition.cardCount,
+      levelWeights: normalizeCardLevelWeights(definition.levelWeights),
       rarityWeights: definition.rarityWeights,
       odds: buildRarityOdds(definition.rarityWeights),
     });
@@ -135,7 +140,7 @@ export function createPackService({
         const template = pickTemplate(await cardTemplateService.listPackableTemplates({ database }), pack, rollInteger);
         const mint = await cardInstanceService.mintCard({
           cardTemplateId: template.cardTemplateId, ownerPlayerId: playerId,
-          cardLevel: rollInteger(1, 6), obtainedMethod: "PACK",
+          cardLevel: rollCardLevel(pack.levelWeights, rollInteger), obtainedMethod: "PACK",
           referenceType: "PACK_OPENING", referenceId: opening.packOpeningId,
         }, { database });
         const completed = await packOpeningRepository.complete(database, {

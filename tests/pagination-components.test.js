@@ -11,6 +11,7 @@ function interaction(customId) {
     value: {
       customId,
       user: { id: "234567890123456789" },
+      message: { embeds: [{ title: "Viewed User's Collection" }] },
       async deferUpdate() { calls.push("defer"); },
       async editReply(payload) { calls.push(payload); },
       async reply(payload) { calls.push(payload); },
@@ -37,6 +38,7 @@ test("Collection page button loads the requested owner page", async () => {
   });
   assert.equal(calls[0], "defer");
   assert.equal(calls[1].embeds[0].toJSON().footer.text, "Page 2/2 | 11 cards | Sort: Rarity");
+  assert.equal(calls[1].embeds[0].toJSON().title, "Viewed User's Collection");
 });
 
 test("Market page button loads the requested page", async () => {

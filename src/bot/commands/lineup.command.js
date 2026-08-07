@@ -24,7 +24,14 @@ export const lineupCommand = Object.freeze({
     .setName("lineup")
     .setDescription("View or edit your active lineup.")
     .addSubcommand((subcommand) =>
-      subcommand.setName("view").setDescription("View your active lineup."),
+      subcommand
+        .setName("view")
+        .setDescription("View a user's active lineup.")
+        .addUserOption((option) =>
+          option
+            .setName("user")
+            .setDescription("User whose lineup you want to view."),
+        ),
     )
     .addSubcommand((subcommand) =>
       addSlotOption(
@@ -48,11 +55,23 @@ export const lineupCommand = Object.freeze({
 
   async execute(interaction, { services }) {
     await interaction.deferReply();
-    const player = await services.player.getOrCreatePlayer({
-      discordUserId: interaction.user.id,
-      usernameSnapshot: interaction.user.username,
-    });
     const subcommand = interaction.options.getSubcommand();
+    const targetUser = subcommand === "view"
+      ? interaction.options.getUser("user") ?? interaction.user
+      : interaction.user;
+    const viewingSelf = targetUser.id === interaction.user.id;
+    const player = viewingSelf
+      ? await services.player.getOrCreatePlayer({
+        discordUserId: interaction.user.id,
+        usernameSnapshot: interaction.user.username,
+      })
+      : await services.player.getPlayer(targetUser.id);
+    if (!player) {
+      await interaction.editReply({
+        content: `${targetUser.globalName ?? targetUser.username} does not have a SlamDunk profile yet.`,
+      });
+      return;
+    }
 
     try {
       let result;
@@ -75,7 +94,13 @@ export const lineupCommand = Object.freeze({
         result = await services.lineup.getLineup(player.playerId);
       }
 
-      await interaction.editReply({ embeds: [createLineupEmbed(result)] });
+      await interaction.editReply({
+        embeds: [createLineupEmbed(result, {
+          title: viewingSelf
+            ? "Active Lineup"
+            : `${targetUser.globalName ?? targetUser.username}'s Active Lineup`,
+        })],
+      });
     } catch (error) {
       if (error instanceof LineupError || error instanceof CardError) {
         await interaction.editReply({ content: error.message, embeds: [] });

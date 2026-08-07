@@ -129,6 +129,22 @@ Contains Discord-specific code only.
 Shared interaction infrastructure, such as the 10-second inactivity timeout
 that disables message components, belongs in `src/bot/components/`.
 
+Stateful Discord-only presentation, such as timed Battle play-by-play playback,
+belongs in `src/bot/battle/`; deterministic simulation remains in the Battle
+domain module.
+
+Reusable static Discord artwork belongs under `assets/images/`. The current
+Battle fallback is `assets/images/unknown-player.png`; it contains no real
+player, team, or league identity.
+
+`src/bot/battle/matchup-image.js` uses `sharp` to compose the five snapshotted
+AI opponents into a transient PNG attachment. The buffer is sent to Discord and
+is not persisted on disk or in PostgreSQL.
+
+`src/bot/battle/battle-report-image.js` renders the completed box score as a
+fixed 824 x 1024 SVG and converts it to a transient PNG with `sharp`. Long
+Player and Discord display names are truncated before rendering.
+
 ### Example
 
 ```text
@@ -310,7 +326,8 @@ migrations/
 ├── 010_create_fusions_and_upgrade_items.sql
 ├── 011_create_market_listings.sql
 ├── 012_create_direct_trades.sql
-└── 013_separate_drop_from_pack.sql
+├── 013_separate_drop_from_pack.sql
+└── 023_add_public_match_ids.sql
 ```
 
 Future migrations are added only when their implementation milestone begins.
