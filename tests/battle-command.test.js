@@ -8,6 +8,13 @@ test("battle command starts the runtime Battle playback", async () => {
   const interaction = {
     id: "123456789012345678",
     user: { id: "234567890123456789", username: "BattleTester" },
+    options: {
+      getString(name, required) {
+        assert.equal(name, "opponent_bracket");
+        assert.equal(required, true);
+        return "pro";
+      },
+    },
     async deferReply() {
       replies.push({ type: "defer" });
     },
@@ -46,6 +53,7 @@ test("battle command starts the runtime Battle playback", async () => {
         assert.deepEqual(input, {
           playerId: "9",
           interactionId: interaction.id,
+          opponentBracket: "pro",
         });
         return {
           match: {

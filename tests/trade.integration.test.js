@@ -68,6 +68,16 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
     );
     const playerAId = players.get("M16PlayerA");
     const playerBId = players.get("M16PlayerB");
+    const acceptBoth = async (tradeId) => {
+      await tradeService.acceptTrade(
+        { tradeId, playerId: playerAId },
+        { database },
+      );
+      return tradeService.acceptTrade(
+        { tradeId, playerId: playerBId },
+        { database },
+      );
+    };
     for (const playerId of [playerAId, playerBId]) {
       await economyService.ensureWallet(playerId, { database });
     }
@@ -126,16 +136,41 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
       { database },
     );
     const tradeId = state.trade.tradeId;
-    await tradeService.addCard(
-      { tradeId, playerId: playerAId, cardInstanceId: cardA.instance.cardInstanceId },
+    await assert.rejects(
+      tradeService.setGoldOffer(
+        { tradeId, playerId: playerAId, goldOffered: 1, operation: "ADD" },
+        { database },
+      ),
+      (error) =>
+        error instanceof TradeError &&
+        error.code === "TRADE_INVITATION_PENDING",
+    );
+    state = await acceptBoth(tradeId);
+    assert.ok(state.participants.every((participant) => participant.acceptedAt));
+    await tradeService.setCardOffer(
+      {
+        tradeId,
+        playerId: playerAId,
+        cardInstanceIds: [cardA.instance.cardInstanceId],
+        operation: "ADD",
+      },
       { database },
     );
-    await tradeService.addCard(
-      { tradeId, playerId: playerBId, cardInstanceId: cardB.instance.cardInstanceId },
+    await tradeService.setCardOffer(
+      {
+        tradeId,
+        playerId: playerBId,
+        cardInstanceIds: [cardB.instance.cardInstanceId],
+        operation: "ADD",
+      },
       { database },
     );
     await tradeService.setGoldOffer(
-      { tradeId, playerId: playerAId, goldOffered: 100 },
+      { tradeId, playerId: playerAId, goldOffered: 120, operation: "ADD" },
+      { database },
+    );
+    await tradeService.setGoldOffer(
+      { tradeId, playerId: playerAId, goldOffered: 20, operation: "REMOVE" },
       { database },
     );
     state = await tradeService.confirmTrade(
@@ -210,6 +245,7 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
       { initiatorPlayerId: playerAId, invitedPlayerId: playerBId },
       { database },
     );
+    await acceptBoth(cancellable.trade.tradeId);
     await tradeService.addCard(
       {
         tradeId: cancellable.trade.tradeId,
@@ -242,6 +278,7 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
       { initiatorPlayerId: playerAId, invitedPlayerId: playerBId },
       { database },
     );
+    await acceptBoth(expiring.trade.tradeId);
     await tradeService.addCard(
       {
         tradeId: expiring.trade.tradeId,
@@ -272,6 +309,7 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
       { initiatorPlayerId: playerAId, invitedPlayerId: playerBId },
       { database },
     );
+    await acceptBoth(insufficientTrade.trade.tradeId);
     await tradeService.setGoldOffer(
       {
         tradeId: insufficientTrade.trade.tradeId,

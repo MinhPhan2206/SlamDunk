@@ -5,6 +5,7 @@ import { createBattlePlayback } from "./bot/battle/battle-playback.js";
 import { commands } from "./bot/commands/index.js";
 import { components } from "./bot/components/index.js";
 import { createInteractionCreateHandler } from "./bot/events/interaction-create.event.js";
+import { createStrategyDraftStore } from "./bot/strategy/strategy-draft-store.js";
 import { gameConfig } from "./config/game-config.js";
 import {
   checkPostgresConnection,
@@ -13,6 +14,7 @@ import {
 import {
   createCardInstanceService,
   createCardTemplateService,
+  createCardViewService,
 } from "./modules/card/index.js";
 import { createBattleService } from "./modules/battle/index.js";
 import { createEconomyService } from "./modules/economy/index.js";
@@ -28,6 +30,7 @@ import { createUpgradeService } from "./modules/upgrade/index.js";
 import { createMarketService } from "./modules/market/index.js";
 import { createTradeService } from "./modules/trade/index.js";
 import { createExchangeService } from "./modules/exchange/index.js";
+import { createInventoryService } from "./modules/inventory/index.js";
 
 export function createApplication({ discordToken, databaseUrl }) {
   const client = createDiscordClient();
@@ -53,6 +56,10 @@ export function createApplication({ discordToken, databaseUrl }) {
     cardTemplateService,
     playerService,
   });
+  const cardViewService = createCardViewService({
+    databasePool,
+    traitService,
+  });
   const dropService = createDropService({
     databasePool,
     cardInstanceService,
@@ -75,11 +82,13 @@ export function createApplication({ discordToken, databaseUrl }) {
     cardTemplateService,
     traitService,
     playerService,
+    economyService,
     battleConfig: gameConfig.battle,
   });
   const battlePlayback = createBattlePlayback({
     playbackConfig: gameConfig.battlePlayback,
   });
+  const strategyDrafts = createStrategyDraftStore();
   const quicksellService = createQuicksellService({
     databasePool,
     economyService,
@@ -108,10 +117,18 @@ export function createApplication({ discordToken, databaseUrl }) {
     exchangeConfig: gameConfig.exchange,
     upgradeConfig: gameConfig.upgrade,
   });
+  const inventoryService = createInventoryService({
+    databasePool,
+    itemDefinitions: [{
+      itemType: gameConfig.upgrade.levelUpItemType,
+      itemName: gameConfig.upgrade.levelUpItemName,
+    }],
+  });
   const services = Object.freeze({
     battle: battleService,
     cardInstance: cardInstanceService,
     cardTemplate: cardTemplateService,
+    cardView: cardViewService,
     collection: collectionService,
     lineup: lineupService,
     economy: economyService,
@@ -125,6 +142,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     market: marketService,
     trade: tradeService,
     trait: traitService,
+    inventory: inventoryService,
   });
   const commandRegistry = new Map(
     commands.map((command) => [command.data.name, command]),
@@ -142,7 +160,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     Events.InteractionCreate,
     createInteractionCreateHandler(
       commandRegistry,
-      { services, battlePlayback },
+      { services, battlePlayback, strategyDrafts },
       componentRegistry,
     ),
   );
@@ -165,6 +183,7 @@ export function createApplication({ discordToken, databaseUrl }) {
 
       isStopped = true;
       battlePlayback.stop();
+      strategyDrafts.stop();
       client.destroy();
       await databasePool.end();
     },

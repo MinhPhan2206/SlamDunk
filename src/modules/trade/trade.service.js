@@ -27,6 +27,18 @@ function normalizeGold(value, maximumGold) {
   return amount.toString();
 }
 
+function normalizeOfferOperation(value, { allowSet = false } = {}) {
+  const operation = String(value ?? (allowSet ? "SET" : "")).trim().toUpperCase();
+  const allowed = allowSet ? ["ADD", "REMOVE", "SET"] : ["ADD", "REMOVE"];
+  if (!allowed.includes(operation)) {
+    throw new TradeError(
+      "TRADE_OPERATION_INVALID",
+      `Action must be ${allowSet ? "add, remove, or set" : "add or remove"}.`,
+    );
+  }
+  return operation;
+}
+
 function useTransaction(databasePool, database, operation) {
   return database
     ? operation(database)
@@ -53,6 +65,15 @@ function assertParticipant(participants, playerId) {
     throw new TradeError(
       "TRADE_NOT_PARTICIPANT",
       "You are not a participant in this Direct Trade.",
+    );
+  }
+}
+
+function assertAcceptedTrade(participants) {
+  if (!participants.every((participant) => participant.acceptedAt)) {
+    throw new TradeError(
+      "TRADE_INVITATION_PENDING",
+      "Both Players must accept the invitation before editing this Direct Trade.",
     );
   }
 }
@@ -127,6 +148,28 @@ export function createTradeService({
       return state;
     },
 
+    async acceptTrade({ tradeId, playerId }, { database } = {}) {
+      const normalizedTradeId = normalizeId(tradeId, "tradeId");
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const trade = await tradeRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedTradeId,
+        );
+        assertOpenTrade(trade);
+        const participants = await tradeRepository.findParticipants(
+          transactionDatabase,
+          trade.tradeId,
+        );
+        assertParticipant(participants, normalizedPlayerId);
+        await tradeRepository.acceptInvitation(transactionDatabase, {
+          tradeId: trade.tradeId,
+          playerId: normalizedPlayerId,
+        });
+        return getState(transactionDatabase, trade);
+      });
+    },
+
     async addCard(
       { tradeId, playerId, cardInstanceId },
       { database } = {},
@@ -146,6 +189,7 @@ export function createTradeService({
           trade.tradeId,
         );
         assertParticipant(participants, normalizedPlayerId);
+        assertAcceptedTrade(participants);
         const currentCards = await tradeRepository.findCards(transactionDatabase, trade.tradeId);
         if (currentCards.filter((card) => card.offeredByPlayerId === normalizedPlayerId).length >= tradeConfig.maximumCardsPerPlayer) {
           throw new TradeError("TRADE_CARD_LIMIT", `Each Player can offer at most ${tradeConfig.maximumCardsPerPlayer} cards.`);
@@ -200,6 +244,7 @@ export function createTradeService({
           trade.tradeId,
         );
         assertParticipant(participants, normalizedPlayerId);
+        assertAcceptedTrade(participants);
         const tradeCard = await tradeRepository.findActiveCard(
           transactionDatabase,
           { tradeId: trade.tradeId, cardInstanceId: normalizedCardId },
@@ -225,12 +270,13 @@ export function createTradeService({
     },
 
     async setGoldOffer(
-      { tradeId, playerId, goldOffered },
+      { tradeId, playerId, goldOffered, operation = "SET" },
       { database } = {},
     ) {
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
-      const normalizedGold = normalizeGold(goldOffered, tradeConfig.maximumGoldPerPlayer);
+      const normalizedOperation = normalizeOfferOperation(operation, { allowSet: true });
+      const requestedGold = normalizeGold(goldOffered, tradeConfig.maximumGoldPerPlayer);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         const trade = await tradeRepository.findByIdForUpdate(
@@ -243,6 +289,26 @@ export function createTradeService({
           trade.tradeId,
         );
         assertParticipant(participants, normalizedPlayerId);
+        assertAcceptedTrade(participants);
+        const participant = participants.find(
+          (entry) => entry.playerId === normalizedPlayerId,
+        );
+        const currentGold = BigInt(participant.goldOffered);
+        const requested = BigInt(requestedGold);
+        if (normalizedOperation === "REMOVE" && requested > currentGold) {
+          throw new TradeError(
+            "TRADE_GOLD_REMOVE_INVALID",
+            "You cannot remove more Gold than you currently offer.",
+          );
+        }
+        const normalizedGold = normalizeGold(
+          normalizedOperation === "ADD"
+            ? currentGold + requested
+            : normalizedOperation === "REMOVE"
+              ? currentGold - requested
+              : requested,
+          tradeConfig.maximumGoldPerPlayer,
+        );
         await tradeRepository.setGoldOffer(transactionDatabase, {
           tradeId: trade.tradeId,
           playerId: normalizedPlayerId,
@@ -265,6 +331,7 @@ export function createTradeService({
         assertOpenTrade(trade);
         let state = await getState(transactionDatabase, trade);
         assertParticipant(state.participants, normalizedPlayerId);
+        assertAcceptedTrade(state.participants);
         const hasValue =
           state.cards.length > 0 ||
           state.participants.some(
@@ -424,12 +491,17 @@ export function createTradeService({
       });
     },
 
-    async setCardOffer({ tradeId, playerId, cardInstanceIds }, { database } = {}) {
+    async setCardOffer(
+      { tradeId, playerId, cardInstanceIds, operation = "SET" },
+      { database } = {},
+    ) {
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       if (!Array.isArray(cardInstanceIds)) throw new TypeError("cardInstanceIds must be an array.");
-      const desiredIds = [...new Set(cardInstanceIds.map((id) => normalizeId(id, "cardInstanceId")))];
-      if (desiredIds.length > tradeConfig.maximumCardsPerPlayer) {
+      const requestedIds = [...new Set(cardInstanceIds.map((id) =>
+        normalizeId(id, "cardInstanceId")))];
+      const normalizedOperation = normalizeOfferOperation(operation, { allowSet: true });
+      if (requestedIds.length > tradeConfig.maximumCardsPerPlayer) {
         throw new TradeError("TRADE_CARD_LIMIT", `Each Player can offer at most ${tradeConfig.maximumCardsPerPlayer} cards.`);
       }
       return useTransaction(databasePool, database, async (transactionDatabase) => {
@@ -437,8 +509,28 @@ export function createTradeService({
         assertOpenTrade(trade);
         const participants = await tradeRepository.findParticipants(transactionDatabase, trade.tradeId);
         assertParticipant(participants, normalizedPlayerId);
+        assertAcceptedTrade(participants);
         const state = await getState(transactionDatabase, trade);
         const current = state.cards.filter((card) => card.offeredByPlayerId === normalizedPlayerId);
+        const currentIds = new Set(current.map((card) => card.cardInstanceId));
+        if (
+          normalizedOperation === "REMOVE" &&
+          requestedIds.some((cardInstanceId) => !currentIds.has(cardInstanceId))
+        ) {
+          throw new TradeError(
+            "TRADE_CARD_NOT_OFFERED",
+            "One or more Cards are not in your current offer.",
+          );
+        }
+        const desiredIds = normalizedOperation === "ADD"
+          ? [...new Set([...currentIds, ...requestedIds])]
+          : normalizedOperation === "REMOVE"
+            ? [...currentIds].filter((cardInstanceId) =>
+                !requestedIds.includes(cardInstanceId))
+            : requestedIds;
+        if (desiredIds.length > tradeConfig.maximumCardsPerPlayer) {
+          throw new TradeError("TRADE_CARD_LIMIT", `Each Player can offer at most ${tradeConfig.maximumCardsPerPlayer} cards.`);
+        }
         const desired = new Set(desiredIds);
         for (const card of current) {
           if (!desired.has(card.cardInstanceId)) {
@@ -446,7 +538,6 @@ export function createTradeService({
             await tradeRepository.resolveCard(transactionDatabase, { tradeCardId: card.tradeCardId, outcome: "REMOVED" });
           }
         }
-        const currentIds = new Set(current.map((card) => card.cardInstanceId));
         for (const cardInstanceId of desiredIds) {
           if (!currentIds.has(cardInstanceId)) {
             try {

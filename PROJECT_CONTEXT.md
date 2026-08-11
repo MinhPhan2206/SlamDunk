@@ -362,10 +362,12 @@ Upgrade Gold fee = 0
 
 This means future Gold sinks are important for inflation control.
 
-Provisional simulation baseline:
+Approved F2P economy is defined in Sections 17, 20, 21, and 29 below.
+
+Historical simulation baseline (superseded):
 
 ```text
-/claim: random integer 300–500 Gold every 30 minutes (400 Gold EV)
+/claim: random integer 300–500 Gold every 10 minutes (400 Gold EV)
 /daily: 300 Gold + 5 Shards
 /challenge: point margin × 50 Gold, 60-minute cooldown
 Challenge streak: +5% per win, capped at ×1.5
@@ -660,21 +662,20 @@ stable code and an ordering rank; Card Templates reference that row by
 
 The intended curve is very steep, inspired by the provided Basketbot rarity reference.
 
-Provisional Free Drop simulation distribution:
+Approved Free Drop per-candidate distribution:
 
 ```text
-Base             50.0000%
-Common           32.0000%
-Uncommon         16.0000%
-Alpha             1.8000%
-All-Star          0.1900%
-Superstar         0.0095%
-Goat              0.0005%
+Base             52.44992%
+Common           31.96947%
+Uncommon         15.45764%
+Alpha             0.111235%
+All-Star          0.011112%
+Superstar         0.000556%
+Goat              0.0000667%
 ```
 
-This distribution totals 100% but remains a card-supply simulation baseline.
-
-Do not silently finalize draft probabilities.
+This distribution totals 100%. Three candidates are rolled independently and
+the Player chooses one.
 
 ---
 
@@ -1303,12 +1304,10 @@ Current direction:
 Still TBD:
 
 ```text
-final cooldown
 paid pack structure
-final Free Drop probabilities
 ```
 
-Previous numbers such as 15 minutes / 3 candidates were draft only unless later approved.
+Earlier cooldown values were drafts and are superseded by the current 15-minute production rule.
 
 The economy simulation baseline currently uses:
 
@@ -1317,12 +1316,11 @@ Free Drop cooldown: 15 minutes
 Cards shown: 3
 Choose: 1
 Cost: FREE
-Selection window: 10 seconds; timeout automatically selects candidate 1
+Selection window: 20 seconds; timeout automatically selects candidate 1
 Pity: none
 ```
 
-This is now the provisional baseline for simulation and playtesting, but it is
-not a final production rule. Increasing candidate count is an economy/card-
+This is the approved F2P production baseline. Increasing candidate count is an economy/card-
 supply buff because `P(at least one target) = 1 - (1 - p)^n`.
 
 The provisional product ladder is:
@@ -1338,13 +1336,13 @@ Drop and Pack are separate modules. The configured Standard Pack uses code
 `standard` and the following approved rarity distribution:
 
 ```text
-Base       10.0000%
-Common     35.0000%
-Uncommon   40.0000%
-Alpha      12.0000%
-All-Star    2.7000%
-Superstar   0.2900%
-Goat        0.0100%
+Base       13.95031%
+Common     44.16792%
+Uncommon   38.25376%
+Alpha       3.451062%
+All-Star    0.166945%
+Superstar   0.008334%
+Goat        0.001667%
 ```
 
 Future Packs must be added as independent Pack catalog entries with their own
@@ -1383,8 +1381,8 @@ Reward commands:
 Confirmed for `/claim`:
 
 ```text
-Cooldown: 30 minutes
-Reward: uniformly random integer from 300 through 500 Gold, inclusive
+Cooldown: 15 minutes
+Reward: uniformly random integer from 80 through 120 Gold, inclusive
 Database cooldown type: CLAIM
 Economy transaction type: CLAIM
 Discord interaction ID provides idempotency
@@ -1548,7 +1546,7 @@ Conceptual commands:
 /market
 /sell
 /buy
-/cancel
+/unlist
 ```
 
 Confirmed:
@@ -1605,6 +1603,8 @@ Other Trades
 Confirmed Direct Trade limits: 10 Card Instances and 20,000,000 Gold per
 participant. A Trade expires after 3 minutes and unlocks its Cards. The Discord
 interface uses one `/trade user:<user>` command followed by buttons and modals.
+Both participants must accept the invitation before the offer editor becomes
+available. Card and Gold modals require an `add` or `remove` action.
 
 ---
 
@@ -1634,41 +1634,56 @@ Secondary Position → allowed
 Other Position     → not allowed
 ```
 
+Lineup Strategy owns Player-controlled Tendencies keyed by Card Instance ID.
+`/strategy` selects a current lineup player before editing Decision, Shot
+Profile, Creation Role, and Usage. Tendencies change bounded action-selection
+weights and never modify Card Template data or shot accuracy. Offense, Tempo,
+Defense, and Rebounding are edited independently; Strategy has no Preset field.
+
 MVP currently assumes no bench.
 
 ---
 
 # 29. Battle
 
-Auto-simulation.
+Battle Engine v3.2 is a deterministic, first-to-21 PVE simulation with runtime
+playback, immutable Match snapshots, contextual Traits, and saved Lineup
+strategy.
 
-Inputs eventually include:
+The Match snapshot includes:
 
 ```text
 base stats
 Card Level
 traits
 Trait Tier
+tendency profile
 position
 height
 matchup context
 controlled RNG
+player and AI strategy
+engine, strategy-resolver, Trait-resolver, and Tendency-resolver versions
 ```
 
 Conceptual possession flow:
 
 ```text
-Select Offensive Player
+Center-versus-Center tip-off
         ↓
-Select Action
+Winning team's Main Handler receives the ball
         ↓
-Determine Defender
+Resolve possession phase
+        ↓
+Select a bounded strategy-and-tendency-weighted action chain
+        ↓
+Resolve defensive coverage
         ↓
 Base Stats
         ↓
 Card Level Modifier
         ↓
-Relevant Traits
+Contextual Trait hooks
         ↓
 Matchup Modifier
         ↓
@@ -1677,21 +1692,24 @@ Controlled RNG
 Outcome
 ```
 
-Initial action concepts:
+Implemented action vocabulary:
 
 ```text
-Inside Shot
-Mid-range Shot
-Three-pointer
-Pass
+TIP_OFF, CHECK_IN
+THREE_POINT, MID_RANGE, DRIVE, POST_UP
+PICK_AND_ROLL, DRIVE_AND_KICK, PICK_AND_POP
+PASS, EXTRA_PASS, POST_KICK_OUT, DRIBBLE_HANDOFF
+CREATE_SEPARATION, CUT, OFF_BALL_SCREEN, RELOCATE
+FAST_BREAK, SECOND_CHANCE, RESET_OFFENSE
 ```
 
-Battle output eventually:
+Battle output includes:
 
 ```text
 Final Score
 Play-by-play
 Box Score
+frozen action, coverage, strategy, and Trait activation data
 ```
 
 Box-score concepts:
@@ -1707,19 +1725,48 @@ FG
 3PT
 ```
 
-Still TBD:
+Approved F2P Battle economy:
 
 ```text
-exact formulas
-level modifier
-simulation depth
-fatigue
-substitutions
-PvP live/asynchronous
-battle rewards
+Cooldown: 60 minutes
+Loss reward: 300 + Player Score * 20
+Win reward: 1,000 + Score Difference * 50
+Reward cap: 3,000 Gold
+Full-reward Battles per UTC day: 16
+Later Battles: 25% reward
 ```
 
-Do not finalize these without explicit product decision.
+The Player selects `street`, `pro`, `all-star`, or `legend` before Battle.
+The minimum runtime lineup strengths are 0, 70, 80, and 88; reward multipliers
+are 0.85, 1.00, 1.20, and 1.40. AI selection remains seeded and random within
+the selected bracket. A win adds 5% reward per consecutive win, bounded per
+bracket at 10%, 25%, 40%, or 50%; a loss resets the streak. Rewards are written
+to the immutable economy ledger once per public Match ID.
+
+`/strategy` edits Offense, Tempo, Defense, Rebounding, and Main Handler for the
+active Lineup. Main Handler is stored as a lineup slot (`PG`, `SG`, `SF`, `PF`,
+or `C`) and defaults to `PG`. The configured player receives the opening tip
+when their team wins it and receives the check-in after the opponent scores.
+The Center normally performs the check-in; if the Center is Main Handler,
+another teammate inbounds. Strategy drafts remain in process memory and only
+one normalized JSONB snapshot is written on Save. Migration 030 seeds the
+original 20-Trait definition catalog. Migration 031 upgrades saved Lineup
+strategies to `strategy-v2` with the Main Handler field; assigning Traits to
+individual Card Templates remains a separate catalog-data task.
+
+Migration 033 adds Tough Shot Maker, Contact Finisher, Clutch Performer,
+Clutch Defender, Comeback Catalyst, Momentum Scorer, and Cold-Blooded.
+Migration 034 removes the interim Card Template Tendency field and upgrades
+Lineup `strategy_config` to `strategy-v3` with Player-controlled Tendencies.
+Migration 035 removes Presets, upgrades Lineup strategy to `strategy-v4`, and
+makes Tendencies specific to each lineup Card Instance.
+Clutch starts at
+`targetScore - 4` with a margin of at most 4; comeback context requires a
+6-point deficit; momentum requires two consecutive scoring possessions by the
+same player; and Cold-Blooded requires a potential game-winning attempt.
+
+Fatigue, substitutions, and PvP remain TBD. The 10-second Battle cooldown is a
+temporary test override; the approved production cooldown remains 60 minutes.
 
 ---
 
@@ -2267,7 +2314,7 @@ Implemented concepts:
 generic PlayerCooldown persistence keyed by player and cooldown type
 Reward module with atomic claimReward operation
 PostgreSQL-authoritative cooldown time
-30-minute CLAIM cooldown
+10-minute CLAIM cooldown
 uniform random integer reward from 300 through 500 Gold
 atomic cooldown + Wallet + EconomyTransaction update
 Discord interaction idempotency
@@ -2345,7 +2392,7 @@ FREE_DROP cooldown shown by /cooldowns
 PostgreSQL integration and Discord command/component tests using node:test
 ```
 
-M9 uses the documented provisional playtest baseline: 15-minute Free Drop
+M9 uses the documented playtest baseline: 10-minute Free Drop
 cooldown, three candidates, and the named-rarity simulation weights. These remain
 centralized, adjustable configuration rather than final production balance.
 The current implementation uses a 10-second selection window and automatically
@@ -2456,7 +2503,7 @@ Implemented concepts:
 
 ```text
 010_create_fusions_and_upgrade_items.sql
-/upgrade fusion with same-template, ownership, ACTIVE, lock, and lineup checks
+/upgrade with same-template, ownership, ACTIVE, lock, and lineup checks
 capped Fusion level sum and new Card Instance/serial
 DESTROYED_FUSION source lifecycle and provenance records
 minimal player item inventory
@@ -2475,7 +2522,7 @@ Implemented concepts:
 
 ```text
 011_create_market_listings.sql
-/market browse, sell, buy, and cancel subcommands
+separate /market, /sell, /unlist, and /buy commands
 fixed positive Gold price
 0% listing and sale fee; seller receives full price
 one ACTIVE listing per Card Instance
@@ -2499,6 +2546,7 @@ Implemented concepts:
 013_separate_drop_from_pack.sql
 /trade create, view, add-card, remove-card, set-gold, confirm, and cancel
 exactly two Player participants
+persisted invitation acceptance required from both participants
 optional Card and Gold offers
 trade lock lifecycle and one active Trade participation per Card Instance
 all confirmations cleared whenever an offer changes
@@ -2509,7 +2557,8 @@ Card ownership transfer, lineup cleanup, and ownership history
 integration and command tests using node:test
 ```
 
-Trade card-count limits, final Gold/card limits, and expiry remain TBD. The
+Migration 026 adds invitation acceptance. Each participant may offer up to 10
+Cards and 20,000,000 Gold; the Trade expires after 3 minutes. The
 planned M0–M16 roadmap is now complete; the next milestone requires a new
 product decision.
 
@@ -2558,8 +2607,8 @@ Direct Trade repository/service with confirmation and atomic settlement
 /collection command and embed presenter
 /lineup view, set, and remove subcommands
 /battle command and result presenter
-/upgrade fusion and item subcommands
-/market browse, sell, buy, and cancel subcommands
+/upgrade and /level-up commands
+separate /market, /sell, /unlist, and /buy commands
 /trade create, view, offer, confirm, and cancel subcommands
 /cooldowns command for CLAIM and FREE_DROP cooldown status
 /rarity command for Card Template discovery by tier
@@ -2890,6 +2939,12 @@ season, rebounding, athleticism, weight, and release date, and renames
 documented in `docs/requirements/card-rating-data.md`. Collection and Market
 browse responses support owner-scoped Previous/Next page buttons.
 
+AI opponent selection is seed-based and lineup-aware. Each position selects
+randomly from a bounded group of Card Templates whose Actual Stat strength is
+closest to the Player Card in that slot. AI Card Level matches the opposing
+Player Card Level. The chosen lineup is persisted in the immutable Match
+snapshot, so a retry never rerolls the opponent.
+
 Battle runtime presentation expands persisted possessions into short setup,
 shot-result, and rebound lines and reveals one line every 1.5 seconds instead
 of immediately displaying the final score. Timeline lines omit timestamps,
@@ -2925,11 +2980,16 @@ come from 16 random bytes. Discord shows this public ID immediately before
 `Your Matchup` and uses it in Battle component identifiers. Migration 023
 backfills existing Matches and enforces the public ID format.
 
-All interactive Discord responses with components use a shared 10-second
+Most interactive Discord responses with components use a shared 10-second
 inactivity timeout. A valid component interaction resets the timer; expiration
 disables the components. Battle overrides this with a 60-second Simulate button
-lifetime. Drop keeps its existing timeout behavior and chooses
+lifetime. Direct Trade controls use the Trade's full 3-minute lifetime. Drop
+keeps its existing timeout behavior and chooses
 candidate 1 when no selection is made.
+
+Migration 026 adds persisted invitation acceptance to Direct Trade. A Trade
+cannot accept offer edits or final confirmation until both participants have
+accepted the invitation.
 
 Migration 021 changes Card Template uniqueness to case-insensitive player name
 plus rarity and compensates every existing Player with 20,000 Gold through one

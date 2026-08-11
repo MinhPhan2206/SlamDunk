@@ -67,4 +67,5 @@ test("collection command displays active cards for the current Player", async ()
   assert.match(embed.description, /Test Player/);
   assert.match(embed.description, /Lv\.3/);
   assert.doesNotMatch(embed.description, /OVR|#12/);
+  assert.match(embed.description, /^▫️/);
 });

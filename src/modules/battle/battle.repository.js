@@ -12,6 +12,7 @@ function mapMatch(row) {
     configVersion: row.config_version,
     inputSnapshot: row.input_snapshot,
     playByPlay: row.play_by_play,
+    rewardSnapshot: row.reward_snapshot ?? {},
     possessionCount: row.possession_count,
     winnerTeam: row.winner_team,
     startedAt: row.started_at,
@@ -156,9 +157,27 @@ export const battleRepository = Object.freeze({
     }
   },
 
+  async countCompletedToday(database, { playerId, excludeMatchId }) {
+    const result = await database.query(
+      `
+        SELECT COUNT(*)::INTEGER AS battle_count
+        FROM matches
+        WHERE player_id = $1
+          AND status = 'COMPLETED'
+          AND match_id <> $2
+          AND completed_at >= (
+            date_trunc('day', CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+            AT TIME ZONE 'UTC'
+          )
+      `,
+      [playerId, excludeMatchId],
+    );
+    return result.rows[0].battle_count;
+  },
+
   async completeMatch(
     database,
-    { matchId, winnerTeam, possessionCount, playByPlay },
+    { matchId, winnerTeam, possessionCount, playByPlay, rewardSnapshot },
   ) {
     const result = await database.query(
       `
@@ -168,11 +187,18 @@ export const battleRepository = Object.freeze({
           winner_team = $2,
           possession_count = $3,
           play_by_play = $4::jsonb,
+          reward_snapshot = $5::jsonb,
           completed_at = CURRENT_TIMESTAMP
         WHERE match_id = $1 AND status = 'IN_PROGRESS'
         RETURNING *
       `,
-      [matchId, winnerTeam, possessionCount, JSON.stringify(playByPlay)],
+      [
+        matchId,
+        winnerTeam,
+        possessionCount,
+        JSON.stringify(playByPlay),
+        JSON.stringify(rewardSnapshot),
+      ],
     );
     return result.rows[0] ? mapMatch(result.rows[0]) : null;
   },
@@ -234,6 +260,14 @@ export const battleRepository = Object.freeze({
         }))),
       }));
     }
-    return Object.freeze({ match, teams: Object.freeze(teams), replayed: true });
+    const reward = Object.keys(match.rewardSnapshot ?? {}).length
+      ? Object.freeze(match.rewardSnapshot)
+      : null;
+    return Object.freeze({
+      match,
+      teams: Object.freeze(teams),
+      reward,
+      replayed: true,
+    });
   },
 });

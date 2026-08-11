@@ -1,11 +1,29 @@
 import { randomBytes, randomInt } from "node:crypto";
 
 import { withTransaction } from "../../database/transaction/transaction-manager.js";
+import {
+  CARD_STAT_FIELDS,
+  getActualCardStats,
+} from "../card/index.js";
+import { EconomyCurrency } from "../economy/index.js";
+import { cooldownRepository } from "../reward/cooldown.repository.js";
 import { BattleError } from "./battle.errors.js";
+import { selectAiMatchup } from "./ai-matchup.js";
 import { simulateBattle } from "./battle-engine.js";
 import { battleRepository } from "./battle.repository.js";
+import { calculateBattleReward } from "./battle-reward.js";
+import {
+  BATTLE_STRATEGY_RESOLVER_VERSION,
+  deriveBattleSeed,
+  resolveBattleStrategy,
+  selectAiStrategy,
+} from "./battle-strategy.js";
+import { BATTLE_TRAIT_RESOLVER_VERSION } from "./battle-trait-resolver.js";
+import { BATTLE_TENDENCY_RESOLVER_VERSION } from "./battle-tendency.js";
 
-const SLOTS = Object.freeze(["PG", "SG", "SF", "PF", "C"]);
+const BATTLE_COOLDOWN_TYPE = "BATTLE";
+const BATTLE_TRANSACTION_TYPE = "BATTLE_REWARD";
+const BATTLE_REFERENCE_TYPE = "BATTLE_MATCH";
 
 function normalizeId(value, fieldName) {
   const normalized = String(value);
@@ -38,18 +56,81 @@ function probability(config, field, { allowNegative = false } = {}) {
   }
 }
 
+function nonNegativeNumber(value, field) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    throw new TypeError(`battleConfig.${field} must be a non-negative number.`);
+  }
+}
+
+function validateOpponentBrackets(brackets) {
+  if (!Array.isArray(brackets) || brackets.length === 0) {
+    throw new TypeError("battleConfig.opponentBrackets must not be empty.");
+  }
+  const codes = new Set();
+  return Object.freeze(brackets.map((bracket) => {
+    if (
+      typeof bracket?.code !== "string" ||
+      !/^[a-z][a-z-]*$/.test(bracket.code) ||
+      codes.has(bracket.code) ||
+      typeof bracket.displayName !== "string" ||
+      !bracket.displayName.trim()
+    ) {
+      throw new TypeError("Each Battle opponent bracket requires a unique code and display name.");
+    }
+    codes.add(bracket.code);
+    nonNegativeNumber(bracket.minimumLineupStrength, "opponentBrackets.minimumLineupStrength");
+    if (!Number.isFinite(bracket.aiRatingOffset)) {
+      throw new TypeError("battleConfig.opponentBrackets.aiRatingOffset must be finite.");
+    }
+    for (const field of [
+      "rewardMultiplierBasisPoints",
+      "maximumStreakBonusBasisPoints",
+    ]) {
+      if (!Number.isSafeInteger(bracket[field]) || bracket[field] < 0) {
+        throw new TypeError(`battleConfig.opponentBrackets.${field} must be a non-negative integer.`);
+      }
+    }
+    return Object.freeze({ ...bracket, displayName: bracket.displayName.trim() });
+  }));
+}
+
 function validateConfig(config) {
-  for (const field of ["engineVersion", "rulesetVersion", "configVersion"]) {
+  for (const field of [
+    "engineVersion",
+    "rulesetVersion",
+    "configVersion",
+    "strategyResolverVersion",
+    "traitResolverVersion",
+    "tendencyResolverVersion",
+  ]) {
     if (typeof config?.[field] !== "string" || !config[field].trim()) {
       throw new TypeError(`battleConfig.${field} is required.`);
     }
   }
-  positiveInteger(config, "aiCardLevel");
+  if (config.strategyResolverVersion !== BATTLE_STRATEGY_RESOLVER_VERSION) {
+    throw new TypeError("battleConfig.strategyResolverVersion is unsupported.");
+  }
+  if (config.traitResolverVersion !== BATTLE_TRAIT_RESOLVER_VERSION) {
+    throw new TypeError("battleConfig.traitResolverVersion is unsupported.");
+  }
+  if (config.tendencyResolverVersion !== BATTLE_TENDENCY_RESOLVER_VERSION) {
+    throw new TypeError("battleConfig.tendencyResolverVersion is unsupported.");
+  }
+  positiveInteger(config, "aiMatchupCandidatePoolSize");
+  positiveInteger(config, "aiMatchupRatingTolerance");
   positiveInteger(config, "targetScore");
   positiveInteger(config, "maximumPossessions");
-  if (config.aiCardLevel > 5) {
-    throw new TypeError("Battle Card Level configuration is invalid.");
-  }
+  for (const field of [
+    "cooldownSeconds",
+    "fullRewardBattlesPerDay",
+    "reducedRewardBasisPoints",
+    "maximumRewardGold",
+    "lossBaseGold",
+    "lossPointGold",
+    "winBaseGold",
+    "winMarginGold",
+    "streakBonusBasisPointsPerWin",
+  ]) positiveInteger(config, field);
   for (const field of [
     "threePointBaseProbability",
     "midRangeBaseProbability",
@@ -75,7 +156,13 @@ function validateConfig(config) {
   ]) {
     probability(config.shotQualityModifiers, quality, { allowNegative: true });
   }
-  return Object.freeze({ ...config });
+  if (config.reducedRewardBasisPoints > 10_000) {
+    throw new TypeError("battleConfig.reducedRewardBasisPoints cannot exceed 10000.");
+  }
+  return Object.freeze({
+    ...config,
+    opponentBrackets: validateOpponentBrackets(config.opponentBrackets),
+  });
 }
 
 function statsFromTemplate(template) {
@@ -91,28 +178,19 @@ function statsFromTemplate(template) {
   });
 }
 
-function chooseAiTemplates(templates) {
-  const unused = new Set(templates.map((template) => template.cardTemplateId));
-  return SLOTS.map((slot) => {
-    const selected = templates
-      .filter(
-        (template) =>
-          unused.has(template.cardTemplateId) &&
-          [template.primaryPosition, template.secondaryPosition].includes(slot),
-      )
-      .sort((left, right) => {
-        if (right.overall !== left.overall) return right.overall - left.overall;
-        return BigInt(left.cardTemplateId) < BigInt(right.cardTemplateId) ? -1 : 1;
-      })[0];
-    if (!selected) {
-      throw new BattleError(
-        "AI_LINEUP_UNAVAILABLE",
-        `The Card catalog cannot fill the AI ${slot} slot.`,
-      );
-    }
-    unused.delete(selected.cardTemplateId);
-    return { slot, template: selected };
-  });
+function teamStrength(team) {
+  const total = team.reduce((teamTotal, player) => {
+    const actual = getActualCardStats(player.stats, player.cardLevel);
+    return teamTotal + CARD_STAT_FIELDS.reduce(
+      (statTotal, field) => statTotal + actual[field],
+      0,
+    ) / CARD_STAT_FIELDS.length;
+  }, 0);
+  return total / team.length;
+}
+
+function addSeconds(date, seconds) {
+  return new Date(date.getTime() + seconds * 1_000);
 }
 
 export function createBattleService({
@@ -122,12 +200,24 @@ export function createBattleService({
   cardTemplateService,
   traitService,
   playerService,
+  economyService,
   battleConfig,
   generateSeed = () => randomInt(1, 2_147_483_647),
   generateMatchId = () => randomBytes(16).toString("hex"),
   resolveTraitModifier = () => 0,
 }) {
   const config = validateConfig(battleConfig);
+  if (!economyService?.credit) {
+    throw new TypeError("Battle requires an Economy service.");
+  }
+
+  function getOpponentBracket(code) {
+    const bracket = config.opponentBrackets.find((entry) => entry.code === code);
+    if (!bracket) {
+      throw new BattleError("BATTLE_BRACKET_INVALID", "Choose a valid opponent bracket.");
+    }
+    return bracket;
+  }
 
   async function snapshotPlayerLineup(database, playerId) {
     const lineup = await lineupService.getLineup(playerId, { database });
@@ -169,13 +259,24 @@ export function createBattleService({
         traits,
       }));
     }
-    return Object.freeze(players);
+    return Object.freeze({
+      players: Object.freeze(players),
+      strategy: resolveBattleStrategy(lineup.strategy),
+    });
   }
 
-  async function snapshotAiLineup(database) {
+  async function snapshotAiLineup(database, playerTeam, seed, bracket) {
     const templates = await cardTemplateService.listPackableTemplates({ database });
     const players = [];
-    for (const { slot, template } of chooseAiTemplates(templates)) {
+    const matchup = selectAiMatchup({
+      templates,
+      playerTeam,
+      seed,
+      candidatePoolSize: config.aiMatchupCandidatePoolSize,
+      ratingTolerance: config.aiMatchupRatingTolerance,
+      ratingOffset: bracket.aiRatingOffset,
+    });
+    for (const { slot, template, cardLevel } of matchup) {
       const traits = await traitService.getTraitsForTemplate(
         template.cardTemplateId,
         { database },
@@ -184,7 +285,7 @@ export function createBattleService({
         slot,
         cardInstanceId: null,
         cardTemplateId: template.cardTemplateId,
-        cardLevel: config.aiCardLevel,
+        cardLevel,
         cardName: template.playerName,
         overall: template.overall,
         rarityCode: template.rarityCode,
@@ -196,7 +297,7 @@ export function createBattleService({
     return Object.freeze(players);
   }
 
-  async function prepare(database, playerId, interactionId) {
+  async function prepare(database, playerId, interactionId, opponentBracket) {
     await battleRepository.lockInteraction(database, interactionId);
     const existing = await battleRepository.findByInteractionId(
       database,
@@ -209,23 +310,87 @@ export function createBattleService({
       if (existing.status === "COMPLETED") {
         return { result: await battleRepository.loadResult(database, existing) };
       }
+      const snapshot = existing.inputSnapshot;
       return {
         match: existing,
-        playerTeam: existing.inputSnapshot.playerTeam,
-        aiTeam: existing.inputSnapshot.aiTeam,
-        simulationConfig: existing.inputSnapshot.battleConfig ?? config,
+        playerTeam: snapshot.playerTeam,
+        aiTeam: snapshot.aiTeam,
+        playerStrategy: snapshot.playerStrategy ?? resolveBattleStrategy(),
+        aiStrategy: snapshot.aiStrategy ?? resolveBattleStrategy(),
+        simulationSeed: snapshot.simulationSeed ?? deriveBattleSeed(
+          existing.rngSeed,
+          "simulation",
+        ),
+        bracket: snapshot.opponentBracket ?? config.opponentBrackets[0],
+        lineupStrength: snapshot.lineupStrength ?? null,
+        simulationConfig: snapshot.battleConfig ?? config,
         replayed: true,
       };
     }
 
-    const playerTeam = await snapshotPlayerLineup(database, playerId);
-    const aiTeam = await snapshotAiLineup(database);
     const rngSeed = generateSeed();
+    const playerLineup = await snapshotPlayerLineup(database, playerId);
+    const playerTeam = playerLineup.players;
+    const playerStrategy = playerLineup.strategy;
+    const bracket = getOpponentBracket(opponentBracket);
+    const lineupStrength = teamStrength(playerTeam);
+    if (lineupStrength < bracket.minimumLineupStrength) {
+      throw new BattleError(
+        "BATTLE_BRACKET_LOCKED",
+        `${bracket.displayName} requires lineup strength ${bracket.minimumLineupStrength} or higher. Your lineup strength is ${lineupStrength.toFixed(1)}.`,
+      );
+    }
+    const currentTime = await cooldownRepository.getDatabaseTime(database);
+    const cooldown = await cooldownRepository.getOrCreateForUpdate(database, {
+      playerId,
+      cooldownType: BATTLE_COOLDOWN_TYPE,
+    });
+    if (cooldown.availableAt > currentTime) {
+      throw new BattleError(
+        "BATTLE_COOLDOWN_ACTIVE",
+        "The Battle cooldown is still active.",
+        { availableAt: cooldown.availableAt },
+      );
+    }
+    const aiMatchupSeed = deriveBattleSeed(rngSeed, "ai-matchup");
+    const aiOffenseStrategySeed = deriveBattleSeed(
+      rngSeed,
+      "ai-offense-strategy",
+    );
+    const aiDefenseStrategySeed = deriveBattleSeed(
+      rngSeed,
+      "ai-defense-strategy",
+    );
+    const simulationSeed = deriveBattleSeed(rngSeed, "simulation");
+    const aiTeam = await snapshotAiLineup(
+      database,
+      playerTeam,
+      aiMatchupSeed,
+      bracket,
+    );
+    const aiStrategy = selectAiStrategy({
+      team: aiTeam,
+      offenseSeed: aiOffenseStrategySeed,
+      defenseSeed: aiDefenseStrategySeed,
+    });
     const publicMatchId = generateMatchId();
     if (!/^[0-9a-f]{32}$/.test(publicMatchId)) {
       throw new TypeError("Generated Battle Match ID must be 32 lowercase hexadecimal characters.");
     }
-    const inputSnapshot = { playerTeam, aiTeam, battleConfig: config };
+    const inputSnapshot = {
+      playerTeam,
+      aiTeam,
+      battleConfig: config,
+      opponentBracket: bracket,
+      lineupStrength,
+      playerStrategy,
+      aiStrategy,
+      strategySchemaVersion: playerStrategy.schemaVersion,
+      strategyResolverVersion: BATTLE_STRATEGY_RESOLVER_VERSION,
+      traitResolverVersion: BATTLE_TRAIT_RESOLVER_VERSION,
+      tendencyResolverVersion: BATTLE_TENDENCY_RESOLVER_VERSION,
+      simulationSeed,
+    };
     const match = await battleRepository.createMatch(database, {
       playerId,
       publicMatchId,
@@ -236,10 +401,20 @@ export function createBattleService({
       configVersion: config.configVersion,
       inputSnapshot,
     });
+    await cooldownRepository.setAvailableAt(database, {
+      playerId,
+      cooldownType: BATTLE_COOLDOWN_TYPE,
+      availableAt: addSeconds(currentTime, config.cooldownSeconds),
+    });
     return {
       match,
       playerTeam,
       aiTeam,
+      playerStrategy,
+      aiStrategy,
+      simulationSeed,
+      bracket,
+      lineupStrength,
       simulationConfig: config,
       replayed: false,
     };
@@ -249,7 +424,9 @@ export function createBattleService({
     return simulateBattle({
       playerTeam: prepared.playerTeam,
       aiTeam: prepared.aiTeam,
-      seed: prepared.match.rngSeed,
+      playerStrategy: prepared.playerStrategy,
+      aiStrategy: prepared.aiStrategy,
+      seed: prepared.simulationSeed,
       config: prepared.simulationConfig,
       resolveTraitModifier,
     });
@@ -281,11 +458,43 @@ export function createBattleService({
     });
     await battleRepository.createPlayers(database, playerTeamId, simulation.playerTeam);
     await battleRepository.createPlayers(database, aiTeamId, simulation.aiTeam);
+    const playerBeforeBattle = await playerService.getPlayerById(match.playerId, {
+      database,
+    });
+    const completedBattlesToday = await battleRepository.countCompletedToday(
+      database,
+      { playerId: match.playerId, excludeMatchId: match.matchId },
+    );
+    const reward = calculateBattleReward({
+      playerScore: simulation.playerScore,
+      aiScore: simulation.aiScore,
+      currentWinStreak: playerBeforeBattle.currentWinStreak,
+      completedBattlesToday,
+      bracket: prepared.bracket,
+      config,
+    });
+    const economyResult = await economyService.credit(
+      {
+        playerId: match.playerId,
+        currency: EconomyCurrency.GOLD,
+        amount: reward.rewardGold,
+        transactionType: BATTLE_TRANSACTION_TYPE,
+        referenceType: BATTLE_REFERENCE_TYPE,
+        referenceId: match.publicMatchId,
+        idempotencyKey: `battle:${match.publicMatchId}:gold`,
+      },
+      { database },
+    );
+    const rewardSnapshot = Object.freeze({
+      ...reward,
+      balanceAfter: economyResult.balanceAfter,
+    });
     const completedMatch = await battleRepository.completeMatch(database, {
       matchId: match.matchId,
       winnerTeam: simulation.winnerTeam,
       possessionCount: simulation.possessionCount,
       playByPlay: simulation.playByPlay,
+      rewardSnapshot,
     });
     await playerService.recordBattleResult(
       { playerId: match.playerId, won: simulation.winnerTeam === 1 },
@@ -299,26 +508,52 @@ export function createBattleService({
       { database },
     );
     const result = await battleRepository.loadResult(database, completedMatch);
-    return Object.freeze({ ...result, replayed: prepared.replayed });
+    return Object.freeze({
+      ...result,
+      reward: rewardSnapshot,
+      replayed: prepared.replayed,
+    });
   }
 
   return Object.freeze({
-    async battle({ playerId, interactionId }, { database } = {}) {
+    async getCooldown(playerId, { database = databasePool } = {}) {
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      const currentTime = await cooldownRepository.getDatabaseTime(database);
+      const cooldown = await cooldownRepository.find(database, {
+        playerId: normalizedPlayerId,
+        cooldownType: BATTLE_COOLDOWN_TYPE,
+      });
+      return Object.freeze({
+        cooldownType: BATTLE_COOLDOWN_TYPE,
+        available: !cooldown || cooldown.availableAt <= currentTime,
+        availableAt: cooldown?.availableAt ?? null,
+        checkedAt: currentTime,
+      });
+    },
+
+    async battle({ playerId, interactionId, opponentBracket }, { database } = {}) {
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       const normalizedInteractionId = normalizeInteractionId(interactionId);
+      const normalizedOpponentBracket = String(opponentBracket ?? "").trim().toLowerCase();
 
       if (database) {
         const prepared = await prepare(
           database,
           normalizedPlayerId,
           normalizedInteractionId,
+          normalizedOpponentBracket,
         );
         if (prepared.result) return prepared.result;
         return finalize(database, prepared, simulate(prepared));
       }
 
       const prepared = await withTransaction(databasePool, (transactionDatabase) =>
-        prepare(transactionDatabase, normalizedPlayerId, normalizedInteractionId),
+        prepare(
+          transactionDatabase,
+          normalizedPlayerId,
+          normalizedInteractionId,
+          normalizedOpponentBracket,
+        ),
       );
       if (prepared.result) return prepared.result;
       const simulation = simulate(prepared);

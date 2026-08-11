@@ -8,7 +8,7 @@
 
 ## Confirmed Claim Rules
 
-- `/claim` has a 30-minute cooldown.
+- `/claim` has a 10-minute cooldown.
 - Each successful claim awards a uniformly random integer from 300 through 500
   Gold, inclusive.
 - Cooldown state, Wallet credit, and EconomyTransaction history must be updated
@@ -48,7 +48,7 @@
 - Replaying the same selection must return the existing result and must not mint
   another Card Instance.
 - An open offer is reused when `/drop` is called again until it is resolved.
-- The current playtest configuration uses a 15-minute Free Drop cooldown, three
+- The current playtest configuration uses a 10-minute Free Drop cooldown, three
   candidates, and the provisional named-rarity weights in
   `economy-pack-baseline.md`. These remain adjustable simulation values rather
   than finalized production balance.
@@ -64,8 +64,9 @@
   one command. Omitting `pack_type` defaults to Free Drop. Current choices are
   Free Drop and Standard Pack; future Pack catalog entries become additional
   choices.
-- Standard Pack odds are: Base 10%, Common 35%, Uncommon 40%, Alpha 12%,
-  All-Star 2.7%, Superstar 0.29%, and Goat 0.01%.
+- Standard Pack odds are: Base 13.95031%, Common 44.16792%, Uncommon
+  38.25376%, Alpha 3.451062%, All-Star 0.166945%, Superstar 0.008334%, and
+  Goat 0.001667%.
 - Pack definitions are keyed by stable Pack codes so each future Pack can own
   an independent name and rarity distribution.
 - This iteration exposes Pack catalog odds only. Buying or opening Packs remains
@@ -125,8 +126,11 @@
   active lineup against an AI lineup selected from the Card catalog.
 - Match and player snapshots preserve historical results, and the Discord
   interaction ID prevents duplicate matches and counter updates.
-- The current offense/defense rating formula, AI Card Level 3, Level bonus, and
-  score variance are centralized playtest configuration, not final balance.
+- Each new Match uses its persisted random seed to select an AI lineup from
+  position-eligible candidates near the Player lineup's Actual Stat strength.
+  AI Card Level matches the opposing Player Card Level in each slot.
+- Candidate-pool size, rating tolerance, offense/defense formulas, and score
+  variance are centralized playtest configuration, not final balance.
 - M12 stores Trait snapshots but does not apply Trait effects. It has no reward,
   cooldown, play-by-play, fatigue, substitutions, or PvP.
 
@@ -172,6 +176,13 @@ Hai Card Instance nguồn được giữ lại trong lịch sử với trạng t
 - Mua listing chuyển Gold, ownership và trạng thái listing trong một transaction.
 - Battle eligibility của thẻ đang được listing vẫn là TBD.
 
+- Market actions are separate slash commands: `/market`, `/sell`, `/unlist`,
+  and `/buy`.
+- `/market` shows Player name and Gold price on the first line, then rarity,
+  positions, Card Level, and public Card ID. Listing ID and seller name are not
+  displayed.
+- `/buy` and `/unlist` identify the active listing by public Card ID.
+
 ## M16 Direct Trade Behavior
 
 - Direct Trade có đúng hai Player và có thể chứa Card cùng Gold tuỳ chọn.
@@ -187,6 +198,20 @@ Hai Card Instance nguồn được giữ lại trong lịch sử với trạng t
   không dùng các subcommand riêng cho từng thao tác.
 - Market fee luôn bằng 0. Card đang được listing không thể vào Lineup hoặc Battle;
   Card đang trong Lineup phải được tháo trước khi listing.
+
+- A new Trade starts as an invitation. Both participants must press Accept
+  before Card or Gold offers can be edited.
+- Card and Gold modals require an `add` or `remove` action. Offer changes remain
+  atomic and clear both final confirmations.
+- Trade controls remain active for the Trade's three-minute lifetime instead
+  of using the shared ten-second component timeout.
+
+## Compact Reward Responses
+
+- Successful `/claim` and `/daily` responses are one English text line stating
+  only the resources received.
+- Active cooldown responses are plain English text with Discord's relative
+  availability timestamp.
 
 ## Future Card Stats Direction
 

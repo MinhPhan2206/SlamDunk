@@ -4,6 +4,8 @@ function mapLineup(row) {
     playerId: row.player_id,
     name: row.name,
     isActive: row.is_active,
+    strategyConfig: row.strategy_config,
+    strategyRevision: Number(row.strategy_revision),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   });
@@ -38,7 +40,15 @@ export const lineupRepository = Object.freeze({
         VALUES ($1)
         ON CONFLICT (player_id) DO UPDATE
           SET player_id = EXCLUDED.player_id
-        RETURNING lineup_id, player_id, name, is_active, created_at, updated_at
+        RETURNING
+          lineup_id,
+          player_id,
+          name,
+          is_active,
+          strategy_config,
+          strategy_revision,
+          created_at,
+          updated_at
       `,
       [playerId],
     );
@@ -143,5 +153,34 @@ export const lineupRepository = Object.freeze({
       `UPDATE lineups SET updated_at = CURRENT_TIMESTAMP WHERE lineup_id = $1`,
       [lineupId],
     );
+  },
+
+  async updateStrategy(
+    database,
+    { playerId, strategyConfig, expectedRevision },
+  ) {
+    const result = await database.query(
+      `
+        UPDATE lineups
+        SET
+          strategy_config = $2::jsonb,
+          strategy_revision = strategy_revision + 1,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE player_id = $1
+          AND strategy_revision = $3
+        RETURNING
+          lineup_id,
+          player_id,
+          name,
+          is_active,
+          strategy_config,
+          strategy_revision,
+          created_at,
+          updated_at
+      `,
+      [playerId, JSON.stringify(strategyConfig), expectedRevision],
+    );
+
+    return result.rows[0] ? mapLineup(result.rows[0]) : null;
   },
 });

@@ -185,4 +185,5 @@ export const cardTemplateRepository = Object.freeze({
     );
     return this.findById(database, cardTemplateId);
   },
+
 });

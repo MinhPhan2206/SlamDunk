@@ -122,7 +122,10 @@ test("Market listing purchase atomically transfers Gold and card ownership", asy
     );
 
     const purchase = await marketService.buyListing(
-      { buyerPlayerId: buyerId, listingId: created.listing.listingId },
+      {
+        buyerPlayerId: buyerId,
+        publicCardId: firstCard.instance.publicCardId,
+      },
       { database },
     );
     assert.equal(purchase.listing.status, "SOLD");
@@ -174,7 +177,10 @@ test("Market listing purchase atomically transfers Gold and card ownership", asy
       { database },
     );
     const cancellation = await marketService.cancelListing(
-      { sellerPlayerId: sellerId, listingId: cancellable.listing.listingId },
+      {
+        sellerPlayerId: sellerId,
+        publicCardId: secondCard.instance.publicCardId,
+      },
       { database },
     );
     assert.equal(cancellation.listing.status, "CANCELLED");

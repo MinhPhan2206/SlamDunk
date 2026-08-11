@@ -1,35 +1,63 @@
 import {
-  ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle,
+  ActionRowBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } from "discord.js";
+import { gameConfig } from "../../config/game-config.js";
 import { CardError } from "../../modules/card/index.js";
 import { TradeError } from "../../modules/trade/index.js";
 import { createTradePayload } from "../presenters/trade.presenter.js";
 
 function modal(action, tradeId) {
   const cards = action === "cards";
+  const operation = new TextInputBuilder()
+    .setCustomId("operation")
+    .setLabel("Action")
+    .setPlaceholder("add or remove")
+    .setStyle(TextInputStyle.Short)
+    .setMinLength(3)
+    .setMaxLength(6)
+    .setRequired(true);
+  const value = new TextInputBuilder()
+    .setCustomId(cards ? "card_ids" : "gold")
+    .setLabel(cards ? "Card IDs or collection numbers (max 10)" : "Gold amount (max 20,000,000)")
+    .setStyle(cards ? TextInputStyle.Paragraph : TextInputStyle.Short)
+    .setRequired(true);
   return new ModalBuilder()
     .setCustomId(`trade:${action}:${tradeId}`)
     .setTitle(cards ? "Edit Offered Cards" : "Edit Offered Gold")
-    .addComponents(new ActionRowBuilder().addComponents(
-      new TextInputBuilder()
-        .setCustomId(cards ? "card_ids" : "gold")
-        .setLabel(cards ? "Public IDs or collection # (max 10)" : "Gold amount (max 20,000,000)")
-        .setStyle(cards ? TextInputStyle.Paragraph : TextInputStyle.Short)
-        .setRequired(true)
-        .setValue(cards ? "" : "0"),
-    ));
+    .addComponents(
+      new ActionRowBuilder().addComponents(operation),
+      new ActionRowBuilder().addComponents(value),
+    );
+}
+
+function parseOperation(value) {
+  const operation = value.trim().toUpperCase();
+  if (!["ADD", "REMOVE"].includes(operation)) {
+    throw new TradeError("TRADE_OPERATION_INVALID", "Action must be add or remove.");
+  }
+  return operation;
 }
 
 function parseCardIds(value) {
-  const trimmed = value.trim();
-  if (!trimmed) return [];
-  const ids = trimmed.split(/[ ,\n]+/).filter(Boolean);
-  if (ids.some((id) => !/^!?\d+$/.test(id))) throw new TradeError("INVALID_CARD_IDS", "Card IDs must be positive integers, optionally prefixed with !, and separated by commas.");
+  const ids = value.trim().split(/[ ,\n]+/).filter(Boolean);
+  if (
+    ids.length === 0 ||
+    ids.some((id) => !/^!?\d+$/.test(id))
+  ) {
+    throw new TradeError(
+      "INVALID_CARD_IDS",
+      "Enter one or more Card IDs or collection numbers separated by commas.",
+    );
+  }
   return ids;
 }
 
 export const tradeComponent = Object.freeze({
   namespace: "trade",
+  componentInactivityTimeoutMs: gameConfig.trade.expiryMinutes * 60_000,
   async execute(interaction, { services }) {
     const [, action, tradeId] = interaction.customId.split(":");
     if (interaction.isButton() && ["cards", "gold"].includes(action)) {
@@ -37,36 +65,55 @@ export const tradeComponent = Object.freeze({
       return;
     }
     const player = await services.player.getOrCreatePlayer({
-      discordUserId: interaction.user.id, usernameSnapshot: interaction.user.username,
+      discordUserId: interaction.user.id,
+      usernameSnapshot: interaction.user.username,
     });
     await interaction.deferUpdate();
     try {
       let result;
-      if (action === "cards") {
+      if (action === "accept") {
+        result = await services.trade.acceptTrade({
+          tradeId,
+          playerId: player.playerId,
+        });
+      } else if (["decline", "cancel"].includes(action)) {
+        result = await services.trade.cancelTrade({
+          tradeId,
+          playerId: player.playerId,
+        });
+      } else if (action === "cards") {
+        const operation = parseOperation(
+          interaction.fields.getTextInputValue("operation"),
+        );
         const references = parseCardIds(
           interaction.fields.getTextInputValue("card_ids"),
         );
-        const cardInstanceIds = await Promise.all(
-          references.map((cardReference) =>
-            services.collection.resolveOwnedCardReference({
-              playerId: player.playerId,
-              cardReference,
-            }),
-          ),
-        );
+        const cardInstanceIds = await Promise.all(references.map((cardReference) =>
+          services.collection.resolveOwnedCardReference({
+            playerId: player.playerId,
+            cardReference,
+          })
+        ));
         result = await services.trade.setCardOffer({
-          tradeId, playerId: player.playerId,
+          tradeId,
+          playerId: player.playerId,
           cardInstanceIds,
+          operation,
         });
       } else if (action === "gold") {
         result = await services.trade.setGoldOffer({
-          tradeId, playerId: player.playerId,
+          tradeId,
+          playerId: player.playerId,
           goldOffered: interaction.fields.getTextInputValue("gold").trim(),
+          operation: parseOperation(
+            interaction.fields.getTextInputValue("operation"),
+          ),
         });
       } else if (action === "confirm") {
-        result = await services.trade.confirmTrade({ tradeId, playerId: player.playerId });
-      } else if (action === "cancel") {
-        result = await services.trade.cancelTrade({ tradeId, playerId: player.playerId });
+        result = await services.trade.confirmTrade({
+          tradeId,
+          playerId: player.playerId,
+        });
       } else {
         throw new TradeError("INVALID_TRADE_ACTION", "Trade action is invalid.");
       }

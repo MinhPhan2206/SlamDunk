@@ -1,6 +1,7 @@
 import {
   createBattleGameCompletePayload,
   createBattleLivePayload,
+  createBattleRewardSummary,
 } from "../presenters/battle.presenter.js";
 import { createBattleReportImage } from "./battle-report-image.js";
 import { createBattleTimeline } from "./battle-timeline.js";
@@ -45,6 +46,7 @@ export function createBattlePlayback({
         ownerDisplayName: session.ownerDisplayName,
       });
       await interaction.followUp({
+        content: createBattleRewardSummary(session.result) ?? undefined,
         files: [{
           attachment: reportImage,
           name: `game-stats-${session.matchId}.png`,
@@ -53,7 +55,10 @@ export function createBattlePlayback({
     } catch (error) {
       console.warn(`Battle report image failed: ${error.message}`);
       await interaction.followUp({
-        content: "GAME STATS could not be rendered for this match.",
+        content: [
+          createBattleRewardSummary(session.result),
+          "GAME STATS could not be rendered for this match.",
+        ].filter(Boolean).join("\n"),
       });
     }
   }

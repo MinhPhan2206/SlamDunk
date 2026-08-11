@@ -153,6 +153,7 @@ Seller receives full price.
 ```text
 Trade OPEN
 Exactly intended participants
+Both participants accepted the invitation
 Both sides confirmed final offer
 No offer changed after confirmation
 All offered cards still valid
@@ -186,6 +187,8 @@ COMMIT
 ```
 
 Any change to a trade offer before execution must clear confirmations.
+Card and Gold offers cannot be edited until both persisted invitation
+acceptances exist.
 
 Fee:
 
@@ -415,7 +418,7 @@ Cooldown and reward credit must commit together.
 
 # 13. Battle Reward
 
-The battle result should be finalized before reward credit.
+The battle result and reward must be finalized atomically after simulation.
 
 The possession simulation must not run while database row locks are held:
 
@@ -433,11 +436,12 @@ COMMIT
 BEGIN
 
 1. Lock Match
-2. Verify Match not already rewarded
-3. Lock Wallet(s)
-4. Credit rewards
-5. Write EconomyTransactions
-6. Mark reward status COMPLETE
+2. Verify Match is not already completed/rewarded
+3. Read the Player streak and UTC daily Battle count
+4. Lock Wallet
+5. Credit Gold and write the EconomyTransaction
+6. Persist the Match reward snapshot and mark the Match COMPLETE
+7. Update Player and Card game counters
 
 COMMIT
 ```
@@ -445,9 +449,10 @@ COMMIT
 This prevents retry/restart from paying the same battle twice.
 
 Battle Engine v2 implements the two short transaction boundaries and persists
-the immutable input snapshot before running the pure seeded simulation. Battle
-rewards remain unimplemented, so the second transaction currently persists the
-result and game counters only.
+the immutable input snapshot before running the pure seeded simulation. The
+second transaction persists the result, Player/Card game counters, immutable
+reward snapshot, Wallet credit, and EconomyTransaction. The public Match ID is
+the reward reference and idempotency boundary.
 
 ---
 

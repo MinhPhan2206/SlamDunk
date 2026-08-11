@@ -67,6 +67,16 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
         };
       },
     },
+    battle: {
+      async getCooldown(playerId) {
+        assert.equal(playerId, "1");
+        return {
+          cooldownType: "BATTLE",
+          available: true,
+          availableAt: null,
+        };
+      },
+    },
   };
 
   await cooldownsCommand.execute(interaction, { services });
@@ -76,6 +86,7 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
   assert.equal(embed.title, "Cooldowns");
   assert.equal(embed.fields[0].name, "Claim");
   assert.equal(embed.fields[2].name, "Free Drop");
+  assert.equal(embed.fields[3].name, "Battle");
   assert.match(
     embed.fields[0].value,
     new RegExp(`<t:${Math.floor(availableAt.getTime() / 1_000)}:R>`),

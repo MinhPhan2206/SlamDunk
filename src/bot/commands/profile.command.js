@@ -29,15 +29,8 @@ export const profileCommand = Object.freeze({
       });
       return;
     }
-    const wallet = await services.economy.getWallet(player.playerId);
-
-    if (!wallet) {
-      throw new Error("Player wallet was not found.");
-    }
-
     const embed = createProfileEmbed({
       player,
-      wallet,
       displayName: targetUser.globalName ?? targetUser.username,
       thumbnailUrl: targetUser.displayAvatarURL?.({ extension: "png", size: 128 }),
     });

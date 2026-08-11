@@ -89,6 +89,40 @@ export const marketRepository = Object.freeze({
     return mapListing(result.rows[0]);
   },
 
+  async findActiveByPublicCardIdForUpdate(database, publicCardId) {
+    const result = await database.query(
+      `
+        SELECT
+          ml.listing_id,
+          ml.seller_player_id,
+          ml.card_instance_id,
+          ci.public_card_id,
+          ml.price_gold,
+          ml.status,
+          ml.buyer_player_id,
+          ml.created_at,
+          ml.sold_at,
+          ml.cancelled_at,
+          p.username_snapshot AS seller_name,
+          ct.player_name,
+          ct.primary_position,
+          ct.secondary_position,
+          r.rarity_code,
+          ci.serial_number,
+          ci.card_level
+        FROM market_listings ml
+        JOIN players p ON p.player_id = ml.seller_player_id
+        JOIN card_instances ci ON ci.card_instance_id = ml.card_instance_id
+        JOIN card_templates ct ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
+        WHERE ci.public_card_id = $1 AND ml.status = 'ACTIVE'
+        FOR UPDATE OF ml
+      `,
+      [publicCardId],
+    );
+    return mapListing(result.rows[0]);
+  },
+
   async listActive(database, { limit, offset }) {
     const countResult = await database.query(
       `SELECT COUNT(*) AS total FROM market_listings WHERE status = 'ACTIVE'`,

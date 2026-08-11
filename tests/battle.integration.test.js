@@ -4,10 +4,13 @@ import test from "node:test";
 import { gameConfig } from "../src/config/game-config.js";
 import { getDatabaseConfig } from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
+import { createEconomyService } from "../src/modules/economy/index.js";
 import { createBattleService } from "../src/modules/battle/index.js";
+import { deriveBattleSeed } from "../src/modules/battle/battle-strategy.js";
 import {
   createCardInstanceService,
   createCardTemplateService,
+  createCardViewService,
 } from "../src/modules/card/index.js";
 import { createLineupService } from "../src/modules/lineup/index.js";
 import { createPlayerService } from "../src/modules/player/index.js";
@@ -39,6 +42,7 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     connectionString: getDatabaseConfig().databaseUrl,
   });
   const database = await pool.connect();
+  const economyService = createEconomyService({ databasePool: pool });
   const baseCardTemplateService = createCardTemplateService({ databasePool: pool });
   const playerService = createPlayerService({ databasePool: pool });
   const cardInstanceService = createCardInstanceService({
@@ -51,6 +55,10 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     databasePool: pool,
     cardTemplateService: baseCardTemplateService,
   });
+  const cardViewService = createCardViewService({
+    databasePool: pool,
+    traitService,
+  });
   const testRunId = Date.now().toString();
   const interactionId = `987${testRunId}`;
 
@@ -62,7 +70,9 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
       [`986${testRunId}`],
     );
     const playerId = playerResult.rows[0].player_id;
+    await economyService.ensureWallet(playerId, { database });
     const templates = [];
+    const instances = [];
 
     for (let index = 0; index < SLOTS.length; index += 1) {
       const slot = SLOTS[index];
@@ -80,6 +90,7 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
         },
         { database },
       );
+      instances.push(mint.instance);
       await lineupService.setCard(
         { playerId, slot, cardInstanceId: mint.instance.cardInstanceId },
         { database },
@@ -99,25 +110,64 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
       cardTemplateService,
       traitService,
       playerService,
+      economyService,
       battleConfig: gameConfig.battle,
       generateSeed: () => 123456,
       generateMatchId: () => "0a038642a1404d938a3dc5b401f17c23",
     });
     const result = await battleService.battle(
-      { playerId, interactionId },
+      { playerId, interactionId, opponentBracket: "street" },
       { database },
     );
 
     assert.equal(result.match.status, "COMPLETED");
     assert.equal(result.match.publicMatchId, "0a038642a1404d938a3dc5b401f17c23");
-    assert.equal(result.match.engineVersion, "2.0.0");
-    assert.equal(result.match.rulesetVersion, "first-to-21-v1");
-    assert.equal(result.match.inputSnapshot.battleConfig.configVersion, "battle-v2-playtest-1");
+    assert.equal(result.match.engineVersion, gameConfig.battle.engineVersion);
+    assert.equal(result.match.rulesetVersion, gameConfig.battle.rulesetVersion);
+    assert.equal(
+      result.match.inputSnapshot.battleConfig.configVersion,
+      gameConfig.battle.configVersion,
+    );
+    assert.deepEqual(
+      result.match.inputSnapshot.aiTeam.map((player) => player.cardLevel),
+      result.match.inputSnapshot.playerTeam.map((player) => player.cardLevel),
+    );
     assert.ok(result.match.inputSnapshot.playerTeam.every((player) =>
       player.overall && player.rarityCode && player.rarityName
     ));
+    assert.equal(
+      result.match.inputSnapshot.strategySchemaVersion,
+      result.match.inputSnapshot.playerStrategy.schemaVersion,
+    );
+    assert.equal(
+      result.match.inputSnapshot.strategyResolverVersion,
+      result.match.inputSnapshot.playerStrategy.resolverVersion,
+    );
+    assert.equal(
+      result.match.inputSnapshot.aiStrategy.resolverVersion,
+      result.match.inputSnapshot.strategyResolverVersion,
+    );
+    assert.equal(
+      result.match.inputSnapshot.traitResolverVersion,
+      gameConfig.battle.traitResolverVersion,
+    );
+    assert.equal(
+      result.match.inputSnapshot.tendencyResolverVersion,
+      gameConfig.battle.tendencyResolverVersion,
+    );
+    assert.equal(
+      typeof result.match.inputSnapshot.playerStrategy.playerTendencies,
+      "object",
+    );
+    assert.equal(
+      result.match.inputSnapshot.simulationSeed,
+      deriveBattleSeed(123456, "simulation"),
+    );
     assert.equal(result.match.playByPlay.length, result.match.possessionCount);
     assert.ok(result.match.possessionCount > 0);
+    assert.equal(result.reward.bracketCode, "street");
+    assert.ok(result.reward.rewardGold >= 1);
+    assert.equal(result.reward.battleNumberToday, 1);
     assert.ok(result.teams.some((team) => team.finalScore >= 21));
     assert.equal(result.teams.length, 2);
     for (const team of result.teams) {
@@ -134,11 +184,12 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     }
 
     const replay = await battleService.battle(
-      { playerId, interactionId },
+      { playerId, interactionId, opponentBracket: "street" },
       { database },
     );
     assert.equal(replay.match.matchId, result.match.matchId);
     assert.equal(replay.replayed, true);
+    assert.deepEqual(replay.reward, result.reward);
     assert.deepEqual(replay.match.playByPlay, result.match.playByPlay);
 
     const playerAfterBattle = await playerService.getPlayerById(playerId, {
@@ -146,12 +197,30 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     });
     assert.equal(playerAfterBattle.gamesPlayed, 1);
     assert.equal(playerAfterBattle.gamesWon + playerAfterBattle.gamesLost, 1);
+    const walletAfterBattle = await economyService.getWallet(playerId, {
+      database,
+    });
+    assert.equal(walletAfterBattle.goldBalance, String(result.reward.rewardGold));
     const cardsAfterBattle = await database.query(
       `SELECT games_played FROM card_instances WHERE owner_player_id = $1`,
       [playerId],
     );
     assert.equal(cardsAfterBattle.rows.length, 5);
     assert.ok(cardsAfterBattle.rows.every((row) => row.games_played === 1));
+    const firstCardStats = await cardViewService.getBattleStats(
+      instances[0].cardInstanceId,
+      { database },
+    );
+    const firstCardView = await cardViewService.getInstance(
+      instances[0].cardInstanceId,
+      { database },
+    );
+    const firstBoxScore = result.teams[0].players[0];
+    assert.equal(firstCardStats.gamesPlayed, 1);
+    assert.equal(firstCardStats.pointsPerGame, firstBoxScore.points);
+    assert.equal(firstCardStats.reboundsPerGame, firstBoxScore.rebounds);
+    assert.equal(firstCardView.ownerUsername, "M12BattlePlayer");
+    assert.equal(firstCardView.totalMinted, "1");
   } finally {
     await database.query("ROLLBACK");
     const residual = await database.query(

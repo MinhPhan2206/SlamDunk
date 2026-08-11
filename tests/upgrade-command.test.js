@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { upgradeCommand } from "../src/bot/commands/upgrade.command.js";
+import {
+  levelUpCommand,
+  upgradeCommand,
+} from "../src/bot/commands/upgrade.command.js";
+
+test("Upgrade actions use separate slash command names", () => {
+  assert.equal(upgradeCommand.data.name, "upgrade");
+  assert.equal(levelUpCommand.data.name, "level-up");
+});
 
 function createInteraction(subcommand, values) {
   const replies = [];
@@ -116,7 +124,7 @@ test("upgrade item command consumes one Level Up item", async () => {
     },
   };
 
-  await upgradeCommand.execute(interaction, { services });
+  await levelUpCommand.execute(interaction, { services });
 
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.match(embed.title, /Card Upgraded/);

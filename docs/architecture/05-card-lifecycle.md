@@ -380,6 +380,9 @@ Battle eligibility while listed is **TBD**.
 
 ## 13. Direct Trade Lifecycle
 
+A new Trade begins in an invitation phase. Both participants must accept before
+Cards can be added or Gold can be offered.
+
 When a card is added to an active trade:
 
 ```text

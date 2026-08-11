@@ -24,8 +24,8 @@ test("trade command creates an interactive Direct Trade", async () => {
         return {
           trade: { tradeId: "9", status: "OPEN", expiresAt: new Date(Date.now() + 60_000) },
           participants: [
-            { playerId: "7", username: "TradeTester", goldOffered: "0", confirmedAt: null },
-            { playerId: "8", username: "OtherPlayer", goldOffered: "0", confirmedAt: null },
+            { playerId: "7", discordUserId: interaction.user.id, username: "TradeTester", goldOffered: "0", acceptedAt: null, confirmedAt: null },
+            { playerId: "8", discordUserId: invited.id, username: "OtherPlayer", goldOffered: "0", acceptedAt: null, confirmedAt: null },
           ],
           cards: [],
         };
@@ -37,6 +37,7 @@ test("trade command creates an interactive Direct Trade", async () => {
   await tradeCommand.execute(interaction, { services });
 
   assert.equal(replies[0], "defer");
-  assert.equal(replies[1].components[0].components.length, 4);
-  assert.match(replies[1].embeds[0].toJSON().description, /Trade `9`/);
+  assert.equal(replies[1].components[0].components.length, 2);
+  assert.equal(replies[1].embeds[0].toJSON().title, "Trade Invitation");
+  assert.equal(tradeCommand.componentInactivityTimeoutMs, 180_000);
 });

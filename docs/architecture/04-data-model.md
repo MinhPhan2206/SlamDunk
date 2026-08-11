@@ -292,6 +292,10 @@ Composite primary key:
 
 Traits and tiers are fixed at Card Template level.
 
+Migration 033 extends the active catalog with seven situational Traits: Tough
+Shot Maker, Contact Finisher, Clutch Performer, Clutch Defender, Comeback
+Catalyst, Momentum Scorer, and Cold-Blooded.
+
 The M7 schema stores `trait_tier` as the numeric value 1, 2, or 3 and maps those
 values to the labels I, II, and III. This allows Total Trait Level to be computed
 as a direct sum. Provisional rarity Trait Level budgets are not database
@@ -668,11 +672,15 @@ lineup_id              PK
 player_id              FK
 name
 is_active
+strategy_config       JSONB
+strategy_revision
 created_at
 updated_at
 ```
 
-MVP may enforce one active lineup per player.
+MVP may enforce one active lineup per player. Migration 034 stores the
+versioned Tendency configuration inside `strategy_config`; Tendencies are
+Player-controlled Lineup tactics and are not Card Template data.
 
 ---
 

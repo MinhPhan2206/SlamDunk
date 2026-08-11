@@ -37,6 +37,25 @@ export function createInteractionCreateHandler(
     let handler;
     let interactionLabel;
 
+    if (interaction.isAutocomplete?.()) {
+      handler = commands.get(interaction.commandName);
+      interactionLabel = `autocomplete /${interaction.commandName}`;
+      if (!handler?.autocomplete) {
+        console.warn(`Unknown Discord interaction received: ${interactionLabel}`);
+        await interaction.respond([]);
+        return;
+      }
+      try {
+        await handler.autocomplete(interaction, context);
+      } catch (error) {
+        console.error(
+          `Discord ${interactionLabel} failed: ${getErrorMessage(error)}`,
+        );
+        if (!interaction.responded) await interaction.respond([]);
+      }
+      return;
+    }
+
     if (interaction.isChatInputCommand()) {
       handler = commands.get(interaction.commandName);
       interactionLabel = `command /${interaction.commandName}`;
@@ -59,9 +78,12 @@ export function createInteractionCreateHandler(
 
     try {
       await handler.execute(interaction, context);
-      await scheduleComponentTimeout(interaction, handler.componentInactivityTimeoutMs
-        ? { timeoutMs: handler.componentInactivityTimeoutMs }
-        : undefined);
+      await scheduleComponentTimeout(interaction, {
+        ...(handler.componentInactivityTimeoutMs
+          ? { timeoutMs: handler.componentInactivityTimeoutMs }
+          : {}),
+        preserveEmbeds: handler.preserveEmbedsOnTimeout === true,
+      });
     } catch (error) {
       console.error(
         `Discord ${interactionLabel} failed: ${getErrorMessage(error)}`,

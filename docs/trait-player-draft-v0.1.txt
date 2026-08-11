@@ -1,0 +1,293 @@
+SLAMDUNK - TRAIT PLAYER DRAFT v0.1
+==================================
+
+Purpose
+-------
+Balance sample for a future five-level Trait system. This is a design draft,
+not production seed data.
+
+Trait Total = sum of all assigned Trait levels.
+
+Suggested Trait Total ranges with 27 available Traits:
+
+Base       :  0-8
+Common     :  6-14
+Uncommon   : 12-22
+Alpha      : 20-34
+All-Star   : 30-45
+Superstar  : 45-60
+GOAT       : 58-75
+
+Adjacent ranges intentionally overlap. Rarity is determined by the complete
+card (Stats, Traits, role and matchup value), not Trait Total alone.
+
+Display-name changes used in this draft:
+
+Mamba Instinct replaces Tough Shot Maker.
+Clutch Gene replaces Clutch Performer.
+Moment Saver replaces Clutch Defender.
+
+
+GOAT
+====
+
+LeBron James - 14 Traits - TOTAL 64
+------------------------------------
+Paint Finisher             5
+Post Technician            4
+Separation Artist          4
+Floor General              5
+Pick & Roll Maestro        5
+Creative Passer            5
+Connector                  4
+Switchable Defender        5
+Glass Cleaner              4
+Transition Engine          5
+Contact Finisher           5
+Clutch Gene                4
+Comeback Catalyst          5
+Cold-Blooded               4
+
+Stephen Curry - 14 Traits - TOTAL 67
+-------------------------------------
+Perimeter Gravity          5
+Range Extender             5
+Midrange Assassin          4
+Catch & Shoot              5
+Separation Artist          5
+Floor General              5
+Pick & Roll Maestro        5
+Creative Passer            4
+Connector                  4
+Off-Ball Mover             5
+Mamba Instinct             5
+Clutch Gene                5
+Momentum Scorer            5
+Cold-Blooded               5
+
+Michael Jordan - 15 Traits - TOTAL 72
+--------------------------------------
+Midrange Assassin          5
+Paint Finisher             5
+Post Technician            4
+Separation Artist          5
+Point of Attack Stopper    5
+Switchable Defender        4
+Active Hands               4
+Transition Engine          5
+Mamba Instinct             5
+Contact Finisher           5
+Clutch Gene                5
+Moment Saver               5
+Comeback Catalyst          5
+Momentum Scorer            5
+Cold-Blooded               5
+
+Kobe Bryant - 16 Traits - TOTAL 72
+-----------------------------------
+Perimeter Gravity          4
+Range Extender             3
+Midrange Assassin          5
+Paint Finisher             5
+Catch & Shoot              4
+Post Technician            4
+Separation Artist          5
+Point of Attack Stopper    5
+Screen Navigator           4
+Mamba Instinct             5
+Contact Finisher           4
+Clutch Gene                5
+Moment Saver               5
+Comeback Catalyst          4
+Momentum Scorer            5
+Cold-Blooded               5
+
+Kareem Abdul-Jabbar - 13 Traits - TOTAL 58
+-------------------------------------------
+Midrange Assassin          4
+Paint Finisher             5
+Post Technician            5
+Screen Setter              5
+Rim Protector              5
+Glass Cleaner              5
+Mamba Instinct             4
+Contact Finisher           5
+Clutch Gene                4
+Moment Saver               4
+Comeback Catalyst          4
+Momentum Scorer            4
+Cold-Blooded               4
+
+
+SUPERSTAR
+=========
+
+Kevin Durant - 13 Traits - TOTAL 52
+-----------------------------------
+Perimeter Gravity          4
+Range Extender             5
+Midrange Assassin          5
+Paint Finisher             4
+Catch & Shoot              4
+Post Technician            3
+Separation Artist          5
+Off-Ball Mover             3
+Mamba Instinct             4
+Contact Finisher           3
+Clutch Gene                4
+Momentum Scorer            4
+Cold-Blooded               4
+
+Giannis Antetokounmpo - 14 Traits - TOTAL 59
+---------------------------------------------
+Paint Finisher             5
+Post Technician            4
+Pick & Roll Maestro        3
+Connector                  2
+Screen Setter              4
+Switchable Defender        5
+Rim Protector              5
+Glass Cleaner              5
+Transition Engine          5
+Contact Finisher           5
+Clutch Gene                3
+Moment Saver               4
+Comeback Catalyst          4
+Momentum Scorer            5
+
+Nikola Jokic - 14 Traits - TOTAL 58
+-----------------------------------
+Perimeter Gravity          3
+Midrange Assassin          5
+Paint Finisher             4
+Post Technician            5
+Floor General              5
+Pick & Roll Maestro        5
+Creative Passer            5
+Connector                  5
+Screen Setter              5
+Glass Cleaner              4
+Mamba Instinct             3
+Clutch Gene                3
+Comeback Catalyst          3
+Cold-Blooded               3
+
+Shai Gilgeous-Alexander - 11 Traits - TOTAL 47
+------------------------------------------------
+Midrange Assassin          5
+Paint Finisher             5
+Separation Artist          5
+Floor General              3
+Pick & Roll Maestro        4
+Point of Attack Stopper    4
+Mamba Instinct             4
+Contact Finisher           5
+Clutch Gene                4
+Momentum Scorer            4
+Cold-Blooded               4
+
+Victor Wembanyama - 12 Traits - TOTAL 49
+------------------------------------------
+Perimeter Gravity          3
+Range Extender             3
+Paint Finisher             5
+Post Technician            4
+Switchable Defender        5
+Rim Protector              5
+Glass Cleaner              5
+Mamba Instinct             3
+Contact Finisher           4
+Clutch Gene                3
+Moment Saver               5
+Momentum Scorer            4
+
+Luka Doncic - 12 Traits - TOTAL 56
+---------------------------------
+Perimeter Gravity          4
+Range Extender             4
+Midrange Assassin          5
+Paint Finisher             4
+Post Technician            5
+Separation Artist          5
+Floor General              5
+Pick & Roll Maestro        5
+Creative Passer            5
+Mamba Instinct             4
+Clutch Gene                5
+Cold-Blooded               5
+
+Jayson Tatum - 13 Traits - TOTAL 50
+----------------------------------
+Perimeter Gravity          4
+Range Extender             4
+Midrange Assassin          4
+Paint Finisher             4
+Catch & Shoot              3
+Separation Artist          4
+Point of Attack Stopper    4
+Switchable Defender        4
+Mamba Instinct             4
+Clutch Gene                4
+Moment Saver               3
+Momentum Scorer            4
+Cold-Blooded               4
+
+Anthony Edwards - 11 Traits - TOTAL 47
+--------------------------------------
+Perimeter Gravity          4
+Midrange Assassin          4
+Paint Finisher             5
+Separation Artist          5
+Point of Attack Stopper    4
+Transition Engine          4
+Mamba Instinct             4
+Contact Finisher           5
+Clutch Gene                4
+Momentum Scorer            4
+Cold-Blooded               4
+
+Jalen Brunson - 12 Traits - TOTAL 50
+-----------------------------------
+Perimeter Gravity          3
+Midrange Assassin          5
+Paint Finisher             4
+Separation Artist          5
+Floor General              4
+Pick & Roll Maestro        5
+Creative Passer            3
+Mamba Instinct             4
+Contact Finisher           3
+Clutch Gene                5
+Momentum Scorer            4
+Cold-Blooded               5
+
+Kawhi Leonard - 13 Traits - TOTAL 55
+-----------------------------------
+Perimeter Gravity          4
+Midrange Assassin          5
+Paint Finisher             4
+Catch & Shoot              3
+Post Technician            3
+Separation Artist          4
+Point of Attack Stopper    5
+Switchable Defender        5
+Active Hands               5
+Mamba Instinct             4
+Clutch Gene                4
+Moment Saver               5
+Cold-Blooded               4
+
+
+Review Notes
+------------
+
+1. Tier 5 represents a defining or historically elite skill, not merely a high
+   rarity bonus.
+2. A GOAT does not receive all 27 Traits. Weaknesses and archetype identity
+   must remain visible.
+3. Superstar and GOAT ranges overlap because a specialized Superstar can have
+   more Trait levels than a specialized GOAT center, while the complete GOAT
+   card can still be stronger through Stats and more impactful Trait choices.
+4. Direct probability modifiers must retain the shared Battle Engine clamp;
+   a larger Trait Total mainly expands contextual coverage rather than allowing
+   unlimited stacking on one action.

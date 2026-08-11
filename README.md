@@ -56,7 +56,7 @@ npm test
 
 - `/ping` — check whether the bot is online.
 - `/profile` — create or view your Player and Wallet profile.
-- `/claim` — receive 300–500 Gold every 30 minutes.
+- `/claim` — receive 80–120 Gold every 15 minutes.
 - `/daily` — receive daily Gold and Shards.
 - `/drop` — open a Free Drop and choose one of three Card Templates.
 - `/pack pack_type:<code>` — buy and immediately open a Pack.
@@ -65,16 +65,19 @@ npm test
 - `/collection` — view owned active cards using the saved ordering and pagination.
 - `/sort [sort_by]` — save the ordering used by `/collection`; omitted option defaults to Rarity.
 - `/lineup view|set|remove` — manage the active five-position lineup.
-- `/battle` — simulate a persisted PvE match with the active lineup.
-- `/cooldowns` — view the current Claim and Free Drop cooldown status.
+- `/battle opponent_bracket:<bracket>` — battle a selected AI bracket for Gold.
+- `/cooldowns` — view Claim, Daily, Free Drop, and Battle cooldowns.
 - `/rarity rarity:<name>` — list Card Templates in a named rarity.
 - `/lock card_id:<id>` — protect an owned card from Quicksell.
 - `/unlock card_id:<id>` — remove Quicksell protection from an owned card.
 - `/quicksell params:<selector>` — preview and confirm Quicksell by all, rarity, position, public ID, or Collection number.
-- `/upgrade fusion card_a:<id> card_b:<id>` — fuse matching Card Templates.
-- `/upgrade item card_id:<id>` — consume one Level Up item for +1 Level.
-- `/market browse|sell|buy|cancel` — use the fixed-price Card Market.
-- `/trade user:<user>` — manage a two-player Direct Trade through buttons and modals.
+- `/upgrade card_a:<id> card_b:<id>` — fuse matching Card Templates.
+- `/level-up card_id:<id>` — consume one Level Up item for +1 Level.
+- `/market` — view active fixed-price Card listings.
+- `/sell card_id:<id> price:<gold>` — list an owned Card.
+- `/unlist card_id:<id>` — remove an owned Card from the Market.
+- `/buy card_id:<id>` — purchase a listed Card.
+- `/trade user:<user>` — invite a Player, then manage an accepted Direct Trade through buttons and modals.
 
 Grant Level Up items locally as an administrator:
 

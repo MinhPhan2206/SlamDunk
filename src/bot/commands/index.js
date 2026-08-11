@@ -8,8 +8,13 @@ import { lineupCommand } from "./lineup.command.js";
 import { profileCommand } from "./profile.command.js";
 import { rarityCommand } from "./rarity.command.js";
 import { quicksellCommand } from "./quicksell.command.js";
-import { upgradeCommand } from "./upgrade.command.js";
-import { marketCommand } from "./market.command.js";
+import { levelUpCommand, upgradeCommand } from "./upgrade.command.js";
+import {
+  buyCommand,
+  marketCommand,
+  sellCommand,
+  unlistCommand,
+} from "./market.command.js";
 import { tradeCommand } from "./trade.command.js";
 import { oddsCommand } from "./odds.command.js";
 import { packCommand } from "./pack.command.js";
@@ -18,6 +23,10 @@ import { exchangeCommand } from "./exchange.command.js";
 import { sortCommand } from "./sort.command.js";
 import { lockCommand } from "./lock.command.js";
 import { unlockCommand } from "./unlock.command.js";
+import { cardCommand } from "./card.command.js";
+import { walletCommand } from "./wallet.command.js";
+import { bagCommand } from "./bag.command.js";
+import { strategyCommand } from "./strategy.command.js";
 
 export const commands = Object.freeze([
   pingCommand,
@@ -31,7 +40,11 @@ export const commands = Object.freeze([
   rarityCommand,
   quicksellCommand,
   upgradeCommand,
+  levelUpCommand,
   marketCommand,
+  sellCommand,
+  unlistCommand,
+  buyCommand,
   tradeCommand,
   oddsCommand,
   packCommand,
@@ -40,4 +53,8 @@ export const commands = Object.freeze([
   sortCommand,
   lockCommand,
   unlockCommand,
+  cardCommand,
+  walletCommand,
+  bagCommand,
+  strategyCommand,
 ]);

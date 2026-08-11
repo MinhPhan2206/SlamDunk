@@ -15,10 +15,9 @@ function gold(value) {
 function listingBlock(listing) {
   const positions = formatPositions(listing);
   return [
-    `**#${listing.listingId} • ${listing.playerName}**`,
+    `**${listing.playerName} • ${gold(listing.priceGold)}**`,
     `${formatRarity(listing.rarityCode)}${positions ? ` • ${positions}` : ""} • ` +
       `Lv.${listing.cardLevel} • \`!${listing.publicCardId}\``,
-    `**${gold(listing.priceGold)}** • Seller: ${listing.sellerName}`,
   ].join("\n");
 }
 
@@ -64,10 +63,8 @@ export function createMarketListingEmbed({ listing, card }) {
   return new EmbedBuilder()
     .setColor(UI_COLORS.success)
     .setTitle("Market Listing Created")
-    .setDescription(`Card \`!${card.publicCardId}\` is now listed.`)
-    .addFields(
-      { name: "Listing ID", value: `\`${listing.listingId}\``, inline: true },
-      { name: "Price", value: gold(listing.priceGold), inline: true },
+    .setDescription(
+      `Card \`!${card.publicCardId}\` is listed for **${gold(listing.priceGold)}**.`,
     );
 }
 
@@ -75,7 +72,7 @@ export function createMarketCancellationEmbed({ listing }) {
   return new EmbedBuilder()
     .setColor(UI_COLORS.neutral)
     .setTitle("Market Listing Cancelled")
-    .setDescription(`Listing \`${listing.listingId}\` has been cancelled.`);
+    .setDescription("Your card has been removed from the Market.");
 }
 
 export function createMarketPurchaseEmbed({ listing, card, economy }) {

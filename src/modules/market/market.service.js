@@ -93,15 +93,31 @@ export function createMarketService({
       });
     },
 
-    async cancelListing({ sellerPlayerId, listingId }, { database } = {}) {
+    async cancelListing(
+      { sellerPlayerId, listingId, publicCardId },
+      { database } = {},
+    ) {
       const sellerId = normalizeId(sellerPlayerId, "sellerPlayerId");
-      const normalizedListingId = normalizeId(listingId, "listingId");
+      const normalizedListingId = listingId == null
+        ? null
+        : normalizeId(listingId, "listingId");
+      const normalizedPublicCardId = publicCardId == null
+        ? null
+        : normalizeId(publicCardId, "publicCardId");
+      if (!normalizedListingId && !normalizedPublicCardId) {
+        throw new TypeError("listingId or publicCardId is required.");
+      }
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
-        const listing = await marketRepository.findByIdForUpdate(
-          transactionDatabase,
-          normalizedListingId,
-        );
+        const listing = normalizedPublicCardId
+          ? await marketRepository.findActiveByPublicCardIdForUpdate(
+              transactionDatabase,
+              normalizedPublicCardId,
+            )
+          : await marketRepository.findByIdForUpdate(
+              transactionDatabase,
+              normalizedListingId,
+            );
         if (!listing) {
           throw new MarketError("LISTING_NOT_FOUND", "Market listing was not found.");
         }
@@ -164,15 +180,31 @@ export function createMarketService({
       });
     },
 
-    async buyListing({ buyerPlayerId, listingId }, { database } = {}) {
+    async buyListing(
+      { buyerPlayerId, listingId, publicCardId },
+      { database } = {},
+    ) {
       const buyerId = normalizeId(buyerPlayerId, "buyerPlayerId");
-      const normalizedListingId = normalizeId(listingId, "listingId");
+      const normalizedListingId = listingId == null
+        ? null
+        : normalizeId(listingId, "listingId");
+      const normalizedPublicCardId = publicCardId == null
+        ? null
+        : normalizeId(publicCardId, "publicCardId");
+      if (!normalizedListingId && !normalizedPublicCardId) {
+        throw new TypeError("listingId or publicCardId is required.");
+      }
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
-        const listing = await marketRepository.findByIdForUpdate(
-          transactionDatabase,
-          normalizedListingId,
-        );
+        const listing = normalizedPublicCardId
+          ? await marketRepository.findActiveByPublicCardIdForUpdate(
+              transactionDatabase,
+              normalizedPublicCardId,
+            )
+          : await marketRepository.findByIdForUpdate(
+              transactionDatabase,
+              normalizedListingId,
+            );
         if (!listing) {
           throw new MarketError("LISTING_NOT_FOUND", "Market listing was not found.");
         }

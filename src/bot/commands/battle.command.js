@@ -1,13 +1,26 @@
 import { SlashCommandBuilder } from "discord.js";
 
+import { gameConfig } from "../../config/game-config.js";
 import { BattleError } from "../../modules/battle/index.js";
+
+function addOpponentBracketOption(option) {
+  option
+    .setName("opponent_bracket")
+    .setDescription("Choose the AI difficulty and reward bracket.")
+    .setRequired(true);
+  for (const bracket of gameConfig.battle.opponentBrackets) {
+    option.addChoices({ name: bracket.displayName, value: bracket.code });
+  }
+  return option;
+}
 
 export const battleCommand = Object.freeze({
   componentInactivityTimeoutMs: 60_000,
 
   data: new SlashCommandBuilder()
     .setName("battle")
-    .setDescription("Battle the SlamDunk AI with your active lineup."),
+    .setDescription("Battle the SlamDunk AI with your active lineup.")
+    .addStringOption(addOpponentBracketOption),
 
   async execute(interaction, { services, battlePlayback }) {
     await interaction.deferReply();
@@ -20,6 +33,10 @@ export const battleCommand = Object.freeze({
       const result = await services.battle.battle({
         playerId: player.playerId,
         interactionId: interaction.id,
+        opponentBracket: interaction.options.getString(
+          "opponent_bracket",
+          true,
+        ),
       });
       await battlePlayback.start({
         interaction,
@@ -32,7 +49,10 @@ export const battleCommand = Object.freeze({
       });
     } catch (error) {
       if (error instanceof BattleError) {
-        await interaction.editReply({ content: error.message, embeds: [] });
+        const content = error.code === "BATTLE_COOLDOWN_ACTIVE"
+          ? `${error.message} Try again <t:${Math.floor(error.details.availableAt.getTime() / 1_000)}:R>.`
+          : error.message;
+        await interaction.editReply({ content, embeds: [] });
         return;
       }
       throw error;

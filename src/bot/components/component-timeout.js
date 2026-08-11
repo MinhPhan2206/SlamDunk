@@ -1,4 +1,4 @@
-export const COMPONENT_INACTIVITY_TIMEOUT_MS = 10_000;
+export const COMPONENT_INACTIVITY_TIMEOUT_MS = 20_000;
 
 const activeTimeouts = new Map();
 
@@ -19,6 +19,13 @@ function disabledRows(rows) {
       })),
     };
   });
+}
+
+function attachmentList(attachments) {
+  if (!attachments) return [];
+  if (Array.isArray(attachments)) return attachments;
+  if (typeof attachments.values === "function") return [...attachments.values()];
+  return Object.values(attachments);
 }
 
 function expiredEmbeds(embeds) {
@@ -45,7 +52,10 @@ async function resolveMessage(interaction) {
 
 export async function scheduleComponentTimeout(
   interaction,
-  { timeoutMs = COMPONENT_INACTIVITY_TIMEOUT_MS } = {},
+  {
+    timeoutMs = COMPONENT_INACTIVITY_TIMEOUT_MS,
+    preserveEmbeds = false,
+  } = {},
 ) {
   const message = await resolveMessage(interaction);
   if (!message?.id || typeof message.edit !== "function") return;
@@ -67,7 +77,8 @@ export async function scheduleComponentTimeout(
         : message;
       if (!current.components?.length) return;
       const update = { components: disabledRows(current.components) };
-      if (current.embeds?.length) {
+      const attachments = attachmentList(current.attachments);
+      if (!preserveEmbeds && current.embeds?.length && attachments.length === 0) {
         update.embeds = expiredEmbeds(current.embeds);
       }
       await current.edit(update);

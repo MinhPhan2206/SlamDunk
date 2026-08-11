@@ -54,19 +54,13 @@ test("profile user option displays another existing Player", async () => {
   await profileCommand.execute(commandInteraction, {
     services: {
       player: playerService(),
-      economy: {
-        async getWallet(playerId) {
-          assert.equal(playerId, "22");
-          return { goldBalance: "100", shardBalance: "20" };
-        },
-      },
     },
   });
 
-  assert.equal(
-    commandInteraction.replies[0].embeds[0].toJSON().title,
-    "Target User's Profile",
-  );
+  const embed = commandInteraction.replies[0].embeds[0].toJSON();
+  assert.equal(embed.title, "Target User's Profile");
+  assert.match(embed.fields[0].value, /W-L:.*0-0.*Total Games:.*0/s);
+  assert.doesNotMatch(JSON.stringify(embed), /Wallet|Gold|Shards|Win Rate/);
 });
 
 test("collection user option displays and paginates another Player's cards", async () => {

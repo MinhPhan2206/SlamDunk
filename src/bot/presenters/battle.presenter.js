@@ -12,6 +12,18 @@ const TEAM_TWO_COLOR = UI_COLORS.secondary;
 const TIE_COLOR = UI_COLORS.tie;
 const MATCHUP_IMAGE_NAME = "battle-matchup.png";
 
+export function createBattleRewardSummary(result) {
+  if (!result.reward) return null;
+  const outcome = result.reward.won ? "Victory" : "Defeat";
+  const streak = result.reward.won
+    ? ` • ${result.reward.winStreakAfter} Win Streak`
+    : " • Win Streak Reset";
+  const reduced = result.reward.reducedReward
+    ? " • Reduced reward after 16 daily Battles"
+    : "";
+  return `**${outcome}** • +${Number(result.reward.rewardGold).toLocaleString("en-US")} Gold • ${result.reward.bracketName}${streak}${reduced}`;
+}
+
 function publicMatchId(result) {
   const matchId = result.match.publicMatchId;
   if (typeof matchId !== "string" || !/^[0-9a-f]{32}$/.test(matchId)) {
@@ -202,7 +214,7 @@ export function createBattleLivePayload(
     ownerDisplayName = "Your Team",
     timeline = createBattleTimeline(result.match.playByPlay),
     revealedLines = 0,
-    tickMilliseconds = 1_500,
+    tickMilliseconds = 2_000,
     simulateDisabled = false,
     hasMatchupImage = false,
   },
@@ -232,7 +244,7 @@ export function createBattleGameCompletePayload(
     simulated = false,
     ownerDisplayName = "Your Team",
     timeline = createBattleTimeline(result.match.playByPlay),
-    tickMilliseconds = 1_500,
+    tickMilliseconds = 2_000,
     hasMatchupImage = false,
   } = {},
 ) {

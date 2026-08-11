@@ -9,7 +9,7 @@ import {
 export const claimCommand = Object.freeze({
   data: new SlashCommandBuilder()
     .setName("claim")
-    .setDescription("Claim a Gold reward every 30 minutes."),
+    .setDescription("Claim a Gold reward every 10 minutes."),
 
   async execute(interaction, { services }) {
     await interaction.deferReply();

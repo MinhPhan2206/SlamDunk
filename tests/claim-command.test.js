@@ -20,7 +20,7 @@ function createInteraction() {
   };
 }
 
-test("claim command shows the awarded Gold and resulting balance", async () => {
+test("claim command sends a compact Gold reward message", async () => {
   const interaction = createInteraction();
   const services = {
     player: {
@@ -46,10 +46,11 @@ test("claim command shows the awarded Gold and resulting balance", async () => {
   await claimCommand.execute(interaction, { services });
 
   assert.equal(interaction.replies[0].type, "defer");
-  const embed = interaction.replies[1].payload.embeds[0].toJSON();
-  assert.equal(embed.title, "Claim Complete");
-  assert.equal(embed.fields[0].value, "350 Gold");
-  assert.equal(embed.fields[1].value, "850");
+  assert.equal(
+    interaction.replies[1].payload.content,
+    "You received 350 Gold.",
+  );
+  assert.deepEqual(interaction.replies[1].payload.embeds, []);
 });
 
 test("claim command maps an active cooldown to a Discord response", async () => {
@@ -75,10 +76,8 @@ test("claim command maps an active cooldown to a Discord response", async () => 
   await claimCommand.execute(interaction, { services });
 
   assert.equal(interaction.replies[0].type, "defer");
-  const embed = interaction.replies[1].payload.embeds[0].toJSON();
-  assert.equal(embed.title, "Claim Cooldown");
   assert.match(
-    embed.description,
+    interaction.replies[1].payload.content,
     new RegExp(`<t:${Math.floor(availableAt.getTime() / 1_000)}:R>`),
   );
 });

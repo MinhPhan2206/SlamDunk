@@ -128,6 +128,8 @@ Contains Discord-specific code only.
 
 Shared interaction infrastructure, such as the 10-second inactivity timeout
 that disables message components, belongs in `src/bot/components/`.
+Direct Trade overrides the shared timeout so its controls remain active for the
+persisted three-minute Trade lifetime.
 
 Stateful Discord-only presentation, such as timed Battle play-by-play playback,
 belongs in `src/bot/battle/`; deterministic simulation remains in the Battle

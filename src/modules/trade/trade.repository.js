@@ -18,8 +18,10 @@ function mapTrade(row) {
 function mapParticipant(row) {
   return Object.freeze({
     playerId: row.player_id,
+    discordUserId: row.discord_user_id,
     username: row.username_snapshot,
     goldOffered: row.gold_offered,
+    acceptedAt: row.accepted_at,
     confirmedAt: row.confirmed_at,
   });
 }
@@ -101,13 +103,18 @@ export const tradeRepository = Object.freeze({
       `
         SELECT
           tp.player_id,
+          p.discord_user_id,
           p.username_snapshot,
           tp.gold_offered,
+          tp.accepted_at,
           tp.confirmed_at
         FROM trade_participants tp
         JOIN players p ON p.player_id = tp.player_id
+        JOIN trades t ON t.trade_id = tp.trade_id
         WHERE tp.trade_id = $1
-        ORDER BY tp.player_id
+        ORDER BY
+          CASE WHEN tp.player_id = t.created_by_player_id THEN 0 ELSE 1 END,
+          tp.player_id
       `,
       [tradeId],
     );
@@ -213,6 +220,19 @@ export const tradeRepository = Object.freeze({
       `,
       [tradeId, playerId],
     );
+  },
+
+  async acceptInvitation(database, { tradeId, playerId }) {
+    const result = await database.query(
+      `
+        UPDATE trade_participants
+        SET accepted_at = COALESCE(accepted_at, CURRENT_TIMESTAMP)
+        WHERE trade_id = $1 AND player_id = $2
+        RETURNING player_id
+      `,
+      [tradeId, playerId],
+    );
+    return result.rowCount === 1;
   },
 
   async clearConfirmations(database, tradeId) {

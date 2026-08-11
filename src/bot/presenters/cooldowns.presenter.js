@@ -11,6 +11,7 @@ export function createCooldownsPayload(
   claimCooldown,
   dailyCooldown,
   freeDropCooldown,
+  battleCooldown,
 ) {
   return {
     embeds: [new EmbedBuilder()
@@ -20,6 +21,7 @@ export function createCooldownsPayload(
         { name: "Claim", value: status(claimCooldown), inline: true },
         { name: "Daily", value: status(dailyCooldown), inline: true },
         { name: "Free Drop", value: status(freeDropCooldown), inline: true },
+        { name: "Battle", value: status(battleCooldown), inline: true },
       )],
   };
 }

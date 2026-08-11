@@ -2,9 +2,10 @@
 
 ## Status
 
-This document defines the implemented Battle Engine v2 playtest architecture.
-Migration 022 replaces the transitional M12 aggregate-score runtime with the
-deterministic possession model below.
+This document records the Battle Engine v2 playtest baseline introduced by
+migration 022. Engine v2 is retained here for historical rules and compatibility
+context, but it is superseded by the implemented strategy-, action-, and
+Trait-aware engine in [10-battle-strategy-and-meta.md](10-battle-strategy-and-meta.md).
 
 The design is accepted because it keeps lineup construction, basketball
 matchups, action selection, and controlled randomness meaningful without
@@ -43,6 +44,20 @@ pick-and-roll may use that help defender against the roller; drive-and-kick
 returns to the receiving shooter's positional defender. Post-up uses the
 direct positional matchup. Each play-by-play event stores the handler, primary
 defender, shooter, actual shot defender, assister, and rebounder when present.
+
+## AI Matchup Selection
+
+AI opponents are selected once when the Match snapshot is created. For each
+PG/SG/SF/PF/C slot, the selector compares the seven Actual Stats of eligible
+Card Templates with the Player Card occupying that slot. It builds a bounded
+pool of the closest candidates and performs a seeded weighted roll that favors
+smaller rating distance without always choosing the same Template.
+
+The selected AI Card uses the opposing Player Card's Level. A single AI lineup
+cannot repeat a Card Template or Player name. The Match seed makes selection
+reproducible for idempotent retries, while different Matches normally receive
+different opponents. Candidate-pool size and acceptable rating distance remain
+centralized Battle configuration.
 
 ## Battle Inputs
 

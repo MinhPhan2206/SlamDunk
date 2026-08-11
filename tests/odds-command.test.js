@@ -45,8 +45,8 @@ test("odds defaults to Free Drop and shows the finalized rarity names", async ()
   await oddsCommand.execute(interaction, { services });
 
   const embed = replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.description, /Base.*50\.0000%/);
-  assert.match(embed.description, /Goat.*0\.0005%/);
+  assert.match(embed.description, /Base.*52\.4499%/);
+  assert.match(embed.description, /Goat.*0\.00007%/);
   assert.equal(embed.footer, undefined);
 });
 
@@ -60,7 +60,7 @@ test("odds pack_type resolves a Pack by its scalable pack code", async () => {
 
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.equal(embed.title, "Standard Pack Odds");
-  assert.match(embed.description, /Base.*10\.0000%/);
-  assert.match(embed.description, /Goat.*0\.0100%/);
+  assert.match(embed.description, /Base.*13\.9503%/);
+  assert.match(embed.description, /Goat.*0\.0017%/);
   assert.equal(embed.footer, undefined);
 });

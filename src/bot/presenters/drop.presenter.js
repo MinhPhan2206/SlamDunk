@@ -27,7 +27,7 @@ export async function createDropOfferPayload({ session, candidates }) {
     .setDescription("Choose one card.")
     .setImage(`attachment://${DROP_IMAGE_NAME}`)
     .setFooter({
-      text: "10 Seconds • Timeout Selects Card 1",
+      text: "20 Seconds • Timeout Selects Card 1",
     });
   const row = new ActionRowBuilder().addComponents(
     candidates.map((candidate) =>

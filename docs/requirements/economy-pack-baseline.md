@@ -1,14 +1,68 @@
 # Economy, Pack Odds, and Progression Baseline
 
-> **Status:** Provisional simulation baseline.
+> **Status:** Approved F2P production baseline; paid progression remains TBD.
 >
 > This document records economy and card-supply hypotheses for simulation and
 > playtesting. It does not finalize production balance values and does not, by
 > itself, authorize implementation of a later milestone.
 
-Approved production decisions override provisional values in this document.
-The M6 Claim rule is finalized as a 30-minute cooldown with a uniformly random
-integer reward from 300 through 500 Gold, inclusive.
+Approved production decisions override historical simulation values in this
+document. The authoritative F2P configuration is recorded below.
+
+## 0. Approved F2P Production Baseline
+
+This section supersedes conflicting cooldown, reward, Battle economy, Free
+Drop, and Standard Pack values elsewhere in this document.
+
+| System | Approved rule |
+| --- | --- |
+| Claim | 15-minute cooldown; 80-120 Gold |
+| Daily | 24-hour cooldown; 1,500-2,000 Gold and 20-30 Shards |
+| Free Drop | 15-minute cooldown; 3 independent candidates; choose 1 |
+| Standard Pack | 1,000 Gold; 1 Card; 1-second anti-spam cooldown |
+| Battle | 60-minute cooldown; Player selects an eligible opponent bracket |
+
+Free Drop per-candidate odds:
+
+| Rarity | Probability |
+| --- | ---: |
+| Base | 52.44992% |
+| Common | 31.96947% |
+| Uncommon | 15.45764% |
+| Alpha | 0.111235% |
+| All-Star | 0.011112% |
+| Superstar | 0.000556% |
+| Goat | 0.0000667% |
+
+Standard Pack odds:
+
+| Rarity | Probability |
+| --- | ---: |
+| Base | 13.95031% |
+| Common | 44.16792% |
+| Uncommon | 38.25376% |
+| Alpha | 3.451062% |
+| All-Star | 0.166945% |
+| Superstar | 0.008334% |
+| Goat | 0.001667% |
+
+Battle Gold uses these base formulas:
+
+```text
+Loss = 300 + Player Score * 20
+Win  = 1,000 + Score Difference * 50
+```
+
+Opponent brackets are Street, Pro, All-Star, and Legend. Their reward
+multipliers are 0.85, 1.00, 1.20, and 1.40. Required lineup strength is 0,
+70, 80, and 88 respectively. The Player selects the bracket before Battle;
+the AI lineup remains seeded and randomized inside that bracket.
+
+A win adds 5% reward per current consecutive win, bounded by the selected
+bracket at 10%, 25%, 40%, or 50%. A loss resets the streak. Battle reward is
+capped at 3,000 Gold. The first 16 completed Battles per UTC day receive full
+reward; later Battles receive 25%. Every reward is ledgered idempotently by
+public Match ID.
 
 ## 1. Design Goals
 
@@ -209,15 +263,15 @@ future crafting/exchange systems
 Net Gold Creation = Gold Faucets - Gold Sinks
 ```
 
-## 6. SlamDunk Simulation Baseline
+## 6. Historical SlamDunk Simulation Baseline (Superseded)
 
-Every value in this section remains provisional except the M6 Claim rule,
-which is approved for production.
+Every value in this historical section is superseded by Section 0 and is
+retained only as design history.
 
 | System | Simulation baseline |
 | --- | --- |
-| Free Drop | 15-minute cooldown, 3 candidates, choose 1, free |
-| Claim | **Final:** 30-minute cooldown, random integer 300–500 Gold, 400 Gold EV |
+| Free Drop | 10-minute cooldown, 3 candidates, choose 1, free |
+| Claim | **Final:** 10-minute cooldown, random integer 300–500 Gold, 400 Gold EV |
 | Daily | 300 Gold + 5 Shards |
 | Challenge | 60-minute cooldown |
 | Challenge base | point margin × 50 Gold |
@@ -270,7 +324,7 @@ Long-term:   about 5–6 active days
 
 Premium packs should provide a clearly noticeable probability improvement.
 
-## 7. Free Drop Rarity Baseline
+## 7. Historical Free Drop Rarity Baseline (Superseded)
 
 | Rarity tier | Probability | Approximate frequency |
 | --- | ---: | ---: |
@@ -285,7 +339,7 @@ Premium packs should provide a clearly noticeable probability improvement.
 The distribution totals 100%. It is a card-supply simulation baseline, not a
 final production probability table.
 
-## 7.1 Standard Pack Rarity Distribution
+## 7.1 Historical Standard Pack Distribution (Superseded)
 
 The first configured paid Pack product uses the stable code `standard`:
 

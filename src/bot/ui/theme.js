@@ -13,9 +13,9 @@ export const RARITY_COLORS = Object.freeze({
   COMMON: 0x22c55e,
   UNCOMMON: 0x38bdf8,
   ALPHA: 0xa855f7,
-  ALL_STAR: 0xef4444,
+  ALL_STAR: 0x4f46e5,
   SUPERSTAR: 0x8b5cf6,
-  GOAT: 0xf59e0b,
+  GOAT: 0xdc2626,
 });
 
 export function rarityColor(rarityCode) {

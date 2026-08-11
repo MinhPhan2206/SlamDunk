@@ -15,6 +15,8 @@ const ART_PATHS = new Map([
   ["SUPERSTAR:shai gilgeous-alexander", "Superstar/SGA.png"],
   ["SUPERSTAR:jayson tatum", "Superstar/Jayson_Tatum.png"],
   ["SUPERSTAR:victor wembanyama", "Superstar/Victor_Wembanyama.png"],
+  ["SUPERSTAR:giannis antetokounmpo", "Superstar/Giannis_Antetokounmpo.png"],
+  ["SUPERSTAR:nikola jokic", "Superstar/Nikola_Jokic.png"],
 ]);
 const imageCache = new Map();
 

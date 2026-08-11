@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { marketCommand } from "../src/bot/commands/market.command.js";
+import {
+  buyCommand,
+  marketCommand,
+  sellCommand,
+  unlistCommand,
+} from "../src/bot/commands/market.command.js";
 
 function createInteraction(subcommand, values = {}) {
   const replies = [];
@@ -36,6 +41,13 @@ const playerService = {
   },
 };
 
+test("Market actions are separate slash commands", () => {
+  assert.equal(marketCommand.data.name, "market");
+  assert.equal(sellCommand.data.name, "sell");
+  assert.equal(unlistCommand.data.name, "unlist");
+  assert.equal(buyCommand.data.name, "buy");
+});
+
 test("market sell command creates a fixed-price listing", async () => {
   const { interaction, replies } = createInteraction("sell", {
     card_id: "42",
@@ -67,12 +79,12 @@ test("market sell command creates a fixed-price listing", async () => {
     },
   };
 
-  await marketCommand.execute(interaction, { services });
+  await sellCommand.execute(interaction, { services });
 
   assert.equal(replies[0].type, "defer");
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.match(embed.title, /Market Listing Created/);
-  assert.equal(embed.fields[1].value, "500 Gold");
+  assert.match(embed.description, /500 Gold/);
 });
 
 test("market browse command displays active listings", async () => {
@@ -105,4 +117,31 @@ test("market browse command displays active listings", async () => {
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.match(embed.description, /Test Guard/);
   assert.match(embed.description, /500 Gold/);
+  assert.doesNotMatch(embed.description, /Seller|#9/);
+});
+
+test("buy and unlist resolve an active listing by public Card ID", async () => {
+  for (const [command, serviceMethod, playerField] of [
+    [buyCommand, "buyListing", "buyerPlayerId"],
+    [unlistCommand, "cancelListing", "sellerPlayerId"],
+  ]) {
+    const { interaction } = createInteraction(null, { card_id: "!123456789" });
+    const services = {
+      player: playerService,
+      market: {
+        async [serviceMethod](input) {
+          assert.equal(input[playerField], "7");
+          assert.equal(input.publicCardId, "123456789");
+          return serviceMethod === "buyListing"
+            ? {
+                listing: { priceGold: "500" },
+                card: { publicCardId: "123456789" },
+                economy: { debit: { balanceAfter: "500" } },
+              }
+            : { listing: {} };
+        },
+      },
+    };
+    await command.execute(interaction, { services });
+  }
 });

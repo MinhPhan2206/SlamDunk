@@ -1,8 +1,10 @@
 import { SlashCommandBuilder } from "discord.js";
+import { gameConfig } from "../../config/game-config.js";
 import { TradeError } from "../../modules/trade/index.js";
 import { createTradePayload } from "../presenters/trade.presenter.js";
 
 export const tradeCommand = Object.freeze({
+  componentInactivityTimeoutMs: gameConfig.trade.expiryMinutes * 60_000,
   data: new SlashCommandBuilder()
     .setName("trade")
     .setDescription("Start an interactive Direct Trade.")

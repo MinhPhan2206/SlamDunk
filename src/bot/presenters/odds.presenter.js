@@ -2,7 +2,8 @@ import { EmbedBuilder } from "discord.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 function formatProbability(probabilityPercent) {
-  return `${probabilityPercent.toFixed(4)}%`;
+  const decimals = probabilityPercent < 0.001 ? 5 : 4;
+  return `${probabilityPercent.toFixed(decimals)}%`;
 }
 
 export function createOddsEmbed(result) {
