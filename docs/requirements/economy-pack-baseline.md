@@ -18,39 +18,64 @@ Drop, and Standard Pack values elsewhere in this document.
 | --- | --- |
 | Claim | 15-minute cooldown; 80-120 Gold |
 | Daily | 24-hour cooldown; 1,500-2,000 Gold and 20-30 Shards |
+| Weekly | 168-hour cooldown; 3,000-4,000 Gold and 200-300 Shards |
 | Free Drop | 15-minute cooldown; 3 independent candidates; choose 1 |
-| Standard Pack | 1,000 Gold; 1 Card; 1-second anti-spam cooldown |
+| Standard Pack | 3,000 Gold; 3 independent Cards; 1-second anti-spam cooldown |
+| Super Pack | 1,300 Shards; 1 Card; Alpha or higher; 1-second anti-spam cooldown |
 | Battle | 60-minute cooldown; Player selects an eligible opponent bracket |
 
 Free Drop per-candidate odds:
 
 | Rarity | Probability |
 | --- | ---: |
-| Base | 52.44992% |
-| Common | 31.96947% |
-| Uncommon | 15.45764% |
-| Alpha | 0.111235% |
-| All-Star | 0.011112% |
-| Superstar | 0.000556% |
-| Goat | 0.0000667% |
+| Base | 52.495346% |
+| Common | 32.010504% |
+| Uncommon | 15.393089% |
+| Alpha | 0.075132% |
+| All-Star | 0.025013% |
+| Superstar | 0.000833% |
+| Goat | 0.0000833% |
+
+These are per-candidate odds. With three independent candidates, the chance
+that a rarity appears at least once is approximately 1/444 Drops for Alpha,
+1/1,333 for All-Star, 1/40,000 for Superstar, and 1/400,000 for Goat. The
+Player still keeps only one selected candidate.
 
 Standard Pack odds:
 
 | Rarity | Probability |
 | --- | ---: |
-| Base | 13.95031% |
-| Common | 44.16792% |
-| Uncommon | 38.25376% |
+| Base | 13.877323% |
+| Common | 43.936835% |
+| Uncommon | 38.053618% |
 | Alpha | 3.451062% |
-| All-Star | 0.166945% |
+| All-Star | 0.671161% |
 | Superstar | 0.008334% |
 | Goat | 0.001667% |
+
+Every Standard Pack performs three independent Card rolls. The approximate
+per-Pack appearance frequencies are 1/10 for Alpha, 1/50 for All-Star,
+1/4,000 for Superstar, and 1/20,000 for Goat.
+
+Super Pack odds:
+
+| Rarity | Probability |
+| --- | ---: |
+| Base | 0% |
+| Common | 0% |
+| Uncommon | 0% |
+| Alpha | 75.000000% |
+| All-Star | 24.153846% |
+| Superstar | 0.769231% |
+| Goat | 0.076923% |
+
+Super Pack costs 1,300 Shards and grants one independently rolled Card.
 
 Battle Gold uses these base formulas:
 
 ```text
-Loss = 300 + Player Score * 20
-Win  = 1,000 + Score Difference * 50
+Loss = 250 + Player Score * 15
+Win  = 950 + Score Difference * 45
 ```
 
 Opponent brackets are Street, Pro, All-Star, and Legend. Their reward
@@ -58,11 +83,13 @@ multipliers are 0.85, 1.00, 1.20, and 1.40. Required lineup strength is 0,
 70, 80, and 88 respectively. The Player selects the bracket before Battle;
 the AI lineup remains seeded and randomized inside that bracket.
 
-A win adds 5% reward per current consecutive win, bounded by the selected
-bracket at 10%, 25%, 40%, or 50%. A loss resets the streak. Battle reward is
-capped at 3,000 Gold. The first 16 completed Battles per UTC day receive full
-reward; later Battles receive 25%. Every reward is ledgered idempotently by
-public Match ID.
+A win adds 5% per win through streak 5, 3% per win from streak 6 through 10,
+and 2% per win after streak 10. The accumulated streak bonus has no cap and a
+loss resets it. Battle reward has no per-match cap and is never reduced by a
+daily Battle count or Gold threshold. The balance target is approximately
+17,000-19,000 Battle Gold over 16 competitive matches, depending on results,
+margin, bracket, and streak. Every reward is ledgered idempotently by public
+Match ID.
 
 ## 1. Design Goals
 
@@ -377,23 +404,24 @@ Preferred separation:
 
 ```text
 Gameplay / Rewards → Gold
-Unwanted Cards     → Shards
+Unwanted Cards     → Gold + Shards
 ```
 
-Free Drop should not become another major Gold faucet. Quicksell should
-primarily return Shards.
+Free Drop should not become another major Gold faucet. Quicksell returns both
+currencies according to rarity, while Pack cost remains materially above its
+expected Gold return.
 
 Provisional SlamDunk quicksell values:
 
-| Rarity tier | Shards |
-| --- | ---: |
-| Base | 1 |
-| Common | 2 |
-| Uncommon | 5 |
-| Alpha | 30 |
-| All-Star | 200 |
-| Superstar | 1,500 |
-| Goat | 10,000 |
+| Rarity | Gold | Shards |
+| --- | ---: | ---: |
+| Base | 10 | 2 |
+| Common | 20 | 4 |
+| Uncommon | 40 | 8 |
+| Alpha | 250 | 30 |
+| All-Star | 7,000 | 350 |
+| Superstar | 15,000 | 1,500 |
+| Goat | 50,000 | 10,000 |
 
 ```text
 Expected Shard Value =

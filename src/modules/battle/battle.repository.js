@@ -157,24 +157,6 @@ export const battleRepository = Object.freeze({
     }
   },
 
-  async countCompletedToday(database, { playerId, excludeMatchId }) {
-    const result = await database.query(
-      `
-        SELECT COUNT(*)::INTEGER AS battle_count
-        FROM matches
-        WHERE player_id = $1
-          AND status = 'COMPLETED'
-          AND match_id <> $2
-          AND completed_at >= (
-            date_trunc('day', CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
-            AT TIME ZONE 'UTC'
-          )
-      `,
-      [playerId, excludeMatchId],
-    );
-    return result.rows[0].battle_count;
-  },
-
   async completeMatch(
     database,
     { matchId, winnerTeam, possessionCount, playByPlay, rewardSnapshot },

@@ -14,10 +14,16 @@ function normalizeId(value, fieldName) {
   return normalized;
 }
 
-function validateRewards(shardRewards) {
-  for (const [rarityCode, reward] of Object.entries(shardRewards ?? {})) {
-    if (!rarityCode || !Number.isSafeInteger(reward) || reward <= 0) {
-      throw new TypeError("Each quicksell rarity reward must be a positive integer.");
+function validateRewards(rewards) {
+  for (const [rarityCode, reward] of Object.entries(rewards ?? {})) {
+    if (
+      !rarityCode ||
+      !Number.isSafeInteger(reward?.gold) || reward.gold <= 0 ||
+      !Number.isSafeInteger(reward?.shards) || reward.shards <= 0
+    ) {
+      throw new TypeError(
+        "Each quicksell rarity reward requires positive Gold and Shards.",
+      );
     }
   }
 }
@@ -65,7 +71,7 @@ export function createQuicksellService({
   economyService,
   quicksellConfig,
 }) {
-  validateRewards(quicksellConfig?.shardRewards);
+  validateRewards(quicksellConfig?.rewards);
 
   async function hydrateSession(database, session) {
     return Object.freeze({
@@ -112,17 +118,22 @@ export function createQuicksellService({
 
         cards = cards
           .map((card) => {
-            const shardReward = quicksellConfig.shardRewards[card.rarityCode];
-            if (!shardReward) {
+            const reward = quicksellConfig.rewards[card.rarityCode];
+            if (!reward) {
               throw new QuicksellError(
                 "RARITY_REWARD_NOT_CONFIGURED",
                 `Quicksell reward is not configured for ${card.rarityCode}.`,
               );
             }
-            return Object.freeze({ ...card, shardReward });
+            return Object.freeze({
+              ...card,
+              goldReward: reward.gold,
+              shardReward: reward.shards,
+            });
           })
           .sort(
             (left, right) =>
+              right.goldReward - left.goldReward ||
               right.shardReward - left.shardReward ||
               Number(left.publicCardId) - Number(right.publicCardId),
           );
@@ -133,6 +144,7 @@ export function createQuicksellService({
             "No unlocked, available cards match those params.",
           );
         }
+        const totalGold = cards.reduce((total, card) => total + card.goldReward, 0);
         const totalShards = cards.reduce((total, card) => total + card.shardReward, 0);
         const session = await quicksellRepository.createSession(
           transactionDatabase,
@@ -140,6 +152,7 @@ export function createQuicksellService({
             playerId: normalizedPlayerId,
             requestParams: parsed.label,
             interactionId: normalizedInteractionId,
+            totalGold,
             totalShards,
             expiresAt: addMinutes(new Date(), PREVIEW_MINUTES),
           },
@@ -216,7 +229,19 @@ export function createQuicksellService({
             playerId: normalizedPlayerId,
           });
         }
-        const economy = await economyService.credit(
+        const goldEconomy = await economyService.credit(
+          {
+            playerId: normalizedPlayerId,
+            currency: EconomyCurrency.GOLD,
+            amount: Number(session.totalGold),
+            transactionType: "QUICKSELL_BATCH",
+            referenceType: "QUICKSELL_SESSION",
+            referenceId: normalizedSessionId,
+            idempotencyKey: `quicksell-session:${normalizedSessionId}:gold`,
+          },
+          { database: transactionDatabase },
+        );
+        const shardEconomy = await economyService.credit(
           {
             playerId: normalizedPlayerId,
             currency: EconomyCurrency.SHARDS,
@@ -224,7 +249,7 @@ export function createQuicksellService({
             transactionType: "QUICKSELL_BATCH",
             referenceType: "QUICKSELL_SESSION",
             referenceId: normalizedSessionId,
-            idempotencyKey: `quicksell-session:${normalizedSessionId}`,
+            idempotencyKey: `quicksell-session:${normalizedSessionId}:shards`,
           },
           { database: transactionDatabase },
         );
@@ -233,7 +258,8 @@ export function createQuicksellService({
           {
             quicksellSessionId: normalizedSessionId,
             status: "COMPLETED",
-            shardBalanceAfter: economy.balanceAfter,
+            goldBalanceAfter: goldEconomy.balanceAfter,
+            shardBalanceAfter: shardEconomy.balanceAfter,
           },
         );
         return Object.freeze({ session: completed, cards: Object.freeze(cards) });
@@ -318,8 +344,8 @@ export function createQuicksellService({
           );
         }
 
-        const shardReward = quicksellConfig.shardRewards[card.rarityCode];
-        if (!shardReward) {
+        const reward = quicksellConfig.rewards[card.rarityCode];
+        if (!reward) {
           throw new QuicksellError(
             "RARITY_REWARD_NOT_CONFIGURED",
             "This card rarity cannot be quicksold yet.",
@@ -346,23 +372,37 @@ export function createQuicksellService({
           cardInstanceId: card.cardInstanceId,
           playerId: normalizedPlayerId,
         });
-        const economy = await economyService.credit(
+        const goldEconomy = await economyService.credit(
           {
             playerId: normalizedPlayerId,
-            currency: EconomyCurrency.SHARDS,
-            amount: shardReward,
+            currency: EconomyCurrency.GOLD,
+            amount: reward.gold,
             transactionType: "QUICKSELL",
             referenceType: "CARD_INSTANCE",
             referenceId: card.cardInstanceId,
-            idempotencyKey: `quicksell:${card.cardInstanceId}`,
+            idempotencyKey: `quicksell:${card.cardInstanceId}:gold`,
+          },
+          { database: transactionDatabase },
+        );
+        const shardEconomy = await economyService.credit(
+          {
+            playerId: normalizedPlayerId,
+            currency: EconomyCurrency.SHARDS,
+            amount: reward.shards,
+            transactionType: "QUICKSELL",
+            referenceType: "CARD_INSTANCE",
+            referenceId: card.cardInstanceId,
+            idempotencyKey: `quicksell:${card.cardInstanceId}:shards`,
           },
           { database: transactionDatabase },
         );
 
         return Object.freeze({
           card,
-          shardReward,
-          shardBalance: economy.balanceAfter,
+          goldReward: reward.gold,
+          shardReward: reward.shards,
+          goldBalance: goldEconomy.balanceAfter,
+          shardBalance: shardEconomy.balanceAfter,
         });
       };
 

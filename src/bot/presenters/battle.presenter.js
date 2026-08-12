@@ -18,10 +18,73 @@ export function createBattleRewardSummary(result) {
   const streak = result.reward.won
     ? ` • ${result.reward.winStreakAfter} Win Streak`
     : " • Win Streak Reset";
-  const reduced = result.reward.reducedReward
-    ? " • Reduced reward after 16 daily Battles"
-    : "";
-  return `**${outcome}** • +${Number(result.reward.rewardGold).toLocaleString("en-US")} Gold • ${result.reward.bracketName}${streak}${reduced}`;
+  return `**${outcome}** • +${Number(result.reward.rewardGold).toLocaleString("en-US")} Gold • ${result.reward.bracketName}${streak}`;
+}
+
+function signedGold(value) {
+  const amount = Number(value);
+  const sign = amount >= 0 ? "+" : "-";
+  return `${sign} ${Math.abs(amount).toLocaleString("en-US")}`;
+}
+
+function breakdownLine(label, value) {
+  return `${label.slice(0, 25).padEnd(25)}${signedGold(value).padStart(10)}`;
+}
+
+export function createBattleRewardBreakdownEmbed(
+  result,
+  { ownerDisplayName = "Your Team" } = {},
+) {
+  const reward = result.reward;
+  if (!reward) return null;
+  const playerScore = result.teams.find((team) => team.teamNumber === 1).finalScore;
+  const opponentScore = result.teams.find((team) => team.teamNumber === 2).finalScore;
+  const scoreMargin = playerScore - opponentScore;
+  const bracketMultiplier = (
+    reward.bracketMultiplierBasisPoints / 10_000
+  ).toFixed(2);
+  const streakPercent = reward.streakBonusBasisPoints / 100;
+  const scoreFactor = reward.won ? scoreMargin : playerScore;
+  const scoreRate = scoreFactor > 0 ? reward.scoreBonusGold / scoreFactor : 0;
+  const rows = [
+    breakdownLine(
+      reward.won ? "Victory Base" : "Defeat Base",
+      reward.fixedBaseGold,
+    ),
+    breakdownLine(
+      reward.won
+        ? `Score Margin (${scoreMargin} x ${scoreRate})`
+        : `Points Scored (${playerScore} x ${scoreRate})`,
+      reward.scoreBonusGold,
+    ),
+    breakdownLine(
+      `${reward.bracketName} Bracket (x${bracketMultiplier})`,
+      reward.bracketAdjustmentGold,
+    ),
+    ...(reward.won
+      ? [breakdownLine(
+        `Win Streak (${reward.winStreakAfter} Wins)`,
+        reward.streakBonusGold,
+      )]
+      : []),
+    "-".repeat(35),
+    breakdownLine(
+      reward.won ? "Total Winnings" : "Total Earnings",
+      reward.rewardGold,
+    ),
+  ];
+  return new EmbedBuilder()
+    .setColor(reward.won ? UI_COLORS.success : UI_COLORS.danger)
+    .setTitle(
+      `${truncate(String(ownerDisplayName), 70)} · ${reward.won ? "Battle Winnings" : "Battle Compensation"}`,
+    )
+    .setDescription(`**Gold Breakdown 🪙**\n\`\`\`text\n${rows.join("\n")}\n\`\`\``)
+    .addFields({
+      name: "🔥 Current Win Streak",
+      value: reward.won
+        ? `**${reward.winStreakAfter} Wins** · **+${streakPercent}% Reward**`
+        : "**Reset to 0**",
+    });
 }
 
 function publicMatchId(result) {

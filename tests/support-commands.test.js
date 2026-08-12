@@ -56,6 +56,14 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
           availableAt: null,
         };
       },
+      async getWeeklyCooldown(playerId) {
+        assert.equal(playerId, "1");
+        return {
+          cooldownType: "WEEKLY",
+          available: true,
+          availableAt: null,
+        };
+      },
     },
     drop: {
       async getCooldown(playerId) {
@@ -85,8 +93,9 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
   const embed = interaction.replies[1].payload.embeds[0].toJSON();
   assert.equal(embed.title, "Cooldowns");
   assert.equal(embed.fields[0].name, "Claim");
-  assert.equal(embed.fields[2].name, "Free Drop");
-  assert.equal(embed.fields[3].name, "Battle");
+  assert.equal(embed.fields[2].name, "Weekly");
+  assert.equal(embed.fields[3].name, "Free Drop");
+  assert.equal(embed.fields[4].name, "Battle");
   assert.match(
     embed.fields[0].value,
     new RegExp(`<t:${Math.floor(availableAt.getTime() / 1_000)}:R>`),

@@ -42,11 +42,11 @@ test("quicksell command previews the selected cards before destruction", async (
           cardInstanceId: "42",
         });
         return {
-          session: { quicksellSessionId: "9", totalShards: "5" },
+          session: { quicksellSessionId: "9", totalGold: "40", totalShards: "8" },
           cards: [{
             cardInstanceId: "42", publicCardId: "123456789",
             playerName: "Test Guard",
-            rarityCode: "UNCOMMON", shardReward: 5,
+            rarityCode: "UNCOMMON", goldReward: 40, shardReward: 8,
           }],
         };
       },
@@ -58,7 +58,8 @@ test("quicksell command previews the selected cards before destruction", async (
   assert.equal(replies[0].type, "defer");
   const embed = replies[1].payload.embeds[0].toJSON();
   assert.match(embed.description, /Test Guard/);
-  assert.match(embed.description, /5 Shards/);
+  assert.match(embed.description, /40 Gold/);
+  assert.match(embed.description, /8 Shards/);
   assert.equal(replies[1].payload.components.length, 1);
 });
 
@@ -76,7 +77,12 @@ test("quicksell confirm button completes the persisted preview", async () => {
       async confirmPreview(input) {
         assert.deepEqual(input, { playerId: "7", quicksellSessionId: "9" });
         return {
-          session: { totalShards: "5", shardBalanceAfter: "15" },
+          session: {
+            totalGold: "40",
+            totalShards: "8",
+            goldBalanceAfter: "140",
+            shardBalanceAfter: "18",
+          },
           cards: [{ cardInstanceId: "42" }],
         };
       },

@@ -167,7 +167,7 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     assert.ok(result.match.possessionCount > 0);
     assert.equal(result.reward.bracketCode, "street");
     assert.ok(result.reward.rewardGold >= 1);
-    assert.equal(result.reward.battleNumberToday, 1);
+    assert.equal("battleNumberToday" in result.reward, false);
     assert.ok(result.teams.some((team) => team.finalScore >= 21));
     assert.equal(result.teams.length, 2);
     for (const team of result.teams) {

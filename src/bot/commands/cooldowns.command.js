@@ -14,9 +14,10 @@ export const cooldownsCommand = Object.freeze({
       discordUserId: interaction.user.id,
       usernameSnapshot: interaction.user.username,
     });
-    const [claimCooldown, dailyCooldown, freeDropCooldown, battleCooldown] = await Promise.all([
+    const [claimCooldown, dailyCooldown, weeklyCooldown, freeDropCooldown, battleCooldown] = await Promise.all([
       services.reward.getClaimCooldown(player.playerId),
       services.reward.getDailyCooldown(player.playerId),
+      services.reward.getWeeklyCooldown(player.playerId),
       services.drop.getCooldown(player.playerId),
       services.battle.getCooldown(player.playerId),
     ]);
@@ -25,6 +26,7 @@ export const cooldownsCommand = Object.freeze({
       createCooldownsPayload(
         claimCooldown,
         dailyCooldown,
+        weeklyCooldown,
         freeDropCooldown,
         battleCooldown,
       ),

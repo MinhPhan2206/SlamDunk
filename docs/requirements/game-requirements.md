@@ -17,9 +17,8 @@
 
 ## Supporting Commands
 
-- `/cooldowns` reports cooldown availability using PostgreSQL time as the source
-  of truth. It currently reports `CLAIM` and `FREE_DROP`; Daily and Weekly can
-  be added when those reward systems exist.
+- `/cooldowns` reports Claim, Daily, Weekly, Free Drop, and Battle cooldowns
+  using PostgreSQL time as the source of truth.
 - `/rarity` accepts a named rarity choice and lists Card Templates in that
   rarity. The current names are Base, Common, Uncommon, Alpha, All-Star,
   Superstar, and Goat.
@@ -62,11 +61,14 @@
 - Free Drop and Pack are separate modules and separate product sources.
 - `/odds pack_type:<code>` displays Free Drop or configured Pack odds through
   one command. Omitting `pack_type` defaults to Free Drop. Current choices are
-  Free Drop and Standard Pack; future Pack catalog entries become additional
+  Free Drop, Standard Pack, and Super Pack; future Pack catalog entries become additional
   choices.
-- Standard Pack odds are: Base 13.95031%, Common 44.16792%, Uncommon
-  38.25376%, Alpha 3.451062%, All-Star 0.166945%, Superstar 0.008334%, and
+- Standard Pack odds are: Base 13.877323%, Common 43.936835%, Uncommon
+  38.053618%, Alpha 3.451062%, All-Star 0.671161%, Superstar 0.008334%, and
   Goat 0.001667%.
+- Super Pack costs 1,300 Shards and grants one Card. Its odds are Alpha 75%,
+  All-Star 24.153846%, Superstar 0.769231%, and Goat 0.076923%; lower rarities
+  have zero probability.
 - Pack definitions are keyed by stable Pack codes so each future Pack can own
   an independent name and rarity distribution.
 - This iteration exposes Pack catalog odds only. Buying or opening Packs remains
@@ -75,15 +77,15 @@
 ## Pack Purchase
 
 - `/pack pack_type:<code>` buys and opens the selected Pack immediately.
-- Standard Pack costs 1,000 Gold, grants one random Card, and has a one-second
+- Standard Pack costs 3,000 Gold, grants three independently rolled Cards, and has a one-second
   anti-spam cooldown with no purchase limit.
-- Gold debit, ledger entry, rarity roll, Card mint, PackOpening completion, and
+- Currency debit, ledger entry, rarity roll, Card mint, PackOpening completion, and
   cooldown update are one PostgreSQL transaction.
 - Discord interaction ID provides idempotency. A retry returns the existing
   Pack result and cannot charge Gold or mint another Card.
 - Eligible Card Templates within each of the current seven rarities have
   equal probability after the rarity roll.
-- Future Premium, Event, and Shard Packs own separate catalog definitions and odds.
+- Future Premium and Event Packs own separate catalog definitions and odds.
 
 ## Card Stat Derivation
 
@@ -114,10 +116,32 @@
 - A successful Daily grants 1,500–2,000 Gold and 20–30 Shards, inclusive.
 - Both rewards, ledger entries, and cooldown are atomic and idempotent.
 
+## Weekly Reward
+
+- `/weekly` has a 168-hour cooldown.
+- A successful Weekly grants 3,000-4,000 Gold and 200-300 Shards, inclusive.
+- Both ledger entries and the cooldown update are one atomic, idempotent
+  PostgreSQL transaction.
+
+## Battle Rewards
+
+- A loss grants `250 + Player Score × 15` Gold.
+- A win grants `(950 + Score Margin × 45) × Bracket × Streak` Gold.
+- Streak gains 5% per win through win 5, 3% per win from wins 6–10, and 2% per
+  win afterward. It has no cap and resets on a loss.
+- Battle Gold has no per-match or daily cap.
+- After Game Stats, both outcomes send a separate Gold Breakdown embed. A win
+  uses green and shows base, score margin, bracket, streak, and total Gold. A
+  loss uses red and shows defeat base, points scored, bracket, total Gold, and
+  the streak reset.
+- Game Stats is a transient 1200×1400 PNG containing opponent bracket, final
+  score, winning-team MVP, cross-team Game Leaders, and both box scores. It
+  omits Match ID, Team Comparison, Game Summary, and Key Insights.
+
 ## Shard Exchange
 
 - `/exchange item:shard` displays an interactive Exchange menu.
-- One Level Up item costs 500 Shards.
+- One Level Up item costs 1,500 Shards.
 - Shard debit, exchange audit record, and item grant are atomic and idempotent.
 
 ## M12 Battle MVP Behavior

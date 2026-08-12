@@ -17,8 +17,10 @@ test("claim atomically credits Gold, records cooldown, and supports replay", asy
   const rewardService = createRewardService({
     databasePool: pool,
     economyService,
+    inventoryService: { grantItem: async () => 1 },
     claimConfig: gameConfig.claim,
     dailyConfig: gameConfig.daily,
+    weeklyConfig: gameConfig.weekly,
     rollInteger(minimum, maximumExclusive) {
       assert.equal(minimum, 80);
       assert.equal(maximumExclusive, 121);

@@ -11,13 +11,16 @@ export function buildRarityOdds(rarityWeights) {
       typeof entry.rarityCode !== "string" ||
       seen.has(entry.rarityCode) ||
       !Number.isSafeInteger(entry.weight) ||
-      entry.weight <= 0
+      entry.weight < 0
     ) {
-      throw new TypeError("Each rarity requires a unique code and positive integer weight.");
+      throw new TypeError("Each rarity requires a unique code and non-negative integer weight.");
     }
     getRarityDefinition(entry.rarityCode);
     seen.add(entry.rarityCode);
     totalWeight += entry.weight;
+  }
+  if (totalWeight <= 0) {
+    throw new TypeError("rarityWeights must contain at least one positive weight.");
   }
 
   return Object.freeze(

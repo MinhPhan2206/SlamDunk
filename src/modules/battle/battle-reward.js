@@ -4,23 +4,36 @@ function applyBasisPoints(value, basisPoints) {
   return Number((BigInt(value) * BigInt(basisPoints)) / BASIS_POINTS);
 }
 
+export function calculateStreakBonusBasisPoints(winStreak, config) {
+  if (!Number.isSafeInteger(winStreak) || winStreak < 0) {
+    throw new TypeError("winStreak must be a non-negative safe integer.");
+  }
+  const firstFiveWins = Math.min(winStreak, 5);
+  const nextFiveWins = Math.min(Math.max(winStreak - 5, 0), 5);
+  const winsAfterTen = Math.max(winStreak - 10, 0);
+  return firstFiveWins * config.firstFive +
+    nextFiveWins * config.nextFive +
+    winsAfterTen * config.afterTen;
+}
+
 export function calculateBattleReward({
   playerScore,
   aiScore,
   currentWinStreak,
-  completedBattlesToday,
   bracket,
   config,
 }) {
   const won = playerScore > aiScore;
   const winStreakAfter = won ? currentWinStreak + 1 : 0;
-  const baseGold = won
-    ? config.winBaseGold + (playerScore - aiScore) * config.winMarginGold
-    : config.lossBaseGold + playerScore * config.lossPointGold;
+  const scoreBonusGold = won
+    ? (playerScore - aiScore) * config.winMarginGold
+    : playerScore * config.lossPointGold;
+  const fixedBaseGold = won ? config.winBaseGold : config.lossBaseGold;
+  const baseGold = fixedBaseGold + scoreBonusGold;
   const streakBonusBasisPoints = won
-    ? Math.min(
-        winStreakAfter * config.streakBonusBasisPointsPerWin,
-        bracket.maximumStreakBonusBasisPoints,
+    ? calculateStreakBonusBasisPoints(
+        winStreakAfter,
+        config.streakBonusBasisPointsPerWin,
       )
     : 0;
   const bracketAdjusted = applyBasisPoints(
@@ -31,22 +44,21 @@ export function calculateBattleReward({
     bracketAdjusted,
     10_000 + streakBonusBasisPoints,
   );
-  const cappedGold = Math.min(streakAdjusted, config.maximumRewardGold);
-  const reducedReward = completedBattlesToday >= config.fullRewardBattlesPerDay;
-  const rewardGold = reducedReward
-    ? applyBasisPoints(cappedGold, config.reducedRewardBasisPoints)
-    : cappedGold;
+  const rewardGold = streakAdjusted;
 
   return Object.freeze({
     won,
+    fixedBaseGold,
+    scoreBonusGold,
     baseGold,
+    bracketAdjustedGold: bracketAdjusted,
+    bracketAdjustmentGold: bracketAdjusted - baseGold,
+    streakBonusGold: rewardGold - bracketAdjusted,
     rewardGold,
     bracketCode: bracket.code,
     bracketName: bracket.displayName,
     bracketMultiplierBasisPoints: bracket.rewardMultiplierBasisPoints,
     winStreakAfter,
     streakBonusBasisPoints,
-    battleNumberToday: completedBattlesToday + 1,
-    reducedReward,
   });
 }

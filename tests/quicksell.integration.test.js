@@ -15,7 +15,7 @@ import {
   createQuicksellService,
 } from "../src/modules/quicksell/index.js";
 
-test("quicksell atomically destroys a card and credits Shards", async () => {
+test("quicksell atomically destroys a card and credits Gold and Shards", async () => {
   const pool = createPostgresPool({
     connectionString: getDatabaseConfig().databaseUrl,
   });
@@ -78,7 +78,9 @@ test("quicksell atomically destroys a card and credits Shards", async () => {
       { database },
     );
 
+    assert.equal(result.goldReward, 250);
     assert.equal(result.shardReward, 30);
+    assert.equal(result.goldBalance, "250");
     assert.equal(result.shardBalance, "30");
     const state = await database.query(
       `
@@ -86,6 +88,7 @@ test("quicksell atomically destroys a card and credits Shards", async () => {
           ci.status,
           ci.owner_player_id,
           cmc.current_circulation,
+          et.currency,
           et.amount,
           et.transaction_type,
           coh.reason
@@ -99,15 +102,20 @@ test("quicksell atomically destroys a card and credits Shards", async () => {
           ON coh.card_instance_id = ci.card_instance_id
           AND coh.reason = 'QUICKSELL'
         WHERE ci.card_instance_id = $1
+        ORDER BY et.currency
       `,
       [mint.instance.cardInstanceId],
     );
+    assert.equal(state.rows.length, 2);
     assert.equal(state.rows[0].status, "DESTROYED_QUICKSELL");
     assert.equal(state.rows[0].owner_player_id, null);
     assert.equal(state.rows[0].current_circulation, "0");
-    assert.equal(state.rows[0].amount, "30");
-    assert.equal(state.rows[0].transaction_type, "QUICKSELL");
-    assert.equal(state.rows[0].reason, "QUICKSELL");
+    assert.deepEqual(
+      Object.fromEntries(state.rows.map((row) => [row.currency, row.amount])),
+      { GOLD: "250", SHARDS: "30" },
+    );
+    assert.ok(state.rows.every((row) => row.transaction_type === "QUICKSELL"));
+    assert.ok(state.rows.every((row) => row.reason === "QUICKSELL"));
 
     await assert.rejects(
       quicksellService.quicksell(
@@ -182,20 +190,23 @@ test("lock protects cards and batch Quicksell requires a persisted confirmation"
     }, { database });
     assert.equal(preview.cards.length, 1);
     assert.equal(preview.cards[0].cardInstanceId, first.instance.cardInstanceId);
-    assert.equal(preview.session.totalShards, "2");
+    assert.equal(preview.session.totalGold, "20");
+    assert.equal(preview.session.totalShards, "4");
 
     const completed = await quicksellService.confirmPreview({
       playerId,
       quicksellSessionId: preview.session.quicksellSessionId,
     }, { database });
     assert.equal(completed.session.status, "COMPLETED");
-    assert.equal(completed.session.shardBalanceAfter, "2");
+    assert.equal(completed.session.goldBalanceAfter, "20");
+    assert.equal(completed.session.shardBalanceAfter, "4");
 
     const replayed = await quicksellService.confirmPreview({
       playerId,
       quicksellSessionId: preview.session.quicksellSessionId,
     }, { database });
-    assert.equal(replayed.session.shardBalanceAfter, "2");
+    assert.equal(replayed.session.goldBalanceAfter, "20");
+    assert.equal(replayed.session.shardBalanceAfter, "4");
 
     const states = await database.query(
       `SELECT card_instance_id, status, user_lock FROM card_instances

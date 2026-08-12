@@ -10,7 +10,8 @@ import { UI_COLORS } from "../ui/theme.js";
 const MAX_VISIBLE_CARDS = 20;
 
 function cardLine(card) {
-  return `${formatCardLine(card)} • ${formatNumber(card.shardReward)} Shards`;
+  return `${formatCardLine(card)} • ${formatNumber(card.goldReward)} Gold • ` +
+    `${formatNumber(card.shardReward)} Shards`;
 }
 
 export function createQuicksellPreviewPayload({ session, cards }) {
@@ -22,7 +23,8 @@ export function createQuicksellPreviewPayload({ session, cards }) {
     .setColor(UI_COLORS.danger)
     .setTitle("Quicksell Preview")
     .setDescription([
-      `Destroy **${cards.length} Cards** for **${formatNumber(session.totalShards)} Shards**?`,
+      `Destroy **${cards.length} Cards** for **${formatNumber(session.totalGold)} Gold** ` +
+        `and **${formatNumber(session.totalShards)} Shards**?`,
       "Listed, traded, locked, and lineup cards are excluded.",
       "**This action cannot be undone.**",
       "",
@@ -47,7 +49,9 @@ export function createQuicksellCompletedPayload({ session, cards }) {
       .setColor(UI_COLORS.success)
       .setTitle("Quicksell Complete")
       .setDescription(
-        `Destroyed **${cards.length} Cards** for **${formatNumber(session.totalShards)} Shards**.\n` +
+        `Destroyed **${cards.length} Cards** for **${formatNumber(session.totalGold)} Gold** ` +
+        `and **${formatNumber(session.totalShards)} Shards**.\n` +
+        `Gold Balance: **${formatNumber(session.goldBalanceAfter)}** • ` +
         `Shard Balance: **${formatNumber(session.shardBalanceAfter)}**`,
       )],
     components: [],
@@ -64,13 +68,27 @@ export function createQuicksellCancelledPayload() {
   };
 }
 
-export function createQuicksellEmbed({ card, shardReward, shardBalance }) {
+export function createQuicksellEmbed({
+  card,
+  goldReward,
+  shardReward,
+  goldBalance,
+  shardBalance,
+}) {
   return new EmbedBuilder()
     .setColor(UI_COLORS.success)
     .setTitle("Quicksell Complete")
     .setDescription(formatCardLine(card))
     .addFields(
-      { name: "Received", value: `${formatNumber(shardReward)} Shards`, inline: true },
-      { name: "Shard Balance", value: formatNumber(shardBalance), inline: true },
+      {
+        name: "Received",
+        value: `${formatNumber(goldReward)} Gold • ${formatNumber(shardReward)} Shards`,
+        inline: true,
+      },
+      {
+        name: "Balances",
+        value: `${formatNumber(goldBalance)} Gold • ${formatNumber(shardBalance)} Shards`,
+        inline: true,
+      },
     );
 }

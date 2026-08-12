@@ -21,6 +21,7 @@ test("Daily, Standard Pack, and Shard exchange update resources atomically", asy
   const reward = createRewardService({
     databasePool: pool, economyService: economy,
     claimConfig: gameConfig.claim, dailyConfig: gameConfig.daily,
+    weeklyConfig: gameConfig.weekly,
     rollInteger: (minimum) => minimum,
   });
   const pack = createPackService({
@@ -42,18 +43,29 @@ test("Daily, Standard Pack, and Shard exchange update resources atomically", asy
     const playerId = row.rows[0].player_id;
     await economy.ensureWallet(playerId, { database });
     await economy.credit({ playerId, currency: "GOLD", amount: 5000, transactionType: "TEST", idempotencyKey: `resource:${run}:gold` }, { database });
-    await economy.credit({ playerId, currency: "SHARDS", amount: 1000, transactionType: "TEST", idempotencyKey: `resource:${run}:shards` }, { database });
+    await economy.credit({ playerId, currency: "SHARDS", amount: 3000, transactionType: "TEST", idempotencyKey: `resource:${run}:shards` }, { database });
 
     const daily = await reward.dailyReward({ playerId, interactionId: `931${run}` }, { database });
     assert.equal(daily.rewardGold, "1500");
     assert.equal(daily.rewardShards, "20");
 
+    const weekly = await reward.weeklyReward({ playerId, interactionId: `934${run}` }, { database });
+    assert.equal(weekly.rewardGold, "3000");
+    assert.equal(weekly.rewardShards, "200");
+    const weeklyReplay = await reward.weeklyReward({ playerId, interactionId: `934${run}` }, { database });
+    assert.equal(weeklyReplay.replayed, true);
     const opened = await pack.openPack({ playerId, packCode: "standard", interactionId: `932${run}` }, { database });
-    assert.equal(opened.pack.priceGold, 1000);
+    assert.equal(opened.pack.priceAmount, 3000);
+    assert.equal(opened.cards.length, 3);
     assert.equal(opened.opening.status, "COMPLETED");
 
+    const superOpened = await pack.openPack({ playerId, packCode: "super", interactionId: `935${run}` }, { database });
+    assert.equal(superOpened.pack.priceCurrency, "SHARDS");
+    assert.equal(superOpened.pack.priceAmount, 1300);
+    assert.equal(superOpened.cards.length, 1);
+
     const exchanged = await exchange.exchange({ playerId, offerCode: "level_up", interactionId: `933${run}` }, { database });
-    assert.equal(exchanged.offer.inputAmount, 500);
+    assert.equal(exchanged.offer.inputAmount, 1500);
     assert.equal(exchanged.itemQuantity, 1);
   } finally {
     await database.query("ROLLBACK");

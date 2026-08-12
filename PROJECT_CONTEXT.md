@@ -372,7 +372,7 @@ Historical simulation baseline (superseded):
 /challenge: point margin × 50 Gold, 60-minute cooldown
 Challenge streak: +5% per win, capped at ×1.5
 
-Standard Pack: 1,000 Gold (confirmed)
+Standard Pack: 3,000 Gold (confirmed)
 Premium Pack: 6,000 Gold
 Promo/Event Pack: 10,000–12,000 Gold
 ```
@@ -665,13 +665,13 @@ The intended curve is very steep, inspired by the provided Basketbot rarity refe
 Approved Free Drop per-candidate distribution:
 
 ```text
-Base             52.44992%
-Common           31.96947%
-Uncommon         15.45764%
-Alpha             0.111235%
-All-Star          0.011112%
-Superstar         0.000556%
-Goat              0.0000667%
+Base             52.495346%
+Common           32.010504%
+Uncommon         15.393089%
+Alpha             0.075132%
+All-Star          0.025013%
+Superstar         0.000833%
+Goat              0.0000833%
 ```
 
 This distribution totals 100%. Three candidates are rolled independently and
@@ -1336,11 +1336,11 @@ Drop and Pack are separate modules. The configured Standard Pack uses code
 `standard` and the following approved rarity distribution:
 
 ```text
-Base       13.95031%
-Common     44.16792%
-Uncommon   38.25376%
+Base       13.877323%
+Common     43.936835%
+Uncommon   38.053618%
 Alpha       3.451062%
-All-Star    0.166945%
+All-Star    0.671161%
 Superstar   0.008334%
 Goat        0.001667%
 ```
@@ -1354,17 +1354,32 @@ Confirmed Standard Pack behavior:
 
 ```text
 Command: /pack pack_type:standard
-Cost: 1,000 Gold
-Result: 1 Card
+Cost: 3,000 Gold
+Result: 3 independently rolled Cards
 Cooldown: 1 second
 Purchase limit: none during test
 Within-rarity Card Template weighting: uniform for the current 7 rarities
 ```
 
+Each Standard Pack Card is rolled independently. The approximate probability
+of seeing at least one target rarity in a Pack is 1/10 for Alpha, 1/50 for
+All-Star, 1/4,000 for Superstar, and 1/20,000 for Goat.
+
 The command opens immediately after submission. Debit, ledger, roll, mint,
 PackOpening completion, and cooldown are atomic. Discord interaction ID prevents
 double charge and duplicate mint on retry. Premium, Event, and Shard Packs will
 use independent catalog entries and odds.
+
+Confirmed Super Pack behavior:
+
+```text
+Command: /pack pack_type:super
+Cost: 1,300 Shards
+Result: 1 Card
+Cooldown: 1 second
+Odds: Alpha 75%, All-Star 24.153846%, Superstar 0.769231%, Goat 0.076923%
+Base/Common/Uncommon: 0%
+```
 
 ---
 
@@ -1375,6 +1390,7 @@ Reward commands:
 ```text
 /claim
 /daily
+/weekly
 /drop
 ```
 
@@ -1389,6 +1405,7 @@ Discord interaction ID provides idempotency
 ```
 
 Confirmed `/daily`: 24-hour cooldown, 1,500–2,000 Gold, and 20–30 Shards.
+Confirmed `/weekly`: 168-hour cooldown, 3,000–4,000 Gold, and 200–300 Shards.
 Confirmed Standard Pack anti-spam cooldown: 1 second.
 
 Database must eventually be the source of truth for cooldown state.
@@ -1415,23 +1432,24 @@ Card Instance ACTIVE
 ↓
 DESTROYED_QUICKSELL
 ↓
-Shards credited
+Gold and Shards credited
 ```
 
 Destroyed card remains in database history.
 
-The configured rarity-based Quicksell Shard values are confirmed for the current version.
+The configured rarity-based Quicksell Gold and Shard values are confirmed for
+the current version.
 
 Provisional simulation values:
 
 ```text
-Base          1 Shard
-Common        2 Shards
-Uncommon      5 Shards
-Alpha        30 Shards
-All-Star    200 Shards
-Superstar 1,500 Shards
-Goat      10,000 Shards
+Base          10 Gold + 2 Shards
+Common        20 Gold + 4 Shards
+Uncommon      40 Gold + 8 Shards
+Alpha        250 Gold + 30 Shards
+All-Star   7,000 Gold + 350 Shards
+Superstar 15,000 Gold + 1,500 Shards
+Goat      50,000 Gold + 10,000 Shards
 ```
 
 For every Shard Key, expected quicksell value of the result must remain below
@@ -1729,19 +1747,21 @@ Approved F2P Battle economy:
 
 ```text
 Cooldown: 60 minutes
-Loss reward: 300 + Player Score * 20
-Win reward: 1,000 + Score Difference * 50
-Reward cap: 3,000 Gold
-Full-reward Battles per UTC day: 16
-Later Battles: 25% reward
+Loss reward: 250 + Player Score * 15
+Win reward: 950 + Score Difference * 45
+Reward cap: none
+Daily Battle reward reduction: none
 ```
 
 The Player selects `street`, `pro`, `all-star`, or `legend` before Battle.
 The minimum runtime lineup strengths are 0, 70, 80, and 88; reward multipliers
 are 0.85, 1.00, 1.20, and 1.40. AI selection remains seeded and random within
-the selected bracket. A win adds 5% reward per consecutive win, bounded per
-bracket at 10%, 25%, 40%, or 50%; a loss resets the streak. Rewards are written
-to the immutable economy ledger once per public Match ID.
+the selected bracket. A win adds 5% per win through streak 5, 3% per win from
+streak 6–10, and 2% per win afterward. The bonus is uncapped and a loss resets
+the streak. The target for 16
+competitive Battles is approximately 17,000–19,000 Gold, depending on score,
+bracket, and streak. Rewards are written to the immutable economy ledger once
+per public Match ID.
 
 `/strategy` edits Offense, Tempo, Defense, Rebounding, and Main Handler for the
 active Lineup. Main Handler is stored as a lineup slot (`PG`, `SG`, `SF`, `PF`,
@@ -2964,9 +2984,18 @@ Discord embeds; no PNG is rendered every possession. Game Display omits the
 horizontal PNG; missing artwork repeats the generic fallback image. Game Display
 derives its aligned PTS/REB/AST tables only from fully revealed possessions.
 `GAME STATS` is sent separately after natural completion or Simulate as one
-transient 824 x 1024 PNG with the final score, complete two-Team box score, and
-totals. Long Player and Discord names are truncated to preserve table layout.
-The report omits engine, possession, and reward metadata.
+transient 1200 x 1400 PNG. Its layout contains `OPPONENT · <BRACKET>`, final
+score/outcome, a large winning-team MVP showcase, cross-team Game Leaders, two
+complete box scores, and totals. MVP uses only recorded box-score performance;
+rarity and Card strength do not affect it. Long names are truncated. Match ID,
+engine/possession/reward metadata, Team Comparison, Game Summary, and Key
+Insights are omitted.
+After the Game Stats image, both outcomes send a separate Gold Breakdown embed
+using the persisted reward snapshot. A victory uses a green `Battle Winnings`
+embed with Victory Base, Score Margin, Bracket adjustment, Win Streak bonus,
+total Gold, and the resulting streak. A defeat uses a red `Battle Compensation`
+embed with Defeat Base, Points Scored, Bracket adjustment, total Gold, and a
+streak reset indicator.
 
 `/profile`, `/collection`, and `/lineup view` accept an optional Discord `user`
 for read-only viewing of another existing Player. Omitting `user` retains the

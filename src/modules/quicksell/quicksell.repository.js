@@ -19,6 +19,7 @@ function mapCard(row) {
     secondaryPosition: row.secondary_position,
     serialNumber: row.serial_number,
     cardLevel: row.card_level,
+    goldReward: row.gold_reward == null ? null : Number(row.gold_reward),
     shardReward: row.shard_reward == null ? null : Number(row.shard_reward),
   });
 }
@@ -31,7 +32,9 @@ function mapSession(row) {
     requestParams: row.request_params,
     discordInteractionId: row.discord_interaction_id,
     status: row.status,
+    totalGold: row.total_gold,
     totalShards: row.total_shards,
+    goldBalanceAfter: row.gold_balance_after,
     shardBalanceAfter: row.shard_balance_after,
     expiresAt: row.expires_at,
     completedAt: row.completed_at,
@@ -42,7 +45,8 @@ function mapSession(row) {
 
 const SESSION_COLUMNS = `
   quicksell_session_id, player_id, request_params, discord_interaction_id,
-  status, total_shards, shard_balance_after, expires_at, completed_at,
+  status, total_gold, total_shards, gold_balance_after, shard_balance_after,
+  expires_at, completed_at,
   cancelled_at, created_at
 `;
 
@@ -120,18 +124,18 @@ export const quicksellRepository = Object.freeze({
 
   async createSession(
     database,
-    { playerId, requestParams, interactionId, totalShards, expiresAt },
+    { playerId, requestParams, interactionId, totalGold, totalShards, expiresAt },
   ) {
     const result = await database.query(
       `
         INSERT INTO quicksell_sessions (
           player_id, request_params, discord_interaction_id,
-          total_shards, expires_at
+          total_gold, total_shards, expires_at
         )
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING ${SESSION_COLUMNS}
       `,
-      [playerId, requestParams, interactionId, totalShards, expiresAt],
+      [playerId, requestParams, interactionId, totalGold, totalShards, expiresAt],
     );
     return mapSession(result.rows[0]);
   },
@@ -139,19 +143,21 @@ export const quicksellRepository = Object.freeze({
   async addSessionCards(database, quicksellSessionId, cards) {
     const values = [];
     const placeholders = cards.map((card, index) => {
-      const offset = index * 4;
+      const offset = index * 5;
       values.push(
         quicksellSessionId,
         card.cardInstanceId,
+        card.goldReward,
         card.shardReward,
         index + 1,
       );
-      return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4})`;
+      return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5})`;
     });
     await database.query(
       `
         INSERT INTO quicksell_session_cards (
-          quicksell_session_id, card_instance_id, shard_reward, display_position
+          quicksell_session_id, card_instance_id, gold_reward, shard_reward,
+          display_position
         ) VALUES ${placeholders.join(", ")}
       `,
       values,
@@ -166,7 +172,8 @@ export const quicksellRepository = Object.freeze({
           ci.owner_player_id, ci.status, ci.market_lock, ci.trade_lock,
           ci.user_lock, ci.serial_number, ci.card_level,
           ct.player_name, ct.primary_position,
-          ct.secondary_position, r.rarity_code, qsc.shard_reward,
+          ct.secondary_position, r.rarity_code, qsc.gold_reward,
+          qsc.shard_reward,
           EXISTS (
             SELECT 1 FROM lineup_slots ls
             WHERE ls.card_instance_id = ci.card_instance_id
@@ -192,18 +199,27 @@ export const quicksellRepository = Object.freeze({
     return mapSession(result.rows[0]);
   },
 
-  async finishSession(database, { quicksellSessionId, status, shardBalanceAfter = null }) {
+  async finishSession(
+    database,
+    {
+      quicksellSessionId,
+      status,
+      goldBalanceAfter = null,
+      shardBalanceAfter = null,
+    },
+  ) {
     const result = await database.query(
       `
         UPDATE quicksell_sessions
         SET status = $2,
-          shard_balance_after = $3,
+          gold_balance_after = $3,
+          shard_balance_after = $4,
           completed_at = CASE WHEN $2 = 'COMPLETED' THEN CURRENT_TIMESTAMP ELSE NULL END,
           cancelled_at = CASE WHEN $2 IN ('CANCELLED', 'EXPIRED') THEN CURRENT_TIMESTAMP ELSE NULL END
         WHERE quicksell_session_id = $1 AND status = 'OPEN'
         RETURNING ${SESSION_COLUMNS}
       `,
-      [quicksellSessionId, status, shardBalanceAfter],
+      [quicksellSessionId, status, goldBalanceAfter, shardBalanceAfter],
     );
     return mapSession(result.rows[0]);
   },

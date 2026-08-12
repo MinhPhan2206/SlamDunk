@@ -2,6 +2,7 @@ import {
   createBattleGameCompletePayload,
   createBattleLivePayload,
   createBattleRewardSummary,
+  createBattleRewardBreakdownEmbed,
 } from "../presenters/battle.presenter.js";
 import { createBattleReportImage } from "./battle-report-image.js";
 import { createBattleTimeline } from "./battle-timeline.js";
@@ -41,12 +42,17 @@ export function createBattlePlayback({
         hasMatchupImage: session.hasMatchupImage,
       }),
     );
+    const rewardEmbed = createBattleRewardBreakdownEmbed(session.result, {
+      ownerDisplayName: session.ownerDisplayName,
+    });
     try {
       const reportImage = await renderReportImage(session.result, {
         ownerDisplayName: session.ownerDisplayName,
       });
       await interaction.followUp({
-        content: createBattleRewardSummary(session.result) ?? undefined,
+        content: rewardEmbed
+          ? undefined
+          : createBattleRewardSummary(session.result) ?? undefined,
         files: [{
           attachment: reportImage,
           name: `game-stats-${session.matchId}.png`,
@@ -56,10 +62,13 @@ export function createBattlePlayback({
       console.warn(`Battle report image failed: ${error.message}`);
       await interaction.followUp({
         content: [
-          createBattleRewardSummary(session.result),
+          rewardEmbed ? null : createBattleRewardSummary(session.result),
           "GAME STATS could not be rendered for this match.",
         ].filter(Boolean).join("\n"),
       });
+    }
+    if (rewardEmbed) {
+      await interaction.followUp({ embeds: [rewardEmbed] });
     }
   }
 

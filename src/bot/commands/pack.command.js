@@ -10,7 +10,11 @@ const packTypeOption = (option) => {
     .setDescription("Pack product to open.")
     .setRequired(true);
   for (const pack of gameConfig.packs) {
-    option.addChoices({ name: `${pack.displayName} (${pack.priceGold} Gold)`, value: pack.packCode });
+    const currency = pack.priceCurrency === "GOLD" ? "Gold" : "Shards";
+    option.addChoices({
+      name: `${pack.displayName} (${pack.priceAmount} ${currency})`,
+      value: pack.packCode,
+    });
   }
   return option;
 };

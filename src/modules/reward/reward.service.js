@@ -9,6 +9,8 @@ const CLAIM_COOLDOWN_TYPE = "CLAIM";
 const CLAIM_TRANSACTION_TYPE = "CLAIM";
 const DAILY_COOLDOWN_TYPE = "DAILY";
 const DAILY_TRANSACTION_TYPE = "DAILY";
+const WEEKLY_COOLDOWN_TYPE = "WEEKLY";
+const WEEKLY_TRANSACTION_TYPE = "WEEKLY";
 const DISCORD_INTERACTION_REFERENCE = "DISCORD_INTERACTION";
 
 function normalizePositiveInteger(value, fieldName) {
@@ -72,6 +74,30 @@ function validateDailyConfig(dailyConfig) {
   return Object.freeze(result);
 }
 
+function validateWeeklyConfig(weeklyConfig) {
+  const fields = [
+    "cooldownHours",
+    "minimumGold",
+    "maximumGold",
+    "minimumShards",
+    "maximumShards",
+  ];
+  const result = {};
+  for (const field of fields) {
+    result[field] = normalizePositiveInteger(
+      weeklyConfig?.[field],
+      `weeklyConfig.${field}`,
+    );
+  }
+  if (
+    result.minimumGold > result.maximumGold ||
+    result.minimumShards > result.maximumShards
+  ) {
+    throw new TypeError("Weekly reward minimums must not exceed maximums.");
+  }
+  return Object.freeze(result);
+}
+
 function addMinutes(date, minutes) {
   return new Date(date.getTime() + minutes * 60_000);
 }
@@ -124,10 +150,12 @@ export function createRewardService({
   economyService,
   claimConfig,
   dailyConfig,
+  weeklyConfig,
   rollInteger = randomInt,
 }) {
   const config = validateClaimConfig(claimConfig);
   const daily = validateDailyConfig(dailyConfig);
+  const weekly = validateWeeklyConfig(weeklyConfig);
 
   async function getCooldown(playerId, cooldownType, database) {
     const normalizedPlayerId = normalizePlayerId(playerId);
@@ -154,6 +182,10 @@ export function createRewardService({
 
     async getDailyCooldown(playerId, { database = databasePool } = {}) {
       return getCooldown(playerId, DAILY_COOLDOWN_TYPE, database);
+    },
+
+    async getWeeklyCooldown(playerId, { database = databasePool } = {}) {
+      return getCooldown(playerId, WEEKLY_COOLDOWN_TYPE, database);
     },
 
     async claimReward({ playerId, interactionId }, { database } = {}) {
@@ -295,6 +327,111 @@ export function createRewardService({
           rewardGold: String(rewardGold), rewardShards: String(rewardShards),
           goldBalanceAfter: gold.balanceAfter, shardBalanceAfter: shards.balanceAfter,
           availableAt: updated.availableAt, replayed: false,
+        });
+      });
+    },
+
+    async weeklyReward({ playerId, interactionId }, { database } = {}) {
+      const normalizedPlayerId = normalizePlayerId(playerId);
+      const normalizedInteractionId = normalizeInteractionId(interactionId);
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const currentTime = await cooldownRepository.getDatabaseTime(transactionDatabase);
+        const cooldown = await cooldownRepository.getOrCreateForUpdate(transactionDatabase, {
+          playerId: normalizedPlayerId,
+          cooldownType: WEEKLY_COOLDOWN_TYPE,
+        });
+        const goldKey = `weekly:${normalizedInteractionId}:gold`;
+        const shardsKey = `weekly:${normalizedInteractionId}:shards`;
+        const existingGold = await economyService.getTransactionByIdempotencyKey(
+          goldKey,
+          { database: transactionDatabase },
+        );
+        const existingShards = await economyService.getTransactionByIdempotencyKey(
+          shardsKey,
+          { database: transactionDatabase },
+        );
+        if (existingGold || existingShards) {
+          if (
+            !existingGold ||
+            !existingShards ||
+            existingGold.playerId !== normalizedPlayerId ||
+            existingGold.currency !== EconomyCurrency.GOLD ||
+            existingGold.transactionType !== WEEKLY_TRANSACTION_TYPE ||
+            existingGold.referenceId !== normalizedInteractionId ||
+            existingShards.playerId !== normalizedPlayerId ||
+            existingShards.currency !== EconomyCurrency.SHARDS ||
+            existingShards.transactionType !== WEEKLY_TRANSACTION_TYPE ||
+            existingShards.referenceId !== normalizedInteractionId
+          ) {
+            throw new EconomyError(
+              "IDEMPOTENCY_CONFLICT",
+              "The interaction was already used for a different economy movement.",
+            );
+          }
+          return Object.freeze({
+            rewardGold: existingGold.amount,
+            rewardShards: existingShards.amount,
+            goldBalanceAfter: existingGold.balanceAfter,
+            shardBalanceAfter: existingShards.balanceAfter,
+            availableAt: cooldown.availableAt,
+            replayed: true,
+          });
+        }
+        if (cooldown.availableAt > currentTime) {
+          throw new RewardError(
+            "WEEKLY_COOLDOWN_ACTIVE",
+            "The weekly cooldown is still active.",
+            { availableAt: cooldown.availableAt },
+          );
+        }
+        const rewardGold = rollInteger(
+          weekly.minimumGold,
+          weekly.maximumGold + 1,
+        );
+        const rewardShards = rollInteger(
+          weekly.minimumShards,
+          weekly.maximumShards + 1,
+        );
+        if (
+          !Number.isSafeInteger(rewardGold) ||
+          rewardGold < weekly.minimumGold ||
+          rewardGold > weekly.maximumGold ||
+          !Number.isSafeInteger(rewardShards) ||
+          rewardShards < weekly.minimumShards ||
+          rewardShards > weekly.maximumShards
+        ) {
+          throw new Error("Weekly reward generator returned an invalid value.");
+        }
+        const gold = await economyService.credit({
+          playerId: normalizedPlayerId,
+          currency: EconomyCurrency.GOLD,
+          amount: rewardGold,
+          transactionType: WEEKLY_TRANSACTION_TYPE,
+          referenceType: DISCORD_INTERACTION_REFERENCE,
+          referenceId: normalizedInteractionId,
+          idempotencyKey: goldKey,
+        }, { database: transactionDatabase });
+        const shards = await economyService.credit({
+          playerId: normalizedPlayerId,
+          currency: EconomyCurrency.SHARDS,
+          amount: rewardShards,
+          transactionType: WEEKLY_TRANSACTION_TYPE,
+          referenceType: DISCORD_INTERACTION_REFERENCE,
+          referenceId: normalizedInteractionId,
+          idempotencyKey: shardsKey,
+        }, { database: transactionDatabase });
+        const updated = await cooldownRepository.setAvailableAt(transactionDatabase, {
+          playerId: normalizedPlayerId,
+          cooldownType: WEEKLY_COOLDOWN_TYPE,
+          availableAt: addHours(currentTime, weekly.cooldownHours),
+        });
+        return Object.freeze({
+          rewardGold: String(rewardGold),
+          rewardShards: String(rewardShards),
+          goldBalanceAfter: gold.balanceAfter,
+          shardBalanceAfter: shards.balanceAfter,
+          availableAt: updated.availableAt,
+          replayed: false,
         });
       });
     },

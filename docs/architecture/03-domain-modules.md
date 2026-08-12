@@ -270,6 +270,7 @@ Examples:
 ```text
 /claim
 /daily
+/weekly
 battle rewards
 future achievements
 ```
@@ -279,6 +280,7 @@ future achievements
 ```text
 claimReward()
 dailyReward()
+weeklyReward()
 grantBattleReward()
 ```
 
@@ -287,6 +289,7 @@ grantBattleReward()
 ```text
 Player
 Economy
+Inventory
 GameConfig
 ```
 

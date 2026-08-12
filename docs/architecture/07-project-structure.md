@@ -148,9 +148,10 @@ defining independent visual conventions.
 AI opponents into a transient PNG attachment. The buffer is sent to Discord and
 is not persisted on disk or in PostgreSQL.
 
-`src/bot/battle/battle-report-image.js` renders the completed box score as a
-fixed 824 x 1024 SVG and converts it to a transient PNG with `sharp`. Long
-Player and Discord display names are truncated before rendering.
+`src/bot/battle/battle-report-image.js` renders the completed score, MVP,
+cross-team leaders, and two box scores as a fixed 1200 x 1400 SVG, then converts
+it to a transient PNG with `sharp`. Long Player and Discord display names are
+truncated before rendering.
 
 `src/modules/card/card-stats.js` is the single source for deriving Actual Stats
 from Level 5 Card Template values and Card Instance Level. Derived stats are not

@@ -82,10 +82,7 @@ function validateOpponentBrackets(brackets) {
     if (!Number.isFinite(bracket.aiRatingOffset)) {
       throw new TypeError("battleConfig.opponentBrackets.aiRatingOffset must be finite.");
     }
-    for (const field of [
-      "rewardMultiplierBasisPoints",
-      "maximumStreakBonusBasisPoints",
-    ]) {
+    for (const field of ["rewardMultiplierBasisPoints"]) {
       if (!Number.isSafeInteger(bracket[field]) || bracket[field] < 0) {
         throw new TypeError(`battleConfig.opponentBrackets.${field} must be a non-negative integer.`);
       }
@@ -122,15 +119,14 @@ function validateConfig(config) {
   positiveInteger(config, "maximumPossessions");
   for (const field of [
     "cooldownSeconds",
-    "fullRewardBattlesPerDay",
-    "reducedRewardBasisPoints",
-    "maximumRewardGold",
     "lossBaseGold",
     "lossPointGold",
     "winBaseGold",
     "winMarginGold",
-    "streakBonusBasisPointsPerWin",
   ]) positiveInteger(config, field);
+  for (const field of ["firstFive", "nextFive", "afterTen"]) {
+    positiveInteger(config.streakBonusBasisPointsPerWin, field);
+  }
   for (const field of [
     "threePointBaseProbability",
     "midRangeBaseProbability",
@@ -155,9 +151,6 @@ function validateConfig(config) {
     "HEAVILY_CONTESTED",
   ]) {
     probability(config.shotQualityModifiers, quality, { allowNegative: true });
-  }
-  if (config.reducedRewardBasisPoints > 10_000) {
-    throw new TypeError("battleConfig.reducedRewardBasisPoints cannot exceed 10000.");
   }
   return Object.freeze({
     ...config,
@@ -461,15 +454,10 @@ export function createBattleService({
     const playerBeforeBattle = await playerService.getPlayerById(match.playerId, {
       database,
     });
-    const completedBattlesToday = await battleRepository.countCompletedToday(
-      database,
-      { playerId: match.playerId, excludeMatchId: match.matchId },
-    );
     const reward = calculateBattleReward({
       playerScore: simulation.playerScore,
       aiScore: simulation.aiScore,
       currentWinStreak: playerBeforeBattle.currentWinStreak,
-      completedBattlesToday,
       bracket: prepared.bracket,
       config,
     });

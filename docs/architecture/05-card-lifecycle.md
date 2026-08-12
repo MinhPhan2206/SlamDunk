@@ -432,7 +432,7 @@ not trade locked
 ```text
 Card → DESTROYED_QUICKSELL
 current_circulation -= 1
-Shards credited
+Gold and Shards credited
 transaction recorded
 ```
 

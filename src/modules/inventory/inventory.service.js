@@ -27,6 +27,21 @@ function normalizeDefinitions(itemDefinitions) {
 export function createInventoryService({ databasePool, itemDefinitions = [] }) {
   const definitions = normalizeDefinitions(itemDefinitions);
   return Object.freeze({
+    async grantItem(
+      { playerId, itemType, quantity },
+      { database = databasePool } = {},
+    ) {
+      const normalizedType = String(itemType).trim().toUpperCase();
+      if (!normalizedType || !Number.isSafeInteger(quantity) || quantity <= 0) {
+        throw new TypeError("A valid itemType and positive quantity are required.");
+      }
+      return inventoryRepository.grantItem(database, {
+        playerId: normalizePlayerId(playerId),
+        itemType: normalizedType,
+        quantity,
+      });
+    },
+
     async listItems(playerId, { database = databasePool } = {}) {
       const storedItems = await inventoryRepository.listPlayerItems(
         database,

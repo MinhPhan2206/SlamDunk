@@ -10,6 +10,7 @@ function status(cooldown) {
 export function createCooldownsPayload(
   claimCooldown,
   dailyCooldown,
+  weeklyCooldown,
   freeDropCooldown,
   battleCooldown,
 ) {
@@ -20,6 +21,7 @@ export function createCooldownsPayload(
       .addFields(
         { name: "Claim", value: status(claimCooldown), inline: true },
         { name: "Daily", value: status(dailyCooldown), inline: true },
+        { name: "Weekly", value: status(weeklyCooldown), inline: true },
         { name: "Free Drop", value: status(freeDropCooldown), inline: true },
         { name: "Battle", value: status(battleCooldown), inline: true },
       )],

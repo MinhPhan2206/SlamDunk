@@ -22,16 +22,20 @@ function normalizeCatalog(packCatalog) {
       typeof definition.packCode !== "string" ||
       !/^[a-z][a-z0-9_-]*$/.test(definition.packCode) ||
       typeof definition.displayName !== "string" ||
-      !Number.isSafeInteger(definition.priceGold) || definition.priceGold <= 0 ||
+      !Object.values(EconomyCurrency).includes(definition.priceCurrency) ||
+      !Number.isSafeInteger(definition.priceAmount) || definition.priceAmount <= 0 ||
       !Number.isSafeInteger(definition.cooldownSeconds) || definition.cooldownSeconds <= 0 ||
-      definition.cardCount !== 1 || packs.has(definition.packCode)
+      !Number.isSafeInteger(definition.cardCount) ||
+      definition.cardCount < 1 || definition.cardCount > 5 ||
+      packs.has(definition.packCode)
     ) {
       throw new TypeError("Each Pack requires valid, unique product configuration.");
     }
     const pack = Object.freeze({
       packCode: definition.packCode,
       displayName: definition.displayName.trim(),
-      priceGold: definition.priceGold,
+      priceCurrency: definition.priceCurrency,
+      priceAmount: definition.priceAmount,
       cooldownSeconds: definition.cooldownSeconds,
       cardCount: definition.cardCount,
       levelWeights: normalizeCardLevelWeights(definition.levelWeights),
@@ -89,12 +93,41 @@ export function createPackService({
   };
 
   async function hydrate(database, opening, replayed) {
+    let openingCards = await packOpeningRepository.listCards(
+      database,
+      opening.packOpeningId,
+    );
+    if (!openingCards.length && opening.cardTemplateId && opening.cardInstanceId) {
+      openingCards = [Object.freeze({
+        cardPosition: 1,
+        cardTemplateId: opening.cardTemplateId,
+        cardInstanceId: opening.cardInstanceId,
+      })];
+    }
+    const cards = [];
+    for (const openingCard of openingCards) {
+      cards.push(Object.freeze({
+        openingCard,
+        template: await cardTemplateService.getTemplate(
+          openingCard.cardTemplateId,
+          { database },
+        ),
+        instance: await cardInstanceService.getInstance(
+          openingCard.cardInstanceId,
+          { database },
+        ),
+      }));
+    }
+    const firstCard = cards[0];
     return Object.freeze({
       source: "pack",
       opening,
       pack: findPack(opening.packCode),
-      template: await cardTemplateService.getTemplate(opening.cardTemplateId, { database }),
-      instance: await cardInstanceService.getInstance(opening.cardInstanceId, { database }),
+      cards: Object.freeze(cards),
+      templates: Object.freeze(cards.map((card) => card.template)),
+      instances: Object.freeze(cards.map((card) => card.instance)),
+      template: firstCard?.template ?? null,
+      instance: firstCard?.instance ?? null,
       replayed,
     });
   }
@@ -123,36 +156,72 @@ export function createPackService({
           throw new PackError("PACK_COOLDOWN_ACTIVE", "This Pack is being opened too quickly.", { availableAt: cooldown.availableAt });
         }
         const opening = await packOpeningRepository.create(database, {
-          playerId, packCode: pack.packCode, priceGold: pack.priceGold, interactionId,
+          playerId,
+          packCode: pack.packCode,
+          paymentCurrency: pack.priceCurrency,
+          priceAmount: pack.priceAmount,
+          interactionId,
         });
         try {
           await economyService.debit({
-            playerId, currency: EconomyCurrency.GOLD, amount: pack.priceGold,
+            playerId, currency: pack.priceCurrency, amount: pack.priceAmount,
             transactionType: "PACK_PURCHASE", referenceType: "PACK_OPENING",
-            referenceId: opening.packOpeningId, idempotencyKey: `pack:${interactionId}:gold`,
+            referenceId: opening.packOpeningId,
+            idempotencyKey: `pack:${interactionId}:${pack.priceCurrency.toLowerCase()}`,
           }, { database });
         } catch (error) {
-          if (error instanceof EconomyError && error.code === "INSUFFICIENT_GOLD") {
-            throw new PackError("INSUFFICIENT_GOLD", `You need ${pack.priceGold} Gold to open this Pack.`);
+          const insufficientCode = `INSUFFICIENT_${pack.priceCurrency}`;
+          if (error instanceof EconomyError && error.code === insufficientCode) {
+            const currencyName = pack.priceCurrency === EconomyCurrency.GOLD
+              ? "Gold"
+              : "Shards";
+            throw new PackError(
+              insufficientCode,
+              `You need ${pack.priceAmount} ${currencyName} to open this Pack.`,
+            );
           }
           throw error;
         }
-        const template = pickTemplate(await cardTemplateService.listPackableTemplates({ database }), pack, rollInteger);
-        const mint = await cardInstanceService.mintCard({
-          cardTemplateId: template.cardTemplateId, ownerPlayerId: playerId,
-          cardLevel: rollCardLevel(pack.levelWeights, rollInteger), obtainedMethod: "PACK",
-          referenceType: "PACK_OPENING", referenceId: opening.packOpeningId,
-        }, { database });
+        const templates = await cardTemplateService.listPackableTemplates({ database });
+        const cards = [];
+        for (let index = 0; index < pack.cardCount; index += 1) {
+          const template = pickTemplate(templates, pack, rollInteger);
+          const cardPosition = index + 1;
+          const mint = await cardInstanceService.mintCard({
+            cardTemplateId: template.cardTemplateId, ownerPlayerId: playerId,
+            cardLevel: rollCardLevel(pack.levelWeights, rollInteger), obtainedMethod: "PACK",
+            referenceType: "PACK_OPENING",
+            referenceId: `${opening.packOpeningId}:${cardPosition}`,
+          }, { database });
+          const openingCard = await packOpeningRepository.addCard(database, {
+            packOpeningId: opening.packOpeningId,
+            cardPosition,
+            cardTemplateId: template.cardTemplateId,
+            cardInstanceId: mint.instance.cardInstanceId,
+          });
+          cards.push(Object.freeze({ openingCard, template, instance: mint.instance }));
+        }
+        const firstCard = cards[0];
         const completed = await packOpeningRepository.complete(database, {
           packOpeningId: opening.packOpeningId,
-          cardTemplateId: template.cardTemplateId,
-          cardInstanceId: mint.instance.cardInstanceId,
+          cardTemplateId: firstCard.template.cardTemplateId,
+          cardInstanceId: firstCard.instance.cardInstanceId,
         });
         await cooldownRepository.setAvailableAt(database, {
           playerId, cooldownType,
           availableAt: addSeconds(currentTime, pack.cooldownSeconds),
         });
-        return Object.freeze({ source: "pack", opening: completed, pack, template, instance: mint.instance, replayed: false });
+        return Object.freeze({
+          source: "pack",
+          opening: completed,
+          pack,
+          cards: Object.freeze(cards),
+          templates: Object.freeze(cards.map((card) => card.template)),
+          instances: Object.freeze(cards.map((card) => card.instance)),
+          template: firstCard.template,
+          instance: firstCard.instance,
+          replayed: false,
+        });
       };
       return suppliedDatabase
         ? operation(suppliedDatabase)

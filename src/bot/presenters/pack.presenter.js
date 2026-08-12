@@ -1,5 +1,8 @@
 import { EmbedBuilder } from "discord.js";
-import { formatRarity } from "../../config/rarity-config.js";
+import {
+  formatRarity,
+  getRarityDefinition,
+} from "../../config/rarity-config.js";
 import { createCardStripImage } from "../ui/card-strip-image.js";
 import { formatNumber, formatPositions } from "../ui/formatters.js";
 import { rarityColor } from "../ui/theme.js";
@@ -7,19 +10,34 @@ import { rarityColor } from "../ui/theme.js";
 const PACK_IMAGE_NAME = "pack-result.png";
 
 export async function createPackOpeningPayload(result) {
-  const { pack, template, instance } = result;
-  const image = await createCardStripImage([template]);
+  const { pack } = result;
+  const currency = pack.priceCurrency === "GOLD" ? "Gold" : "Shards";
+  const cards = result.cards ?? [Object.freeze({
+    template: result.template,
+    instance: result.instance,
+  })];
+  const highestRarityCard = cards.reduce((highest, card) =>
+    getRarityDefinition(card.template.rarityCode).rank >
+      getRarityDefinition(highest.template.rarityCode).rank
+      ? card
+      : highest
+  );
+  const image = await createCardStripImage(
+    cards.map((card) => card.template),
+  );
   return {
     embeds: [new EmbedBuilder()
-      .setColor(rarityColor(template.rarityCode))
+      .setColor(rarityColor(highestRarityCard.template.rarityCode))
       .setTitle(`${pack.displayName} Result`)
       .setDescription(
-        `**${template.playerName}** • ${formatRarity(template.rarityCode)} • ` +
-        `${formatPositions(template)} • Lv.${instance.cardLevel} • ` +
-        `\`!${instance.publicCardId}\``,
+        cards.map(({ template, instance }, index) =>
+          `**${index + 1}. ${template.playerName}** • ${formatRarity(template.rarityCode)} • ` +
+          `${formatPositions(template)} • Lv.${instance.cardLevel} • ` +
+          `\`!${instance.publicCardId}\``
+        ).join("\n"),
       )
       .setImage(`attachment://${PACK_IMAGE_NAME}`)
-      .setFooter({ text: `Cost: ${formatNumber(pack.priceGold)} Gold` })],
+      .setFooter({ text: `Cost: ${formatNumber(pack.priceAmount)} ${currency}` })],
     files: [{ attachment: image, name: PACK_IMAGE_NAME }],
   };
 }

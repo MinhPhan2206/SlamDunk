@@ -3,7 +3,10 @@ import test from "node:test";
 
 import { createBattlePlayback } from "../src/bot/battle/battle-playback.js";
 import { battleComponent } from "../src/bot/components/battle.component.js";
-import { createBattleLivePayload } from "../src/bot/presenters/battle.presenter.js";
+import {
+  createBattleLivePayload,
+  createBattleRewardBreakdownEmbed,
+} from "../src/bot/presenters/battle.presenter.js";
 
 const SLOTS = ["PG", "SG", "SF", "PF", "C"];
 const PUBLIC_MATCH_ID = "0a038642a1404d938a3dc5b401f17c23";
@@ -75,8 +78,57 @@ function resultFixture() {
       { teamNumber: 1, teamName: "Your Team", finalScore: 21, players: playerPlayers },
       { teamNumber: 2, teamName: "SlamDunk AI", finalScore: 18, players: aiPlayers },
     ],
+    reward: {
+      won: true,
+      fixedBaseGold: 950,
+      scoreBonusGold: 135,
+      baseGold: 1_085,
+      bracketAdjustedGold: 1_085,
+      bracketAdjustmentGold: 0,
+      streakBonusGold: 54,
+      rewardGold: 1_139,
+      bracketCode: "pro",
+      bracketName: "Pro",
+      bracketMultiplierBasisPoints: 10_000,
+      winStreakAfter: 1,
+      streakBonusBasisPoints: 500,
+    },
   };
 }
+
+test("Battle loss uses a red Gold Breakdown and resets the streak", () => {
+  const result = resultFixture();
+  result.match.winnerTeam = 2;
+  result.teams[0].finalScore = 17;
+  result.teams[1].finalScore = 21;
+  result.reward = {
+    won: false,
+    fixedBaseGold: 250,
+    scoreBonusGold: 255,
+    baseGold: 505,
+    bracketAdjustedGold: 429,
+    bracketAdjustmentGold: -76,
+    streakBonusGold: 0,
+    rewardGold: 429,
+    bracketCode: "street",
+    bracketName: "Street",
+    bracketMultiplierBasisPoints: 8_500,
+    winStreakAfter: 0,
+    streakBonusBasisPoints: 0,
+  };
+
+  const embed = createBattleRewardBreakdownEmbed(result, {
+    ownerDisplayName: "haackzz",
+  }).toJSON();
+
+  assert.equal(embed.color, 0xef4444);
+  assert.equal(embed.title, "haackzz · Battle Compensation");
+  assert.match(embed.description, /Defeat Base\s+\+ 250/);
+  assert.match(embed.description, /Points Scored \(17 x 15\)\s+\+ 255/);
+  assert.match(embed.description, /Street Bracket \(x0\.85\)\s+- 76/);
+  assert.match(embed.description, /Total Earnings\s+\+ 429/);
+  assert.equal(embed.fields[0].value, "**Reset to 0**");
+});
 
 test("Battle playback renders live possessions and then a postgame report", async () => {
   const scheduled = [];
@@ -140,6 +192,8 @@ test("Battle playback renders live possessions and then a postgame report", asyn
   assert.equal(edits[12].components.length, 0);
   assert.equal(reports[0].files[0].name, `game-stats-${PUBLIC_MATCH_ID}.png`);
   assert.equal(reports[0].files[0].attachment.toString(), "report-image");
+  assert.equal(reports[1].embeds[0].toJSON().title, "haackzz · Battle Winnings");
+  assert.match(reports[1].embeds[0].toJSON().description, /Total Winnings\s+\+ 1,139/);
 });
 
 test("Battle live border follows the team currently leading", () => {
@@ -191,6 +245,7 @@ test("Battle Simulate button skips playback and is owner-only", async () => {
   assert.equal(edits[0].embeds[0].toJSON().title, "Your Matchup");
   assert.match(edits[0].embeds[1].toJSON().footer.text, /simulated/);
   assert.equal(replies[0].files[0].name, `game-stats-${PUBLIC_MATCH_ID}.png`);
+  assert.equal(replies[1].embeds[0].toJSON().title, "Your Team · Battle Winnings");
 
   const unauthorized = {
     customId: `battle:simulate:${PUBLIC_MATCH_ID}:99`,

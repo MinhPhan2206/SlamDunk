@@ -19,6 +19,7 @@ import { tradeCommand } from "./trade.command.js";
 import { oddsCommand } from "./odds.command.js";
 import { packCommand } from "./pack.command.js";
 import { dailyCommand } from "./daily.command.js";
+import { weeklyCommand } from "./weekly.command.js";
 import { exchangeCommand } from "./exchange.command.js";
 import { sortCommand } from "./sort.command.js";
 import { lockCommand } from "./lock.command.js";
@@ -49,6 +50,7 @@ export const commands = Object.freeze([
   oddsCommand,
   packCommand,
   dailyCommand,
+  weeklyCommand,
   exchangeCommand,
   sortCommand,
   lockCommand,

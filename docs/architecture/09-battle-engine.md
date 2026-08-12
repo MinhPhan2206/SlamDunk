@@ -271,11 +271,15 @@ both remove all components from the game message. The game message remains a
 separate final scoreboard/feed, while the bot sends a new `GAME STATS` message.
 The live embed has no play/possession progress footer. Its left border is amber
 when Team 1 leads, blue when Team 2 leads, and slate when the score is tied.
-The postgame report is a single transient 824 x 1024 PNG containing the score,
-both five-Player box scores, and team totals. It is rendered locally from SVG
-with `sharp`; it is never persisted in PostgreSQL. Long Player and Discord
-display names are truncated to preserve the table layout. The report does not
-show engine version, possession count, or reward metadata.
+The postgame report is a single transient 1200 x 1400 PNG. It contains the
+opponent bracket and final score, a large MVP showcase, cross-team scoring,
+rebounding, playmaking, and defense leaders, both five-Player box scores, and
+team totals. MVP is selected only from the winning team using PTS, REB, AST,
+STL, BLK, TOV, and shooting-efficiency tie-breaks; rarity and Card strength do
+not affect selection. The report is rendered locally from SVG with `sharp` and
+is never persisted in PostgreSQL. Long names are truncated to preserve the
+layout. Match ID, engine version, possession count, reward metadata, Team
+Comparison, Game Summary, and Key Insights are omitted.
 
 Game Display uses native Discord embeds and omits the prototype's
 `Your Starting 5` subtitle. `Your Matchup` renders the

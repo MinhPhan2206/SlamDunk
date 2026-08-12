@@ -40,11 +40,19 @@ export function createApplication({ discordToken, databaseUrl }) {
     databasePool,
     economyService,
   });
+  const inventoryService = createInventoryService({
+    databasePool,
+    itemDefinitions: [{
+      itemType: gameConfig.upgrade.levelUpItemType,
+      itemName: gameConfig.upgrade.levelUpItemName,
+    }],
+  });
   const rewardService = createRewardService({
     databasePool,
     economyService,
     claimConfig: gameConfig.claim,
     dailyConfig: gameConfig.daily,
+    weeklyConfig: gameConfig.weekly,
   });
   const cardTemplateService = createCardTemplateService({ databasePool });
   const traitService = createTraitService({
@@ -116,13 +124,6 @@ export function createApplication({ discordToken, databaseUrl }) {
     economyService,
     exchangeConfig: gameConfig.exchange,
     upgradeConfig: gameConfig.upgrade,
-  });
-  const inventoryService = createInventoryService({
-    databasePool,
-    itemDefinitions: [{
-      itemType: gameConfig.upgrade.levelUpItemType,
-      itemName: gameConfig.upgrade.levelUpItemName,
-    }],
   });
   const services = Object.freeze({
     battle: battleService,
