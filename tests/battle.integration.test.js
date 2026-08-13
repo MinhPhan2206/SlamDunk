@@ -167,6 +167,10 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     assert.ok(result.match.possessionCount > 0);
     assert.equal(result.reward.bracketCode, "street");
     assert.ok(result.reward.rewardGold >= 1);
+    assert.equal(
+      result.reward.rewardXp,
+      result.match.winnerTeam === 1 ? "150" : "50",
+    );
     assert.equal("battleNumberToday" in result.reward, false);
     assert.ok(result.teams.some((team) => team.finalScore >= 21));
     assert.equal(result.teams.length, 2);
@@ -197,6 +201,13 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     });
     assert.equal(playerAfterBattle.gamesPlayed, 1);
     assert.equal(playerAfterBattle.gamesWon + playerAfterBattle.gamesLost, 1);
+    assert.equal(playerAfterBattle.xp, result.reward.rewardXp);
+    assert.equal(playerAfterBattle.playerLevel, 0);
+    const xpTransactions = await database.query(
+      "SELECT COUNT(*)::integer AS count FROM player_xp_transactions WHERE player_id = $1",
+      [playerId],
+    );
+    assert.equal(xpTransactions.rows[0].count, 1);
     const walletAfterBattle = await economyService.getWallet(playerId, {
       database,
     });

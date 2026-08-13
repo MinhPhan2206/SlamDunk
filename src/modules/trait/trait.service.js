@@ -53,8 +53,8 @@ function normalizeDefinitionInput(input) {
 }
 
 function normalizeTraitTier(traitTier) {
-  if (!Number.isInteger(traitTier) || traitTier < 1 || traitTier > 3) {
-    throw new TypeError("traitTier must be 1, 2, or 3.");
+  if (!Number.isInteger(traitTier) || traitTier < 1 || traitTier > 5) {
+    throw new TypeError("traitTier must be an integer from 1 through 5.");
   }
 
   return traitTier;

@@ -5,7 +5,8 @@ const relative = (date) => `<t:${Math.floor(date.getTime() / 1_000)}:R>`;
 export function createDailySuccessPayload(result) {
   return {
     content: `You received ${formatNumber(result.rewardGold)} Gold and ` +
-      `${formatNumber(result.rewardShards)} Shards.`,
+      `${formatNumber(result.rewardShards)} Shards, and ` +
+      `${formatNumber(result.rewardXp)} XP.`,
     embeds: [],
   };
 }

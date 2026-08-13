@@ -20,6 +20,7 @@ test("Daily, Standard Pack, and Shard exchange update resources atomically", asy
   const instances = createCardInstanceService({ databasePool: pool, cardTemplateService: templates, playerService });
   const reward = createRewardService({
     databasePool: pool, economyService: economy,
+    playerService,
     claimConfig: gameConfig.claim, dailyConfig: gameConfig.daily,
     weeklyConfig: gameConfig.weekly,
     rollInteger: (minimum) => minimum,
@@ -48,12 +49,17 @@ test("Daily, Standard Pack, and Shard exchange update resources atomically", asy
     const daily = await reward.dailyReward({ playerId, interactionId: `931${run}` }, { database });
     assert.equal(daily.rewardGold, "1500");
     assert.equal(daily.rewardShards, "20");
+    assert.equal(daily.rewardXp, "300");
 
     const weekly = await reward.weeklyReward({ playerId, interactionId: `934${run}` }, { database });
     assert.equal(weekly.rewardGold, "3000");
     assert.equal(weekly.rewardShards, "200");
+    assert.equal(weekly.rewardXp, "1000");
     const weeklyReplay = await reward.weeklyReward({ playerId, interactionId: `934${run}` }, { database });
     assert.equal(weeklyReplay.replayed, true);
+    const progression = await playerService.getPlayerById(playerId, { database });
+    assert.equal(progression.xp, "1300");
+    assert.equal(progression.playerLevel, 1);
     const opened = await pack.openPack({ playerId, packCode: "standard", interactionId: `932${run}` }, { database });
     assert.equal(opened.pack.priceAmount, 3000);
     assert.equal(opened.cards.length, 3);

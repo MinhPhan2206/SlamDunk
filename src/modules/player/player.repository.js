@@ -34,7 +34,78 @@ function mapPlayer(row) {
   });
 }
 
+function mapXpTransaction(row) {
+  if (!row) return null;
+  return Object.freeze({
+    xpTransactionId: row.xp_transaction_id,
+    playerId: row.player_id,
+    amount: row.amount,
+    sourceType: row.source_type,
+    referenceId: row.reference_id,
+    idempotencyKey: row.idempotency_key,
+    xpAfter: row.xp_after,
+    playerLevelAfter: row.player_level_after,
+    createdAt: row.created_at,
+  });
+}
+
 export const playerRepository = Object.freeze({
+  async findXpTransactionByIdempotencyKey(database, idempotencyKey) {
+    const result = await database.query(
+      `
+        SELECT *
+        FROM player_xp_transactions
+        WHERE idempotency_key = $1
+      `,
+      [idempotencyKey],
+    );
+    return mapXpTransaction(result.rows[0]);
+  },
+
+  async createXpTransaction(database, input) {
+    const result = await database.query(
+      `
+        INSERT INTO player_xp_transactions (
+          player_id,
+          amount,
+          source_type,
+          reference_id,
+          idempotency_key,
+          xp_after,
+          player_level_after
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING *
+      `,
+      [
+        input.playerId,
+        input.amount,
+        input.sourceType,
+        input.referenceId,
+        input.idempotencyKey,
+        input.xpAfter,
+        input.playerLevelAfter,
+      ],
+    );
+    return mapXpTransaction(result.rows[0]);
+  },
+
+  async updateProgression(database, { playerId, xp, playerLevel }) {
+    const result = await database.query(
+      `
+        UPDATE players
+        SET
+          xp = $2,
+          player_level = $3,
+          last_active_at = CURRENT_TIMESTAMP
+        WHERE player_id = $1
+        RETURNING ${PLAYER_COLUMNS}
+      `,
+      [playerId, xp, playerLevel],
+    );
+    return mapPlayer(result.rows[0]);
+  },
+
   async recordBattleResult(database, { playerId, won }) {
     const result = await database.query(
       `
@@ -67,6 +138,14 @@ export const playerRepository = Object.freeze({
       [playerId],
     );
 
+    return mapPlayer(result.rows[0]);
+  },
+
+  async findByIdForUpdate(database, playerId) {
+    const result = await database.query(
+      `SELECT ${PLAYER_COLUMNS} FROM players WHERE player_id = $1 FOR UPDATE`,
+      [playerId],
+    );
     return mapPlayer(result.rows[0]);
   },
 

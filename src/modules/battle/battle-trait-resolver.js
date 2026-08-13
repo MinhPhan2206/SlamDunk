@@ -1,4 +1,4 @@
-export const BATTLE_TRAIT_RESOLVER_VERSION = "battle-traits-v2";
+export const BATTLE_TRAIT_RESOLVER_VERSION = "battle-traits-v4";
 
 export const APPROVED_BATTLE_TRAIT_CODES = Object.freeze([
   "PERIMETER_GRAVITY",
@@ -64,7 +64,7 @@ function clamp(value, minimum, maximum) {
 }
 
 function tierValue(trait, values) {
-  return values[clamp(Number(trait.traitTier) || 1, 1, 3) - 1];
+  return values[clamp(Number(trait.traitTier) || 1, 1, 5) - 1];
 }
 
 function findTrait(player, traitCode) {
@@ -154,35 +154,35 @@ function resolveActionSelection(result, context) {
     const source = ownedTrait(actor, "PAINT_FINISHER");
     if (source) addMultiplier(
       result, source, "ACTION_SELECTION",
-      tierValue(source.trait, [1.05, 1.10, 1.15]),
+      tierValue(source.trait, [1.05, 1.10, 1.15, 1.20, 1.25]),
     );
   }
   if (["PASS", "RESET_OFFENSE", "EXTRA_PASS", "PICK_AND_ROLL"].includes(context.action)) {
     const source = strongestTrait(context.offense, "FLOOR_GENERAL");
     if (source) addScore(
       result, source, "ACTION_SELECTION",
-      tierValue(source.trait, [2, 4, 6]), "DECISION_SCORE_DELTA",
+      tierValue(source.trait, [2, 4, 6, 8, 10]), "DECISION_SCORE_DELTA",
     );
   }
   if (["CUT", "DRIVE_AND_KICK", "POST_KICK_OUT", "EXTRA_PASS"].includes(context.action)) {
     const source = ownedTrait(context.handler, "CREATIVE_PASSER");
     if (source) addMultiplier(
       result, source, "ACTION_SELECTION",
-      tierValue(source.trait, [1.05, 1.10, 1.15]), "PASS_ACTION_WEIGHT",
+      tierValue(source.trait, [1.05, 1.10, 1.15, 1.20, 1.25]), "PASS_ACTION_WEIGHT",
     );
   }
   if (["EXTRA_PASS", "RESET_OFFENSE"].includes(context.action)) {
     const source = ownedTrait(actor, "CONNECTOR");
     if (source) addMultiplier(
       result, source, "ACTION_SELECTION",
-      tierValue(source.trait, [1.08, 1.16, 1.24]), "CONTINUATION_ACTION_WEIGHT",
+      tierValue(source.trait, [1.08, 1.16, 1.24, 1.32, 1.40]), "CONTINUATION_ACTION_WEIGHT",
     );
   }
   if (["CUT", "OFF_BALL_SCREEN", "RELOCATE"].includes(context.action)) {
     const source = ownedTrait(actor, "OFF_BALL_MOVER");
     if (source) addMultiplier(
       result, source, "ACTION_SELECTION",
-      tierValue(source.trait, [1.05, 1.10, 1.15]), "OFF_BALL_ACTION_WEIGHT",
+      tierValue(source.trait, [1.05, 1.10, 1.15, 1.20, 1.25]), "OFF_BALL_ACTION_WEIGHT",
     );
   }
 }
@@ -193,47 +193,49 @@ function resolveAdvantage(result, context) {
     const source = strongestTrait(candidates, "PERIMETER_GRAVITY");
     if (source) addScore(
       result, source, "ADVANTAGE_CREATION",
-      tierValue(source.trait, [2, 4, 6]), "TEAM_SPACING_SCORE",
+      tierValue(source.trait, context.shotType === "THREE_POINT"
+        ? [2, 5, 9, 14, 20]
+        : [2, 4, 6, 8, 10]), "TEAM_SPACING_SCORE",
     );
   }
   if (["POST_UP", "POST_KICK_OUT"].includes(context.action)) {
     const source = ownedTrait(context.handler, "POST_TECHNICIAN");
     if (source) addScore(
       result, source, "ADVANTAGE_CREATION",
-      tierValue(source.trait, [2, 4, 6]), "CREATION_SCORE_DELTA",
+      tierValue(source.trait, [2, 4, 6, 8, 10]), "CREATION_SCORE_DELTA",
     );
   }
   if (["CREATE_SEPARATION", "DRIVE", "MID_RANGE", "THREE_POINT"].includes(context.action)) {
     const source = ownedTrait(context.handler, "SEPARATION_ARTIST");
     if (source) addScore(
       result, source, "ADVANTAGE_CREATION",
-      tierValue(source.trait, [2, 4, 6]), "CREATION_SCORE_DELTA",
+      tierValue(source.trait, [2, 4, 6, 8, 10]), "CREATION_SCORE_DELTA",
     );
   }
   if (SCREEN_ACTIONS.has(context.action)) {
     const maestro = ownedTrait(context.handler, "PICK_ROLL_MAESTRO");
     if (maestro) addScore(
       result, maestro, "ADVANTAGE_CREATION",
-      tierValue(maestro.trait, [2, 4, 6]), "SCREEN_READ_SCORE_DELTA",
+      tierValue(maestro.trait, [2, 4, 6, 8, 10]), "SCREEN_READ_SCORE_DELTA",
     );
     const setter = ownedTrait(context.screener, "SCREEN_SETTER");
     if (setter) addScore(
       result, setter, "ADVANTAGE_CREATION",
-      tierValue(setter.trait, [2, 4, 6]), "SCREEN_ADVANTAGE_SCORE",
+      tierValue(setter.trait, [2, 4, 6, 8, 10]), "SCREEN_ADVANTAGE_SCORE",
     );
   }
   if (["CUT", "OFF_BALL_SCREEN", "RELOCATE"].includes(context.action)) {
     const source = ownedTrait(context.beneficiary, "OFF_BALL_MOVER");
     if (source) addScore(
       result, source, "ADVANTAGE_CREATION",
-      tierValue(source.trait, [2, 4, 6]), "CREATION_SCORE_DELTA",
+      tierValue(source.trait, [2, 4, 6, 8, 10]), "CREATION_SCORE_DELTA",
     );
   }
   if (["CREATE_SEPARATION", "DRIVE", "DRIBBLE_HANDOFF"].includes(context.action)) {
     const source = ownedTrait(context.defender, "POINT_OF_ATTACK_STOPPER");
     if (source) addScore(
       result, source, "ADVANTAGE_CREATION",
-      -tierValue(source.trait, [2, 4, 6]), "OPPONENT_CREATION_SCORE_DELTA",
+      -tierValue(source.trait, [2, 4, 6, 8, 10]), "OPPONENT_CREATION_SCORE_DELTA",
     );
   }
 }
@@ -242,7 +244,7 @@ function resolveDefensiveResponse(result, context) {
   if (context.coverage === "SWITCH") {
     const source = ownedTrait(context.defender, "SWITCHABLE_DEFENDER");
     if (source) {
-      const value = tierValue(source.trait, [2, 4, 6]);
+      const value = tierValue(source.trait, [2, 4, 6, 8, 10]);
       result.mismatchPenaltyReduction += value;
       activation(result, source, "DEFENSIVE_RESPONSE", "MISMATCH_PENALTY_REDUCTION", value);
     }
@@ -251,7 +253,7 @@ function resolveDefensiveResponse(result, context) {
     const source = ownedTrait(context.onBallDefender ?? context.defender, "SCREEN_NAVIGATOR");
     if (source) addScore(
       result, source, "DEFENSIVE_RESPONSE",
-      -tierValue(source.trait, [2, 4, 6]), "SCREEN_ADVANTAGE_SCORE_DELTA",
+      -tierValue(source.trait, [2, 4, 6, 8, 10]), "SCREEN_ADVANTAGE_SCORE_DELTA",
     );
   }
 }
@@ -261,14 +263,14 @@ function resolvePass(result, context) {
     const source = ownedTrait(context.passer, "PICK_ROLL_MAESTRO");
     if (source) addProbability(
       result, source, "PASS_RESOLUTION",
-      tierValue(source.trait, [0.01, 0.02, 0.03]), "PASS_SUCCESS_PROBABILITY_DELTA",
+      tierValue(source.trait, [0.01, 0.02, 0.03, 0.04, 0.05]), "PASS_SUCCESS_PROBABILITY_DELTA",
     );
   }
   if (PASS_ACTIONS.has(context.action) && context.difficultPass !== false) {
     const source = ownedTrait(context.passer, "CREATIVE_PASSER");
     if (source) addProbability(
       result, source, "PASS_RESOLUTION",
-      tierValue(source.trait, [0.01, 0.02, 0.03]), "PASS_SUCCESS_PROBABILITY_DELTA",
+      tierValue(source.trait, [0.01, 0.02, 0.03, 0.04, 0.05]), "PASS_SUCCESS_PROBABILITY_DELTA",
     );
   }
 }
@@ -278,34 +280,34 @@ function resolveTurnover(result, context) {
     const source = ownedTrait(context.handler, "POST_TECHNICIAN");
     if (source) addProbability(
       result, source, "TURNOVER",
-      -tierValue(source.trait, [0.005, 0.01, 0.015]), "TURNOVER_PROBABILITY_DELTA",
+      -tierValue(source.trait, [0.005, 0.01, 0.015, 0.02, 0.025]), "TURNOVER_PROBABILITY_DELTA",
     );
   }
   if (["PASS", "HANDLE"].includes(context.turnoverType)) {
     const source = strongestTrait(context.offense, "FLOOR_GENERAL");
     if (source) addProbability(
       result, source, "TURNOVER",
-      -tierValue(source.trait, [0.005, 0.01, 0.015]), "TURNOVER_PROBABILITY_DELTA",
+      -tierValue(source.trait, [0.005, 0.01, 0.015, 0.02, 0.025]), "TURNOVER_PROBABILITY_DELTA",
     );
   }
   if (["PASS", "HANDLE"].includes(context.turnoverType)) {
     const source = ownedTrait(context.defender, "ACTIVE_HANDS");
     if (source) addProbability(
       result, source, "TURNOVER",
-      tierValue(source.trait, [0.005, 0.01, 0.015]), "TURNOVER_PROBABILITY_DELTA",
+      tierValue(source.trait, [0.005, 0.01, 0.015, 0.02, 0.025]), "TURNOVER_PROBABILITY_DELTA",
     );
   }
   if (context.isClutch) {
     const performer = ownedTrait(context.handler, "CLUTCH_PERFORMER");
     if (performer) addProbability(
       result, performer, "TURNOVER",
-      -tierValue(performer.trait, [0.005, 0.01, 0.015]),
+      -tierValue(performer.trait, [0.005, 0.01, 0.015, 0.02, 0.025]),
       "CLUTCH_TURNOVER_PROBABILITY_DELTA",
     );
     const defender = ownedTrait(context.defender, "CLUTCH_DEFENDER");
     if (defender) addProbability(
       result, defender, "TURNOVER",
-      tierValue(defender.trait, [0.005, 0.01, 0.015]),
+      tierValue(defender.trait, [0.005, 0.01, 0.015, 0.02, 0.025]),
       "CLUTCH_TURNOVER_PROBABILITY_DELTA",
     );
   }
@@ -316,7 +318,7 @@ function resolveShotQuality(result, context) {
     const source = ownedTrait(context.shooter, "RANGE_EXTENDER");
     if (source) addQuality(
       result, source, "SHOT_QUALITY",
-      tierValue(source.trait, [1.5, 3, 4.5]), "DISTANCE_PENALTY_REDUCTION",
+      tierValue(source.trait, [2, 4, 6, 9, 12]), "DISTANCE_PENALTY_REDUCTION",
     );
   }
   if (
@@ -326,7 +328,7 @@ function resolveShotQuality(result, context) {
     const source = ownedTrait(context.shooter, "MIDRANGE_ASSASSIN");
     if (source) addQuality(
       result, source, "SHOT_QUALITY",
-      tierValue(source.trait, [1.5, 3, 4.5]), "CONTEST_PENALTY_REDUCTION",
+      tierValue(source.trait, [1.5, 3, 4.5, 6, 7.5]), "CONTEST_PENALTY_REDUCTION",
     );
   }
   if (
@@ -336,14 +338,16 @@ function resolveShotQuality(result, context) {
     const source = ownedTrait(context.shooter, "PAINT_FINISHER");
     if (source) addQuality(
       result, source, "SHOT_QUALITY",
-      tierValue(source.trait, [2, 4, 6]), "CONTACT_PENALTY_REDUCTION",
+      tierValue(source.trait, [2, 4, 6, 8, 10]), "CONTACT_PENALTY_REDUCTION",
     );
   }
   if (context.catchAndShoot) {
     const source = ownedTrait(context.shooter, "CATCH_AND_SHOOT");
     if (source) addQuality(
       result, source, "SHOT_QUALITY",
-      tierValue(source.trait, [2, 4, 6]), "SHOT_QUALITY_DELTA",
+      tierValue(source.trait, context.shotType === "THREE_POINT"
+        ? [3, 6, 10, 15, 20]
+        : [2, 4, 6, 8, 10]), "SHOT_QUALITY_DELTA",
     );
   }
 }
@@ -357,11 +361,11 @@ function resolveRimDefense(result, context) {
   if (!source) return;
   addScore(
     result, source, "RIM_DEFENSE",
-    -tierValue(source.trait, [2, 4, 6]), "CONTEST_SCORE_DELTA",
+    -tierValue(source.trait, [2, 4, 6, 8, 10]), "CONTEST_SCORE_DELTA",
   );
   addBlockProbability(
     result, source, "RIM_DEFENSE",
-    tierValue(source.trait, [0.005, 0.01, 0.015]),
+    tierValue(source.trait, [0.005, 0.01, 0.015, 0.02, 0.025]),
   );
 }
 
@@ -369,7 +373,7 @@ function resolveRebound(result, context) {
   const source = ownedTrait(context.rebounder ?? context.actor, "GLASS_CLEANER");
   if (source) addProbability(
     result, source, "REBOUND",
-    tierValue(source.trait, [0.02, 0.04, 0.06]), "REBOUND_PROBABILITY_DELTA",
+    tierValue(source.trait, [0.02, 0.04, 0.06, 0.08, 0.10]), "REBOUND_PROBABILITY_DELTA",
   );
 }
 
@@ -378,14 +382,14 @@ function resolveTransition(result, context) {
     const source = strongestTrait(context.offense, "TRANSITION_ENGINE");
     if (source) addProbability(
       result, source, "POSSESSION_TRANSITION",
-      tierValue(source.trait, [0.02, 0.04, 0.06]), "FAST_BREAK_PROBABILITY_DELTA",
+      tierValue(source.trait, [0.02, 0.04, 0.06, 0.08, 0.10]), "FAST_BREAK_PROBABILITY_DELTA",
     );
   }
   if (["SECOND_CHANCE", "RESET_OFFENSE"].includes(context.action)) {
     const source = ownedTrait(context.rebounder, "GLASS_CLEANER");
     if (source) addMultiplier(
       result, source, "POSSESSION_TRANSITION",
-      tierValue(source.trait, [1.05, 1.10, 1.15]), "SECOND_CHANCE_ACTION_WEIGHT",
+      tierValue(source.trait, [1.05, 1.10, 1.15, 1.20, 1.25]), "SECOND_CHANCE_ACTION_WEIGHT",
     );
   }
 }
@@ -398,15 +402,25 @@ function resolveShotMake(result, context) {
     const source = ownedTrait(context.shooter, "TOUGH_SHOT_MAKER");
     if (source) addProbability(
       result, source, "SHOT_MAKE",
-      tierValue(source.trait, [0.01, 0.02, 0.03]),
+      tierValue(source.trait, context.shotType === "THREE_POINT"
+        ? [0.01, 0.025, 0.045, 0.07, 0.10]
+        : [0.01, 0.02, 0.03, 0.04, 0.05]),
       "CONTESTED_SHOT_PROBABILITY_DELTA",
+    );
+  }
+  if (context.shotType === "THREE_POINT" && context.catchAndShoot) {
+    const source = ownedTrait(context.shooter, "CATCH_AND_SHOOT");
+    if (source) addProbability(
+      result, source, "SHOT_MAKE",
+      tierValue(source.trait, [0.005, 0.01, 0.02, 0.035, 0.05]),
+      "CATCH_AND_SHOOT_PROBABILITY_DELTA",
     );
   }
   if (context.shotType === "FINISHING" && context.contact) {
     const source = ownedTrait(context.shooter, "CONTACT_FINISHER");
     if (source) addProbability(
       result, source, "SHOT_MAKE",
-      tierValue(source.trait, [0.01, 0.02, 0.03]),
+      tierValue(source.trait, [0.01, 0.02, 0.03, 0.04, 0.05]),
       "CONTACT_FINISH_PROBABILITY_DELTA",
     );
   }
@@ -414,13 +428,13 @@ function resolveShotMake(result, context) {
     const performer = ownedTrait(context.shooter, "CLUTCH_PERFORMER");
     if (performer) addProbability(
       result, performer, "SHOT_MAKE",
-      tierValue(performer.trait, [0.005, 0.01, 0.015]),
+      tierValue(performer.trait, [0.005, 0.01, 0.015, 0.02, 0.025]),
       "CLUTCH_SHOT_PROBABILITY_DELTA",
     );
     const defender = ownedTrait(context.defender, "CLUTCH_DEFENDER");
     if (defender) addProbability(
       result, defender, "SHOT_MAKE",
-      -tierValue(defender.trait, [0.005, 0.01, 0.015]),
+      -tierValue(defender.trait, [0.005, 0.01, 0.015, 0.02, 0.025]),
       "CLUTCH_CONTEST_PROBABILITY_DELTA",
     );
   }
@@ -428,7 +442,7 @@ function resolveShotMake(result, context) {
     const source = ownedTrait(context.shooter, "COMEBACK_CATALYST");
     if (source) addProbability(
       result, source, "SHOT_MAKE",
-      tierValue(source.trait, [0.005, 0.01, 0.015]),
+      tierValue(source.trait, [0.005, 0.01, 0.015, 0.02, 0.025]),
       "COMEBACK_SHOT_PROBABILITY_DELTA",
     );
   }
@@ -436,7 +450,7 @@ function resolveShotMake(result, context) {
     const source = ownedTrait(context.shooter, "MOMENTUM_SCORER");
     if (source) addProbability(
       result, source, "SHOT_MAKE",
-      tierValue(source.trait, [0.005, 0.01, 0.015]),
+      tierValue(source.trait, [0.005, 0.01, 0.015, 0.02, 0.025]),
       "MOMENTUM_SHOT_PROBABILITY_DELTA",
     );
   }
@@ -444,7 +458,7 @@ function resolveShotMake(result, context) {
     const source = ownedTrait(context.shooter, "COLD_BLOODED");
     if (source) addProbability(
       result, source, "SHOT_MAKE",
-      tierValue(source.trait, [0.01, 0.02, 0.03]),
+      tierValue(source.trait, [0.01, 0.02, 0.03, 0.04, 0.05]),
       "GAME_WINNING_SHOT_PROBABILITY_DELTA",
     );
   }
@@ -466,13 +480,14 @@ export function resolveBattleTraitModifiers(hook, context = {}) {
     throw new TypeError(`Unsupported Battle Trait hook: ${hook}.`);
   }
 
+  const threePointLimit = context.shotType === "THREE_POINT" ? 20 : 10;
   return Object.freeze({
-    scoreDelta: clamp(result.scoreDelta, -8, 8),
-    qualityDelta: clamp(result.qualityDelta, -8, 8),
-    probabilityDelta: clamp(result.probabilityDelta, -0.08, 0.08),
-    blockProbabilityDelta: clamp(result.blockProbabilityDelta, 0, 0.02),
-    mismatchPenaltyReduction: clamp(result.mismatchPenaltyReduction, 0, 6),
-    weightMultiplier: clamp(result.weightMultiplier, 0.75, 1.30),
+    scoreDelta: clamp(result.scoreDelta, -threePointLimit, threePointLimit),
+    qualityDelta: clamp(result.qualityDelta, -threePointLimit, threePointLimit),
+    probabilityDelta: clamp(result.probabilityDelta, -0.10, 0.10),
+    blockProbabilityDelta: clamp(result.blockProbabilityDelta, 0, 0.025),
+    mismatchPenaltyReduction: clamp(result.mismatchPenaltyReduction, 0, 10),
+    weightMultiplier: clamp(result.weightMultiplier, 0.75, 1.40),
     activations: Object.freeze(result.activations),
   });
 }

@@ -117,18 +117,25 @@ function validateConfig(config) {
   positiveInteger(config, "aiMatchupRatingTolerance");
   positiveInteger(config, "targetScore");
   positiveInteger(config, "maximumPossessions");
+  positiveInteger(config, "threePointRatingBaseline");
   for (const field of [
     "cooldownSeconds",
     "lossBaseGold",
     "lossPointGold",
     "winBaseGold",
     "winMarginGold",
+    "winXp",
+    "lossXp",
   ]) positiveInteger(config, field);
   for (const field of ["firstFive", "nextFive", "afterTen"]) {
     positiveInteger(config.streakBonusBasisPointsPerWin, field);
   }
   for (const field of [
     "threePointBaseProbability",
+    "threePointBelowBaselineScale",
+    "threePointAboveBaselineScale",
+    "minimumThreePointProbability",
+    "maximumThreePointProbability",
     "midRangeBaseProbability",
     "finishingBaseProbability",
     "ratingProbabilityScale",
@@ -143,6 +150,12 @@ function validateConfig(config) {
     config.maximumShotProbability > 1
   ) {
     throw new TypeError("Battle shot probability limits are invalid.");
+  }
+  if (
+    config.minimumThreePointProbability >= config.maximumThreePointProbability ||
+    config.maximumThreePointProbability > 1
+  ) {
+    throw new TypeError("Battle three-point probability limits are invalid.");
   }
   for (const quality of [
     "OPEN",
@@ -473,9 +486,28 @@ export function createBattleService({
       },
       { database },
     );
+    const won = simulation.winnerTeam === 1;
+    await playerService.recordBattleResult(
+      { playerId: match.playerId, won },
+      { database },
+    );
+    const xp = await playerService.awardXp(
+      {
+        playerId: match.playerId,
+        amount: won ? config.winXp : config.lossXp,
+        sourceType: "BATTLE",
+        referenceId: match.publicMatchId,
+        idempotencyKey: `battle:${match.publicMatchId}:xp`,
+      },
+      { database },
+    );
     const rewardSnapshot = Object.freeze({
       ...reward,
       balanceAfter: economyResult.balanceAfter,
+      rewardXp: xp.xpAwarded,
+      xpAfter: xp.xpAfter,
+      playerLevelAfter: xp.playerLevelAfter,
+      leveledUp: xp.leveledUp,
     });
     const completedMatch = await battleRepository.completeMatch(database, {
       matchId: match.matchId,
@@ -484,10 +516,6 @@ export function createBattleService({
       playByPlay: simulation.playByPlay,
       rewardSnapshot,
     });
-    await playerService.recordBattleResult(
-      { playerId: match.playerId, won: simulation.winnerTeam === 1 },
-      { database },
-    );
     await cardInstanceService.recordGamesPlayed(
       {
         ownerPlayerId: match.playerId,

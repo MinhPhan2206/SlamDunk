@@ -15,13 +15,13 @@ test("daily command sends one compact reward line", async () => {
     player: { async getOrCreatePlayer() { return { playerId: "1" }; } },
     reward: {
       async dailyReward() {
-        return { rewardGold: "1750", rewardShards: "25" };
+        return { rewardGold: "1750", rewardShards: "25", rewardXp: "300" };
       },
     },
   };
 
   await dailyCommand.execute(interaction, { services });
 
-  assert.equal(replies[0].content, "You received 1,750 Gold and 25 Shards.");
+  assert.equal(replies[0].content, "You received 1,750 Gold and 25 Shards, and 300 XP.");
   assert.deepEqual(replies[0].embeds, []);
 });

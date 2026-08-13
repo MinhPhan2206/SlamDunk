@@ -17,6 +17,7 @@ test("claim atomically credits Gold, records cooldown, and supports replay", asy
   const rewardService = createRewardService({
     databasePool: pool,
     economyService,
+    playerService: { async awardXp() { throw new Error("Claim must not award XP."); } },
     inventoryService: { grantItem: async () => 1 },
     claimConfig: gameConfig.claim,
     dailyConfig: gameConfig.daily,

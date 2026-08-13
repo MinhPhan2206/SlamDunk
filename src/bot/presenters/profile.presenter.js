@@ -1,4 +1,5 @@
 import { EmbedBuilder } from "discord.js";
+import { getPlayerLevelProgress } from "../../modules/player/index.js";
 import { formatNumber } from "../ui/formatters.js";
 import { UI_COLORS } from "../ui/theme.js";
 
@@ -7,11 +8,13 @@ export function createProfileEmbed({
   displayName = player.usernameSnapshot,
   thumbnailUrl,
 }) {
+  const progress = getPlayerLevelProgress(player.xp);
   const embed = new EmbedBuilder()
     .setColor(UI_COLORS.primary)
     .setTitle(`${displayName}'s Profile`)
     .setDescription(
-      `**Level ${player.playerLevel}** · ${formatNumber(player.xp)} XP`,
+      `**Level ${progress.playerLevel}** · ` +
+      `${formatNumber(progress.xpIntoLevel)} / ${formatNumber(progress.xpRequired)} XP`,
     )
     .addFields(
       {

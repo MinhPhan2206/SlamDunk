@@ -22,9 +22,37 @@ function player(name, traits = []) {
 }
 
 test("Battle Trait catalog exposes the approved 27 unique codes", () => {
-  assert.equal(BATTLE_TRAIT_RESOLVER_VERSION, "battle-traits-v2");
+  assert.equal(BATTLE_TRAIT_RESOLVER_VERSION, "battle-traits-v4");
   assert.equal(APPROVED_BATTLE_TRAIT_CODES.length, 27);
   assert.equal(new Set(APPROVED_BATTLE_TRAIT_CODES).size, 27);
+});
+
+test("Trait Levels 1 through 5 produce distinct runtime effects", () => {
+  const creationScores = [];
+  const shotBonuses = [];
+  const reboundBonuses = [];
+
+  for (let level = 1; level <= 5; level += 1) {
+    const creator = player(`Creator ${level}`, [["SEPARATION_ARTIST", level]]);
+    creationScores.push(resolveBattleTraitModifiers("ADVANTAGE_CREATION", {
+      action: "CREATE_SEPARATION",
+      offense: [creator],
+      handler: creator,
+      beneficiary: creator,
+    }).scoreDelta);
+    shotBonuses.push(resolveBattleTraitModifiers("SHOT_MAKE", {
+      shotType: "THREE_POINT",
+      shotQuality: "CONTESTED",
+      shooter: player(`Shooter ${level}`, [["TOUGH_SHOT_MAKER", level]]),
+    }).probabilityDelta);
+    reboundBonuses.push(resolveBattleTraitModifiers("REBOUND", {
+      rebounder: player(`Rebounder ${level}`, [["GLASS_CLEANER", level]]),
+    }).probabilityDelta);
+  }
+
+  assert.deepEqual(creationScores, [2, 4, 6, 8, 10]);
+  assert.deepEqual(shotBonuses, [0.01, 0.025, 0.045, 0.07, 0.10]);
+  assert.deepEqual(reboundBonuses, [0.02, 0.04, 0.06, 0.08, 0.10]);
 });
 
 test("Situational Traits activate only in their matching Battle context", () => {
@@ -47,7 +75,7 @@ test("Situational Traits activate only in their matching Battle context", () => 
     isGameWinningAttempt: true,
   });
 
-  assert.equal(result.probabilityDelta, 0.075);
+  assert.equal(result.probabilityDelta, 0.09);
   assert.deepEqual(
     result.activations.map((entry) => entry.traitCode).sort(),
     [
@@ -118,8 +146,38 @@ test("Catch-and-shoot and Glass Cleaner use different bounded channels", () => {
   });
   const rebound = resolveBattleTraitModifiers("REBOUND", { rebounder });
 
-  assert.equal(shot.qualityDelta, 4);
+  assert.equal(shot.qualityDelta, 6);
   assert.equal(shot.probabilityDelta, 0);
   assert.equal(rebound.probabilityDelta, 0.06);
   assert.equal(rebound.qualityDelta, 0);
+});
+
+test("Catch-and-shoot Levels add distinct three-point make bonuses", () => {
+  const bonuses = [];
+  for (let level = 1; level <= 5; level += 1) {
+    bonuses.push(resolveBattleTraitModifiers("SHOT_MAKE", {
+      shotType: "THREE_POINT",
+      shotQuality: "OPEN",
+      catchAndShoot: true,
+      shooter: player(`Shooter ${level}`, [["CATCH_AND_SHOOT", level]]),
+    }).probabilityDelta);
+  }
+  assert.deepEqual(bonuses, [0.005, 0.01, 0.02, 0.035, 0.05]);
+});
+
+test("Stronger shooting Trait curves do not change mid-range effects", () => {
+  const shooter = player("Mid-range Shooter", [
+    ["CATCH_AND_SHOOT", 5],
+    ["TOUGH_SHOT_MAKER", 5],
+  ]);
+  assert.equal(resolveBattleTraitModifiers("SHOT_QUALITY", {
+    shotType: "MID_RANGE",
+    shooter,
+    catchAndShoot: true,
+  }).qualityDelta, 10);
+  assert.equal(resolveBattleTraitModifiers("SHOT_MAKE", {
+    shotType: "MID_RANGE",
+    shotQuality: "CONTESTED",
+    shooter,
+  }).probabilityDelta, 0.05);
 });

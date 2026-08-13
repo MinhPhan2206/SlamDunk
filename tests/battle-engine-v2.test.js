@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { gameConfig } from "../src/config/game-config.js";
-import { ACTIONS, simulateBattle } from "../src/modules/battle/battle-engine.js";
+import {
+  ACTIONS,
+  calculateThreePointShotProbability,
+  simulateBattle,
+} from "../src/modules/battle/battle-engine.js";
 import { APPROVED_BATTLE_TRAIT_CODES } from "../src/modules/battle/battle-trait-resolver.js";
 import { DEFAULT_LINEUP_STRATEGY } from "../src/modules/lineup/lineup-strategy.js";
 
@@ -40,9 +44,9 @@ test("Battle Engine v3 is deterministic and produces a valid first-to-21 result"
   const second = simulateBattle(input);
 
   assert.deepEqual(second, first);
-  assert.equal(first.engineVersion, "3.2.0");
+  assert.equal(first.engineVersion, "3.3.0");
   assert.equal(first.strategyResolverVersion, "battle-strategy-v4");
-  assert.equal(first.traitResolverVersion, "battle-traits-v2");
+  assert.equal(first.traitResolverVersion, "battle-traits-v4");
   assert.equal(first.tendencyResolverVersion, "battle-tendencies-v2");
   assert.equal(first.playByPlay.length, first.possessionCount);
   assert.ok(first.playerScore >= 21 || first.aiScore >= 21);
@@ -74,6 +78,29 @@ test("Battle Engine v3 is deterministic and produces a valid first-to-21 result"
       assert.ok(player.threePointersMade <= player.threePointersAttempted);
       assert.ok(player.threePointersMade <= player.fieldGoalsMade);
       assert.ok(player.threePointersAttempted <= player.fieldGoalsAttempted);
+    }
+  }
+});
+
+test("Three-point accuracy separates weak and elite shooters by shot quality", () => {
+  const expected = [
+    [60, 0.3525, 0.2925, 0.2125, 0.1425],
+    [75, 0.42, 0.36, 0.28, 0.21],
+    [90, 0.5025, 0.4425, 0.3625, 0.2925],
+    [99, 0.552, 0.492, 0.412, 0.342],
+  ];
+  for (const [rating, open, light, contested, heavy] of expected) {
+    for (const [shotQuality, probability] of [
+      ["OPEN", open],
+      ["LIGHTLY_CONTESTED", light],
+      ["CONTESTED", contested],
+      ["HEAVILY_CONTESTED", heavy],
+    ]) {
+      assert.ok(Math.abs(calculateThreePointShotProbability({
+        threePointRating: rating,
+        shotQuality,
+        config: gameConfig.battle,
+      }) - probability) < 1e-10);
     }
   }
 });

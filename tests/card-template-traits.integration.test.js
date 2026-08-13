@@ -124,7 +124,7 @@ test("Card Templates own fixed Trait assignments and tiers", async () => {
       {
         cardTemplateId: baseTemplate.cardTemplateId,
         traitId: rangeSpecialist.traitId,
-        traitTier: 3,
+        traitTier: 5,
       },
       { database },
     );
@@ -137,8 +137,8 @@ test("Card Templates own fixed Trait assignments and tiers", async () => {
       { database },
     );
 
-    assert.equal(firstAssignment.traitTier, 3);
-    assert.equal(firstAssignment.traitTierLabel, "III");
+    assert.equal(firstAssignment.traitTier, 5);
+    assert.equal(firstAssignment.traitTierLabel, "V");
 
     const traits = await traitService.getTraitsForTemplate(
       baseTemplate.cardTemplateId,
@@ -149,7 +149,7 @@ test("Card Templates own fixed Trait assignments and tiers", async () => {
       await traitService.getTotalTraitLevel(baseTemplate.cardTemplateId, {
         database,
       }),
-      5,
+      7,
     );
 
     await assert.rejects(
@@ -178,11 +178,11 @@ test("Card Templates own fixed Trait assignments and tiers", async () => {
         {
           cardTemplateId: baseTemplate.cardTemplateId,
           traitId: floorGeneral.traitId,
-          traitTier: 4,
+          traitTier: 6,
         },
         { database },
       ),
-      /traitTier must be 1, 2, or 3/,
+      /traitTier must be an integer from 1 through 5/,
     );
 
     await assert.rejects(
@@ -207,7 +207,7 @@ test("Card Templates own fixed Trait assignments and tiers", async () => {
             trait_id,
             trait_tier
           )
-          VALUES ($1, $2, 4)
+          VALUES ($1, $2, 6)
         `,
         [playoffTemplate.cardTemplateId, rangeSpecialist.traitId],
       ),

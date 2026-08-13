@@ -27,7 +27,7 @@ function targetPlayer() {
   return {
     playerId: "22",
     usernameSnapshot: "target_user",
-    playerLevel: 1,
+    playerLevel: 0,
     xp: "0",
     gamesPlayed: 0,
     gamesWon: 0,
@@ -59,6 +59,7 @@ test("profile user option displays another existing Player", async () => {
 
   const embed = commandInteraction.replies[0].embeds[0].toJSON();
   assert.equal(embed.title, "Target User's Profile");
+  assert.match(embed.description, /Level 0.*0 \/ 1,000 XP/s);
   assert.match(embed.fields[0].value, /W-L:.*0-0.*Total Games:.*0/s);
   assert.doesNotMatch(JSON.stringify(embed), /Wallet|Gold|Shards|Win Rate/);
 });

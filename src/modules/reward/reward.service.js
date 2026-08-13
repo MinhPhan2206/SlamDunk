@@ -63,7 +63,7 @@ function validateClaimConfig(claimConfig) {
 }
 
 function validateDailyConfig(dailyConfig) {
-  const fields = ["cooldownHours", "minimumGold", "maximumGold", "minimumShards", "maximumShards"];
+  const fields = ["cooldownHours", "xpReward", "minimumGold", "maximumGold", "minimumShards", "maximumShards"];
   const result = {};
   for (const field of fields) {
     result[field] = normalizePositiveInteger(dailyConfig?.[field], `dailyConfig.${field}`);
@@ -77,6 +77,7 @@ function validateDailyConfig(dailyConfig) {
 function validateWeeklyConfig(weeklyConfig) {
   const fields = [
     "cooldownHours",
+    "xpReward",
     "minimumGold",
     "maximumGold",
     "minimumShards",
@@ -148,11 +149,15 @@ async function useTransaction(databasePool, database, operation) {
 export function createRewardService({
   databasePool,
   economyService,
+  playerService,
   claimConfig,
   dailyConfig,
   weeklyConfig,
   rollInteger = randomInt,
 }) {
+  if (!playerService?.awardXp) {
+    throw new TypeError("Reward service requires a Player XP service.");
+  }
   const config = validateClaimConfig(claimConfig);
   const daily = validateDailyConfig(dailyConfig);
   const weekly = validateWeeklyConfig(weeklyConfig);
@@ -292,12 +297,23 @@ export function createRewardService({
         const existingShards = await economyService.getTransactionByIdempotencyKey(shardsKey, { database: transactionDatabase });
         if (existingGold || existingShards) {
           if (!existingGold || !existingShards) throw new EconomyError("IDEMPOTENCY_CONFLICT", "Daily reward ledger is incomplete.");
+          const xp = await playerService.awardXp({
+            playerId: normalizedPlayerId,
+            amount: daily.xpReward,
+            sourceType: DAILY_TRANSACTION_TYPE,
+            referenceId: normalizedInteractionId,
+            idempotencyKey: `daily:${normalizedInteractionId}:xp`,
+          }, { database: transactionDatabase });
           return Object.freeze({
             rewardGold: existingGold.amount,
             rewardShards: existingShards.amount,
             goldBalanceAfter: existingGold.balanceAfter,
             shardBalanceAfter: existingShards.balanceAfter,
             availableAt: cooldown.availableAt,
+            rewardXp: xp.xpAwarded,
+            xpAfter: xp.xpAfter,
+            playerLevelAfter: xp.playerLevelAfter,
+            leveledUp: xp.leveledUp,
             replayed: true,
           });
         }
@@ -318,6 +334,13 @@ export function createRewardService({
         const shards = await economyService.credit({
           ...reference, currency: EconomyCurrency.SHARDS, amount: rewardShards, idempotencyKey: shardsKey,
         }, { database: transactionDatabase });
+        const xp = await playerService.awardXp({
+          playerId: normalizedPlayerId,
+          amount: daily.xpReward,
+          sourceType: DAILY_TRANSACTION_TYPE,
+          referenceId: normalizedInteractionId,
+          idempotencyKey: `daily:${normalizedInteractionId}:xp`,
+        }, { database: transactionDatabase });
         const updated = await cooldownRepository.setAvailableAt(transactionDatabase, {
           playerId: normalizedPlayerId,
           cooldownType: DAILY_COOLDOWN_TYPE,
@@ -326,6 +349,8 @@ export function createRewardService({
         return Object.freeze({
           rewardGold: String(rewardGold), rewardShards: String(rewardShards),
           goldBalanceAfter: gold.balanceAfter, shardBalanceAfter: shards.balanceAfter,
+          rewardXp: xp.xpAwarded, xpAfter: xp.xpAfter,
+          playerLevelAfter: xp.playerLevelAfter, leveledUp: xp.leveledUp,
           availableAt: updated.availableAt, replayed: false,
         });
       });
@@ -368,12 +393,23 @@ export function createRewardService({
               "The interaction was already used for a different economy movement.",
             );
           }
+          const xp = await playerService.awardXp({
+            playerId: normalizedPlayerId,
+            amount: weekly.xpReward,
+            sourceType: WEEKLY_TRANSACTION_TYPE,
+            referenceId: normalizedInteractionId,
+            idempotencyKey: `weekly:${normalizedInteractionId}:xp`,
+          }, { database: transactionDatabase });
           return Object.freeze({
             rewardGold: existingGold.amount,
             rewardShards: existingShards.amount,
             goldBalanceAfter: existingGold.balanceAfter,
             shardBalanceAfter: existingShards.balanceAfter,
             availableAt: cooldown.availableAt,
+            rewardXp: xp.xpAwarded,
+            xpAfter: xp.xpAfter,
+            playerLevelAfter: xp.playerLevelAfter,
+            leveledUp: xp.leveledUp,
             replayed: true,
           });
         }
@@ -420,6 +456,13 @@ export function createRewardService({
           referenceId: normalizedInteractionId,
           idempotencyKey: shardsKey,
         }, { database: transactionDatabase });
+        const xp = await playerService.awardXp({
+          playerId: normalizedPlayerId,
+          amount: weekly.xpReward,
+          sourceType: WEEKLY_TRANSACTION_TYPE,
+          referenceId: normalizedInteractionId,
+          idempotencyKey: `weekly:${normalizedInteractionId}:xp`,
+        }, { database: transactionDatabase });
         const updated = await cooldownRepository.setAvailableAt(transactionDatabase, {
           playerId: normalizedPlayerId,
           cooldownType: WEEKLY_COOLDOWN_TYPE,
@@ -430,6 +473,10 @@ export function createRewardService({
           rewardShards: String(rewardShards),
           goldBalanceAfter: gold.balanceAfter,
           shardBalanceAfter: shards.balanceAfter,
+          rewardXp: xp.xpAwarded,
+          xpAfter: xp.xpAfter,
+          playerLevelAfter: xp.playerLevelAfter,
+          leveledUp: xp.leveledUp,
           availableAt: updated.availableAt,
           replayed: false,
         });

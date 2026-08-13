@@ -39,7 +39,7 @@ function mapTemplateTrait(row) {
     traitType: row.trait_type,
     description: row.description,
     traitTier: row.trait_tier,
-    traitTierLabel: ["I", "II", "III"][row.trait_tier - 1],
+    traitTierLabel: ["I", "II", "III", "IV", "V"][row.trait_tier - 1],
     active: row.active,
     assignedAt: row.created_at,
   });

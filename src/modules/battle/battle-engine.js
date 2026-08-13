@@ -817,6 +817,24 @@ function qualityModifier(quality, config) {
   return config.shotQualityModifiers[quality];
 }
 
+export function calculateThreePointShotProbability({
+  threePointRating,
+  shotQuality,
+  traitProbabilityDelta = 0,
+  config,
+}) {
+  const ratingDifference = threePointRating - config.threePointRatingBaseline;
+  const ratingScale = ratingDifference < 0
+    ? config.threePointBelowBaselineScale
+    : config.threePointAboveBaselineScale;
+  return clamp(
+    config.threePointBaseProbability + ratingScale * ratingDifference +
+      qualityModifier(shotQuality, config) + traitProbabilityDelta,
+    config.minimumThreePointProbability,
+    config.maximumThreePointProbability,
+  );
+}
+
 function legacyTraitModifier(resolveTraitModifier, stage, context) {
   const value = resolveTraitModifier?.(stage, context) ?? 0;
   if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -867,9 +885,12 @@ function shotProbability(
 ) {
   let probability;
   if (plan.shotType === "THREE_POINT") {
-    probability = config.threePointBaseProbability +
-      config.ratingProbabilityScale * (rating(plan.shooter, "threePoint") - 75) +
-      qualityModifier(quality, config);
+    probability = calculateThreePointShotProbability({
+      threePointRating: rating(plan.shooter, "threePoint"),
+      shotQuality: quality,
+      traitProbabilityDelta,
+      config,
+    });
   } else if (plan.shotType === "MID_RANGE") {
     probability = config.midRangeBaseProbability +
       config.ratingProbabilityScale * (rating(plan.shooter, "midRange") - 75) +
@@ -885,13 +906,20 @@ function shotProbability(
       config.ratingProbabilityScale * (finishScore - rimDefense) +
       qualityModifier(quality, config) * 0.5;
   }
-  probability += legacyTraitModifier(resolveTraitModifier, "SHOT_MAKE", {
+  const legacyProbabilityDelta = legacyTraitModifier(resolveTraitModifier, "SHOT_MAKE", {
     shooter: plan.shooter,
     defender: plan.defender,
     shotType: plan.shotType,
     quality,
   });
-  probability += traitProbabilityDelta;
+  if (plan.shotType === "THREE_POINT") {
+    return clamp(
+      probability + legacyProbabilityDelta,
+      config.minimumThreePointProbability,
+      config.maximumThreePointProbability,
+    );
+  }
+  probability += legacyProbabilityDelta + traitProbabilityDelta;
   return clamp(probability, config.minimumShotProbability, config.maximumShotProbability);
 }
 
@@ -1126,6 +1154,7 @@ export function simulateBattle({
       beneficiary: option.beneficiary,
       screener: option.screener,
       defender: primary,
+      shotType: plan.shotType,
     });
     const defensiveTraits = resolveBattleTraitModifiers("DEFENSIVE_RESPONSE", {
       action: option.action,
@@ -1244,6 +1273,7 @@ export function simulateBattle({
       shooter: plan.shooter,
       defender: plan.defender,
       contact: plan.contact,
+      catchAndShoot: plan.catchAndShoot,
       isClutch: situation.isClutch,
       isComeback: situation.isComeback,
       scoringStreak,

@@ -50,6 +50,7 @@ export function createApplication({ discordToken, databaseUrl }) {
   const rewardService = createRewardService({
     databasePool,
     economyService,
+    playerService,
     claimConfig: gameConfig.claim,
     dailyConfig: gameConfig.daily,
     weeklyConfig: gameConfig.weekly,

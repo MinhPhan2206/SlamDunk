@@ -316,6 +316,14 @@ Player Level and Card Level are separate concepts.
 
 Player Level does not currently directly modify card stats.
 
+Player XP is cumulative and auditable, and every Player starts at Level 0.
+Advancing from Level `L` to Level `L + 1` requires `(L + 1) × 1,000` XP: Level 1
+begins at 1,000 total XP, Level 2 at 3,000, Level 3 at 6,000, and so on. Battle
+grants 150 XP for a win or 50 XP for a loss; Daily grants 300 XP; Weekly grants
+1,000 XP. Migration 039 adds the idempotent `player_xp_transactions` ledger;
+Migration 040 changes the starting level and existing progress to Level 0.
+Player-level milestone rewards remain TBD.
+
 ---
 
 # 9. Economy
@@ -701,6 +709,8 @@ Trait Tiers use:
 I
 II
 III
+IV
+V
 ```
 
 Exact numerical effects are TBD.
@@ -720,6 +730,8 @@ Trait Level values:
 Trait I   = 1 point
 Trait II  = 2 points
 Trait III = 3 points
+Trait IV  = 4 points
+Trait V   = 5 points
 
 A card's Total Trait Level is the sum of the levels of all Traits assigned to its Card Template.
 
@@ -752,6 +764,8 @@ Trait Level values:
 Trait I   = 1 point
 Trait II  = 2 points
 Trait III = 3 points
+Trait IV  = 4 points
+Trait V   = 5 points
 
 Example:
 
@@ -1174,16 +1188,20 @@ Example:
 Rim Protector I
 Rim Protector II
 Rim Protector III
+Rim Protector IV
+Rim Protector V
 
 should all protect the rim.
 
-Tier II and III simply provide stronger versions of the effect.
+Higher levels provide stronger versions of the same effect.
 
 Conceptually:
 
 I   = noticeable
 II  = strong
 III = elite
+IV  = dominant
+V   = generational
 
 Exact battle coefficients remain TBD.
 
@@ -1192,6 +1210,8 @@ The values:
 I   = 1
 II  = 2
 III = 3
+IV  = 4
+V   = 5
 
 are used for Total Trait Level calculation only.
 
@@ -1762,6 +1782,16 @@ the streak. The target for 16
 competitive Battles is approximately 17,000–19,000 Gold, depending on score,
 bracket, and streak. Rewards are written to the immutable economy ledger once
 per public Match ID.
+
+Battle XP is written once per public Match ID in the Player XP ledger. A win
+grants 150 XP and a loss grants 50 XP.
+
+Battle Engine 3.3 separates three-point accuracy more strongly by Actual 3 Point
+Stat: the probability slope is 0.45 percentage points below the 75 baseline and
+0.55 points at or above it, with a dedicated 8%–70% clamp. Mid-range and paint
+probabilities are unchanged. Battle Trait Resolver v4 increases the Level I–V
+separation of Perimeter Gravity, Range Extender, Catch & Shoot, and Mamba
+Instinct; Catch & Shoot also grants a bounded make bonus on eligible threes.
 
 `/strategy` edits Offense, Tempo, Defense, Rebounding, and Main Handler for the
 active Lineup. Main Handler is stored as a lineup slot (`PG`, `SG`, `SF`, `PF`,
@@ -2356,7 +2386,7 @@ Implemented concepts:
 card_templates table with identity, positions, rarity tier, OVR, and 8 base stats
 trait_definitions catalog table
 card_template_traits fixed many-to-many assignments
-Trait Tier stored as 1 / 2 / 3 and exposed as I / II / III
+Trait Tier originally stored as 1 / 2 / 3 and exposed as I / II / III
 Total Trait Level calculated as the sum of assigned Trait Tiers
 Card Template and Trait repositories/services
 inactive Trait assignment protection
@@ -2747,12 +2777,14 @@ Base, Common, Uncommon, Alpha, All-Star, Superstar, Goat
 Traits:
 fixed by Card Template
 Trait Tier fixed by Card Template
-I / II / III
+I / II / III / IV / V
 
 Trait Level value:
 I   = 1
 II  = 2
 III = 3
+IV  = 4
+V   = 5
 
 Total Trait Level is rarity-dependent.
 Rarity does NOT directly define the number of distinct Traits.
@@ -2791,7 +2823,7 @@ hard circulation caps
 
 final Free Drop probabilities
 
-exact battle effect/formula of each Trait Tier
+final balance coefficients for each implemented Trait Level
 
 final Total Trait Level ranges after battle balancing
 
@@ -3032,6 +3064,13 @@ Collection uses 10 rows per page and icon-only pagination. Profile and
 Collection use the viewed Discord user's avatar. Lineup, Drop, Pack, and Battle
 reuse transient artwork composites with `unknown-player.png` as the fallback.
 All component timeouts disable controls and show `Interaction Expired`.
+
+Migration 038 expands fixed Card Template Trait Levels to 1–5 / I–V. Battle
+Trait resolver v3 preserves the existing Level 1–3 coefficients and adds
+distinct bounded Level 4–5 effects. The Card catalog seed synchronizes the
+audited Trait profiles for the five GOAT Templates: LeBron James, Stephen
+Curry, Michael Jordan, Kobe Bryant, and Kareem Abdul-Jabbar. Their Total Trait
+Levels are 87, 82, 87, 86, and 78 respectively.
 
 Before defining a new milestone:
 

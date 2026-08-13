@@ -102,9 +102,19 @@ last_active_at
 
 ```text
 discord_user_id UNIQUE
-player_level >= 1
+player_level >= 0
 xp >= 0
 ```
+
+`xp` stores lifetime cumulative XP. `player_level` starts at 0 and is a cached
+derivation for fast reads, updated atomically with XP. Advancing from Level `L`
+to Level `L + 1` requires `(L + 1) × 1,000` XP, so Level 1 starts at 1,000
+cumulative XP, Level 2 at 3,000, Level 3 at 6,000, and so on.
+
+`player_xp_transactions` is the immutable, idempotent audit trail for XP from
+Battle, Daily, and Weekly rewards. It stores source, reference, amount, XP after
+the award, and Player Level after the award. Level milestone rewards are not
+implemented yet.
 
 ---
 
@@ -281,7 +291,7 @@ Suggested fields:
 ```text
 card_template_id       FK
 trait_id               FK
-trait_tier             I | II | III
+trait_tier             I | II | III | IV | V
 ```
 
 Composite primary key:
@@ -296,10 +306,10 @@ Migration 033 extends the active catalog with seven situational Traits: Tough
 Shot Maker, Contact Finisher, Clutch Performer, Clutch Defender, Comeback
 Catalyst, Momentum Scorer, and Cold-Blooded.
 
-The M7 schema stores `trait_tier` as the numeric value 1, 2, or 3 and maps those
-values to the labels I, II, and III. This allows Total Trait Level to be computed
-as a direct sum. Provisional rarity Trait Level budgets are not database
-constraints because they still require battle simulation and balancing.
+Migration 038 stores `trait_tier` as a numeric value from 1 through 5 and maps
+those values to I through V. Total Trait Level remains a direct sum. Provisional
+rarity Trait Level budgets are not database constraints because they still
+require battle simulation and balancing.
 
 ---
 

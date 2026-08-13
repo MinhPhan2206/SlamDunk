@@ -72,6 +72,14 @@ A perimeter strategy may create more three-point attempts, but it does not make
 those attempts more accurate. Accuracy still comes from Actual Stats, created
 advantage, defender quality, shot quality, and relevant Traits.
 
+Three-point accuracy uses a rating baseline of 75. Ratings below the baseline
+change probability by 0.45 percentage points per rating point; ratings at or
+above it change probability by 0.55 percentage points. Three-point attempts
+have an independent 8%–70% probability clamp. Mid-range and finishing formulas
+remain unchanged. Perimeter Gravity, Range Extender, Catch & Shoot, and Mamba
+Instinct use increasingly nonlinear Level I–V effects so elite shooting Traits
+create a clearer specialization without improving every shooter equally.
+
 ## Target Action Vocabulary
 
 ```text
@@ -476,6 +484,22 @@ silently overwrite one another. A revision conflict asks the player to reopen
 The resolved player and AI strategies, strategy schema version, and resolver
 version are copied into the immutable Match snapshot. Later balance changes do
 not rewrite historical Matches.
+
+## Five-Level Trait Effects
+
+Battle Trait resolver v3 supports five distinct fixed Template levels. Levels
+1–3 retain their previous coefficients; Levels 4–5 extend the same behavior
+with stronger bounded effects. Representative progressions are:
+
+```text
+creation / contest score:  2 / 4 / 6 / 8 / 10
+shot probability:          1% / 2% / 3% / 4% / 5%
+rebound / transition:      2% / 4% / 6% / 8% / 10%
+```
+
+Each hook still clamps once after eligible offensive and defensive effects are
+combined. Trait identity and level remain fixed on the Card Template and are
+snapshotted into each Match.
 
 ## Anti-Dominance and Loop Guardrails
 

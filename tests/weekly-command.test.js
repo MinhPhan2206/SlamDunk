@@ -18,6 +18,7 @@ test("weekly command sends one compact reward line", async () => {
         return {
           rewardGold: "3500",
           rewardShards: "250",
+          rewardXp: "1000",
         };
       },
     },
@@ -25,6 +26,6 @@ test("weekly command sends one compact reward line", async () => {
 
   await weeklyCommand.execute(interaction, { services });
 
-  assert.equal(replies[0].content, "You received 3,500 Gold and 250 Shards.");
+  assert.equal(replies[0].content, "You received 3,500 Gold and 250 Shards, and 1,000 XP.");
   assert.deepEqual(replies[0].embeds, []);
 });

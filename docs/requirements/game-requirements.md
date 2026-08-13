@@ -114,19 +114,22 @@
 
 - `/daily` has a 24-hour cooldown.
 - A successful Daily grants 1,500–2,000 Gold and 20–30 Shards, inclusive.
-- Both rewards, ledger entries, and cooldown are atomic and idempotent.
+- A successful Daily also grants 300 XP.
+- All rewards, ledger entries, and cooldown are atomic and idempotent.
 
 ## Weekly Reward
 
 - `/weekly` has a 168-hour cooldown.
 - A successful Weekly grants 3,000-4,000 Gold and 200-300 Shards, inclusive.
-- Both ledger entries and the cooldown update are one atomic, idempotent
+- A successful Weekly also grants 1,000 XP.
+- All ledger entries and the cooldown update are one atomic, idempotent
   PostgreSQL transaction.
 
 ## Battle Rewards
 
 - A loss grants `250 + Player Score × 15` Gold.
 - A win grants `(950 + Score Margin × 45) × Bracket × Streak` Gold.
+- A Battle win grants 150 XP; a loss grants 50 XP.
 - Streak gains 5% per win through win 5, 3% per win from wins 6–10, and 2% per
   win afterward. It has no cap and resets on a loss.
 - Battle Gold has no per-match or daily cap.
@@ -134,6 +137,8 @@
   uses green and shows base, score margin, bracket, streak, and total Gold. A
   loss uses red and shows defeat base, points scored, bracket, total Gold, and
   the streak reset.
+- The Battle reward embed shows the XP award and reports a new Player Level
+  when the award crosses a level threshold.
 - Game Stats is a transient 1200×1400 PNG containing opponent bracket, final
   score, winning-team MVP, cross-team Game Leaders, and both box scores. It
   omits Match ID, Team Comparison, Game Summary, and Key Insights.

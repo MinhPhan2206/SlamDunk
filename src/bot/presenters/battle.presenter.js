@@ -18,7 +18,7 @@ export function createBattleRewardSummary(result) {
   const streak = result.reward.won
     ? ` • ${result.reward.winStreakAfter} Win Streak`
     : " • Win Streak Reset";
-  return `**${outcome}** • +${Number(result.reward.rewardGold).toLocaleString("en-US")} Gold • ${result.reward.bracketName}${streak}`;
+  return `**${outcome}** • +${Number(result.reward.rewardGold).toLocaleString("en-US")} Gold • +${Number(result.reward.rewardXp ?? 0).toLocaleString("en-US")} XP • ${result.reward.bracketName}${streak}`;
 }
 
 function signedGold(value) {
@@ -84,6 +84,10 @@ export function createBattleRewardBreakdownEmbed(
       value: reward.won
         ? `**${reward.winStreakAfter} Wins** · **+${streakPercent}% Reward**`
         : "**Reset to 0**",
+    }, {
+      name: "⭐ Experience",
+      value: `**+${Number(reward.rewardXp ?? 0).toLocaleString("en-US")} XP**` +
+        (reward.leveledUp ? ` · **Level ${reward.playerLevelAfter} reached!**` : ""),
     });
 }
 
