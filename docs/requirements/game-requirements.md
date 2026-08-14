@@ -157,7 +157,8 @@
   interaction ID prevents duplicate matches and counter updates.
 - Each new Match uses its persisted random seed to select an AI lineup from
   position-eligible candidates near the Player lineup's Actual Stat strength.
-  AI Card Level matches the opposing Player Card Level in each slot.
+  AI Cards always use Level 5. Matchup candidate strength is evaluated using
+  the AI Card's Level 5 stats.
 - Candidate-pool size, rating tolerance, offense/defense formulas, and score
   variance are centralized playtest configuration, not final balance.
 - M12 stores Trait snapshots but does not apply Trait effects. It has no reward,

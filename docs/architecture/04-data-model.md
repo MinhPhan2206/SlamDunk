@@ -574,8 +574,10 @@ card_instance_id       FK
 price_gold
 status
 created_at
+expires_at
 sold_at
 cancelled_at
+expired_at
 buyer_player_id        FK nullable
 ```
 
@@ -585,12 +587,16 @@ Status:
 ACTIVE
 SOLD
 CANCELLED
-EXPIRED   (future)
+EXPIRED
 ```
 
 ### Constraints
 
 Only one active listing per Card Instance.
+
+Active listings use a seller-selected duration. The default is 12 hours; the
+supported durations are 1h, 6h, 12h, 1d, 3d, and 7d. Expiration clears the
+Card Instance market lock so the Card becomes usable again.
 
 Recommended partial unique index:
 
@@ -616,6 +622,8 @@ Suggested fields:
 ```text
 trade_id               PK
 status
+offer_revision
+review_started_at      nullable
 created_at
 updated_at
 executed_at
@@ -626,13 +634,13 @@ Status:
 
 ```text
 OPEN
-CONFIRMED
 COMPLETED
 CANCELLED
 EXPIRED
 ```
 
-Exact confirmation representation may use participants rather than a global CONFIRMED status.
+Editing, Ready, and Final Review are derived from the Trade revision and its
+participant approval fields while the lifecycle status remains `OPEN`.
 
 ---
 
@@ -641,10 +649,14 @@ Exact confirmation representation may use participants rather than a global CONF
 Suggested fields:
 
 ```text
-trade_id               FK
-player_id              FK
-confirmed_at           nullable
+trade_id                    FK
+player_id                   FK
+accepted_at                 nullable
 gold_offered
+ready_at                    nullable
+ready_revision              nullable
+final_accepted_at           nullable
+final_accepted_revision     nullable
 ```
 
 Composite key:
@@ -669,7 +681,9 @@ offered_by_player_id   FK
 
 A card may participate in only one active trade at a time.
 
-Any offer modification clears all participant confirmations.
+Any offer modification increments the Trade offer revision and clears all
+Ready and Final Accept state. Ready and Final Accept values are valid only when
+their stored revision matches the current Trade offer revision.
 
 ---
 
@@ -808,6 +822,7 @@ player_cooldown
 player_id
 cooldown_type
 available_at
+charges_remaining      nullable; used by stacking cooldowns
 updated_at
 ```
 
@@ -824,6 +839,10 @@ CLAIM
 DAILY
 FREE_DROP
 ```
+
+`CLAIM` and `FREE_DROP` each store up to two charges. `available_at` is the
+next charge recovery time while below the cap; one charge recovers every 15
+minutes and recovery stops while full.
 
 This is more extensible than:
 

@@ -12,6 +12,8 @@ function mapTrade(row) {
     cancelledAt: row.cancelled_at,
     expiresAt: row.expires_at,
     expiredAt: row.expired_at,
+    offerRevision: Number(row.offer_revision),
+    reviewStartedAt: row.review_started_at,
   });
 }
 
@@ -22,7 +24,12 @@ function mapParticipant(row) {
     username: row.username_snapshot,
     goldOffered: row.gold_offered,
     acceptedAt: row.accepted_at,
-    confirmedAt: row.confirmed_at,
+    readyAt: row.ready_at,
+    readyRevision: row.ready_revision === null ? null : Number(row.ready_revision),
+    finalAcceptedAt: row.final_accepted_at,
+    finalAcceptedRevision: row.final_accepted_revision === null
+      ? null
+      : Number(row.final_accepted_revision),
   });
 }
 
@@ -52,6 +59,8 @@ const TRADE_COLUMNS = `
   cancelled_at
   ,expires_at
   ,expired_at
+  ,offer_revision
+  ,review_started_at
 `;
 
 export const tradeRepository = Object.freeze({
@@ -107,7 +116,10 @@ export const tradeRepository = Object.freeze({
           p.username_snapshot,
           tp.gold_offered,
           tp.accepted_at,
-          tp.confirmed_at
+          tp.ready_at,
+          tp.ready_revision,
+          tp.final_accepted_at,
+          tp.final_accepted_revision
         FROM trade_participants tp
         JOIN players p ON p.player_id = tp.player_id
         JOIN trades t ON t.trade_id = tp.trade_id
@@ -211,14 +223,68 @@ export const tradeRepository = Object.freeze({
     return result.rowCount === 1;
   },
 
-  async confirm(database, { tradeId, playerId }) {
+  async markReady(database, { tradeId, playerId, offerRevision }) {
     await database.query(
       `
         UPDATE trade_participants
-        SET confirmed_at = CURRENT_TIMESTAMP
+        SET
+          ready_at = CURRENT_TIMESTAMP,
+          ready_revision = $3,
+          final_accepted_at = NULL,
+          final_accepted_revision = NULL
+        WHERE trade_id = $1 AND player_id = $2
+      `,
+      [tradeId, playerId, offerRevision],
+    );
+  },
+
+  async clearPlayerReady(database, { tradeId, playerId }) {
+    await database.query(
+      `
+        UPDATE trade_participants
+        SET
+          ready_at = NULL,
+          ready_revision = NULL,
+          final_accepted_at = NULL,
+          final_accepted_revision = NULL
         WHERE trade_id = $1 AND player_id = $2
       `,
       [tradeId, playerId],
+    );
+    await database.query(
+      `UPDATE trades SET updated_at = CURRENT_TIMESTAMP WHERE trade_id = $1`,
+      [tradeId],
+    );
+  },
+
+  async beginReview(database, { tradeId, offerRevision }) {
+    const result = await database.query(
+      `
+        UPDATE trades
+        SET review_started_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+        WHERE trade_id = $1
+          AND status = 'OPEN'
+          AND offer_revision = $2
+          AND review_started_at IS NULL
+        RETURNING ${TRADE_COLUMNS}
+      `,
+      [tradeId, offerRevision],
+    );
+    return mapTrade(result.rows[0]);
+  },
+
+  async markFinalAccepted(database, { tradeId, playerId, offerRevision }) {
+    await database.query(
+      `
+        UPDATE trade_participants
+        SET
+          final_accepted_at = CURRENT_TIMESTAMP,
+          final_accepted_revision = $3
+        WHERE trade_id = $1
+          AND player_id = $2
+          AND ready_revision = $3
+      `,
+      [tradeId, playerId, offerRevision],
     );
   },
 
@@ -235,15 +301,57 @@ export const tradeRepository = Object.freeze({
     return result.rowCount === 1;
   },
 
-  async clearConfirmations(database, tradeId) {
+  async advanceOfferRevision(database, tradeId) {
     await database.query(
-      `UPDATE trade_participants SET confirmed_at = NULL WHERE trade_id = $1`,
+      `
+        UPDATE trade_participants
+        SET
+          ready_at = NULL,
+          ready_revision = NULL,
+          final_accepted_at = NULL,
+          final_accepted_revision = NULL
+        WHERE trade_id = $1
+      `,
       [tradeId],
     );
-    await database.query(
-      `UPDATE trades SET updated_at = CURRENT_TIMESTAMP WHERE trade_id = $1`,
+    const result = await database.query(
+      `
+        UPDATE trades
+        SET
+          offer_revision = offer_revision + 1,
+          review_started_at = NULL,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE trade_id = $1 AND status = 'OPEN'
+        RETURNING ${TRADE_COLUMNS}
+      `,
       [tradeId],
     );
+    return mapTrade(result.rows[0]);
+  },
+
+  async clearReview(database, tradeId) {
+    await database.query(
+      `
+        UPDATE trade_participants
+        SET
+          ready_at = NULL,
+          ready_revision = NULL,
+          final_accepted_at = NULL,
+          final_accepted_revision = NULL
+        WHERE trade_id = $1
+      `,
+      [tradeId],
+    );
+    const result = await database.query(
+      `
+        UPDATE trades
+        SET review_started_at = NULL, updated_at = CURRENT_TIMESTAMP
+        WHERE trade_id = $1 AND status = 'OPEN'
+        RETURNING ${TRADE_COLUMNS}
+      `,
+      [tradeId],
+    );
+    return mapTrade(result.rows[0]);
   },
 
   async markCompleted(database, tradeId) {

@@ -78,12 +78,14 @@ export function createInteractionCreateHandler(
 
     try {
       await handler.execute(interaction, context);
-      await scheduleComponentTimeout(interaction, {
-        ...(handler.componentInactivityTimeoutMs
-          ? { timeoutMs: handler.componentInactivityTimeoutMs }
-          : {}),
-        preserveEmbeds: handler.preserveEmbedsOnTimeout === true,
-      });
+      if (handler.managesOwnComponentTimeout !== true) {
+        await scheduleComponentTimeout(interaction, {
+          ...(handler.componentInactivityTimeoutMs
+            ? { timeoutMs: handler.componentInactivityTimeoutMs }
+            : {}),
+          preserveEmbeds: handler.preserveEmbedsOnTimeout === true,
+        });
+      }
     } catch (error) {
       console.error(
         `Discord ${interactionLabel} failed: ${getErrorMessage(error)}`,

@@ -36,6 +36,7 @@ test("lineup set command assigns a Card Instance to a slot", async () => {
           gamesPlayed: 10,
           gamesWon: 6,
           gamesLost: 4,
+          currentWinStreak: 2,
         };
       },
     },
@@ -57,6 +58,7 @@ test("lineup set command assigns a Card Instance to a slot", async () => {
               rarityCode: "COMMON",
               cardLevel: 3,
               serialNumber: "4",
+              heightCm: 190,
               actualStats: {
                 threePoint: 80,
                 midRange: 79,
@@ -81,9 +83,16 @@ test("lineup set command assigns a Card Instance to a slot", async () => {
 
   assert.equal(replies[0].type, "defer");
   const embed = replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.description, /Test Guard/);
+  assert.equal(replies[1].payload.embeds.length, 1);
+  assert.equal(embed.description, undefined);
+  assert.equal(embed.thumbnail, undefined);
+  assert.match(embed.title, /LineupTester's Lineup/);
   assert.match(embed.footer.text, /1\/5/);
   assert.match(embed.fields[0].value, /80\.0/);
-  assert.match(embed.fields[2].value, /60\.0% Win Rate/);
+  assert.match(embed.fields[1].value, /HEIGHT.*6'3\"/s);
+  assert.match(embed.fields[2].value, /6W – 4L/);
+  assert.match(embed.fields[2].value, /60\.0%/);
+  assert.match(embed.fields[2].value, /2.*Streak/);
+  assert.match(embed.footer.text, /Missing SG, SF, PF, C/);
   assert.equal(replies[1].payload.files[0].name, "lineup.png");
 });

@@ -23,6 +23,12 @@ function statLine(label, value) {
   return `${label} · **${value}**`;
 }
 
+function ownerLabel(card) {
+  if (card.ownerDiscordUserId) return `<@${card.ownerDiscordUserId}>`;
+  if (card.ownerUsername) return `@${card.ownerUsername}`;
+  return "No current owner";
+}
+
 function statsDescription(card, mode) {
   const stats = card.actualStats ?? card;
   const positions = formatPositions(card);
@@ -51,24 +57,54 @@ function statsDescription(card, mode) {
     `Obtained · **${formatNumber(card.totalMinted ?? 0)}**`,
   ];
   if (mode === "instance") {
-    const owner = card.ownerDiscordUserId
-      ? `<@${card.ownerDiscordUserId}>`
-      : card.ownerUsername
-        ? `@${card.ownerUsername}`
-        : "No current owner";
     lines.push(
       `Serial · **!${card.publicCardId}**`,
-      `Owned by ${owner}`,
+      `Owned by ${ownerLabel(card)}`,
     );
   }
   return lines.join("\n");
 }
 
-function traitBlock(traits) {
-  if (!traits?.length) return "No Traits.";
-  return traits.map((trait) =>
-    `• **${trait.traitName}** · ${trait.traitTierLabel ?? `Tier ${trait.traitTier}`}`
-  ).join("\n");
+const TRAIT_GROUPS = Object.freeze([
+  Object.freeze({
+    name: "⚔️ OFFENSE",
+    types: new Set(["OFFENSE", "SHOOTING", "FINISHING", "CREATION", "TRANSITION"]),
+  }),
+  Object.freeze({ name: "🎯 PLAYMAKING", types: new Set(["PLAYMAKING"]) }),
+  Object.freeze({ name: "🛡️ DEFENSE", types: new Set(["DEFENSE"]) }),
+  Object.freeze({
+    name: "💪 PHYSICAL & REBOUNDING",
+    types: new Set(["PHYSICAL", "REBOUNDING"]),
+  }),
+  Object.freeze({
+    name: "⏱️ SITUATIONAL & CLUTCH",
+    types: new Set(["SITUATIONAL", "CLUTCH"]),
+  }),
+]);
+
+function traitLine(trait) {
+  return `• **${trait.traitName}** · **${trait.traitTierLabel ?? `Tier ${trait.traitTier}`}**`;
+}
+
+function traitFields(traits) {
+  if (!traits?.length) return [{ name: "✨ TRAITS", value: "No Traits." }];
+  const assigned = new Set();
+  const fields = TRAIT_GROUPS.flatMap((group) => {
+    const matches = traits
+      .filter((trait) => group.types.has(trait.traitType))
+      .sort((left, right) => left.traitName.localeCompare(right.traitName));
+    matches.forEach((trait) => assigned.add(trait));
+    return matches.length
+      ? [{ name: group.name, value: matches.map(traitLine).join("\n"), inline: false }]
+      : [];
+  });
+  const other = traits
+    .filter((trait) => !assigned.has(trait))
+    .sort((left, right) => left.traitName.localeCompare(right.traitName));
+  if (other.length) {
+    fields.push({ name: "✨ OTHER", value: other.map(traitLine).join("\n"), inline: false });
+  }
+  return fields;
 }
 
 function battleStatsBlock(stats) {
@@ -94,15 +130,14 @@ function cardDescription(card, mode) {
     return `**${card.playerName.toUpperCase()}**\nCard Template\n` +
       `${positions} · Level 5`;
   }
-  const owner = card.ownerUsername ? `@${card.ownerUsername}` : "No current owner";
   const lock = card.userLock ? " · 🔒 Locked" : "";
-  return `**${card.playerName.toUpperCase()}**\nOwned by ${owner}\n` +
+  return `**${card.playerName.toUpperCase()}**\nOwned by ${ownerLabel(card)}\n` +
     `${positions} · Level ${card.cardLevel} · \`!${card.publicCardId}\`${lock}`;
 }
 
 function addTabContent(embed, card, tab, { traits, battleStats }) {
   if (tab === "traits") {
-    return embed.addFields({ name: "Traits", value: traitBlock(traits) });
+    return embed.addFields(...traitFields(traits));
   }
   if (tab === "battle") {
     return embed.addFields({

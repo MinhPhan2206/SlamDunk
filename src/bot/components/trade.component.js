@@ -9,7 +9,7 @@ import { CardError } from "../../modules/card/index.js";
 import { TradeError } from "../../modules/trade/index.js";
 import { createTradePayload } from "../presenters/trade.presenter.js";
 
-function modal(action, tradeId) {
+function modal(action, tradeId, offerRevision) {
   const cards = action === "cards";
   const operation = new TextInputBuilder()
     .setCustomId("operation")
@@ -25,7 +25,7 @@ function modal(action, tradeId) {
     .setStyle(cards ? TextInputStyle.Paragraph : TextInputStyle.Short)
     .setRequired(true);
   return new ModalBuilder()
-    .setCustomId(`trade:${action}:${tradeId}`)
+    .setCustomId(`trade:${action}:${tradeId}:${offerRevision}`)
     .setTitle(cards ? "Edit Offered Cards" : "Edit Offered Gold")
     .addComponents(
       new ActionRowBuilder().addComponents(operation),
@@ -59,9 +59,9 @@ export const tradeComponent = Object.freeze({
   namespace: "trade",
   componentInactivityTimeoutMs: gameConfig.trade.expiryMinutes * 60_000,
   async execute(interaction, { services }) {
-    const [, action, tradeId] = interaction.customId.split(":");
+    const [, action, tradeId, offerRevision] = interaction.customId.split(":");
     if (interaction.isButton() && ["cards", "gold"].includes(action)) {
-      await interaction.showModal(modal(action, tradeId));
+      await interaction.showModal(modal(action, tradeId, offerRevision));
       return;
     }
     const player = await services.player.getOrCreatePlayer({
@@ -99,6 +99,7 @@ export const tradeComponent = Object.freeze({
           playerId: player.playerId,
           cardInstanceIds,
           operation,
+          offerRevision,
         });
       } else if (action === "gold") {
         result = await services.trade.setGoldOffer({
@@ -108,11 +109,25 @@ export const tradeComponent = Object.freeze({
           operation: parseOperation(
             interaction.fields.getTextInputValue("operation"),
           ),
+          offerRevision,
         });
-      } else if (action === "confirm") {
-        result = await services.trade.confirmTrade({
+      } else if (action === "ready") {
+        result = await services.trade.readyTrade({
           tradeId,
           playerId: player.playerId,
+          offerRevision,
+        });
+      } else if (action === "undo") {
+        result = await services.trade.undoReady({
+          tradeId,
+          playerId: player.playerId,
+          offerRevision,
+        });
+      } else if (action === "final") {
+        result = await services.trade.finalAcceptTrade({
+          tradeId,
+          playerId: player.playerId,
+          offerRevision,
         });
       } else {
         throw new TradeError("INVALID_TRADE_ACTION", "Trade action is invalid.");

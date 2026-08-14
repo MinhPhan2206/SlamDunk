@@ -13,6 +13,7 @@ function interaction() {
       globalName: "Wallet User",
       displayAvatarURL: () => "https://cdn.example/avatar.png",
     },
+    options: { getUser: () => null },
     reply: null,
     async deferReply() {},
     async editReply(payload) { this.reply = payload; },
@@ -71,6 +72,50 @@ test("/bag shows Shards, Level Up, future items, and the Discord avatar", async 
   assert.match(embed.description, /🎟️.*Event Ticket.*3/);
   assert.doesNotMatch(embed.description, /Gold/i);
   assert.equal(embed.thumbnail.url, "https://cdn.example/avatar.png");
+});
+
+test("/bag user option displays another existing Player's inventory", async () => {
+  const commandInteraction = interaction();
+  const targetUser = {
+    id: "1061705680060416130",
+    username: "other_user",
+    globalName: "Other User",
+    displayAvatarURL: () => "https://cdn.example/other.png",
+  };
+  commandInteraction.options.getUser = () => targetUser;
+  await bagCommand.execute(commandInteraction, {
+    services: {
+      player: {
+        async getPlayer(discordUserId) {
+          assert.equal(discordUserId, targetUser.id);
+          return { playerId: "12" };
+        },
+      },
+      economy: {
+        async getBalance(playerId) {
+          assert.equal(playerId, "12");
+          return { shardBalance: "1250" };
+        },
+      },
+      inventory: {
+        async listItems(playerId) {
+          assert.equal(playerId, "12");
+          return [{ itemType: "LEVEL_UP", itemName: "Level Up", quantity: 4 }];
+        },
+      },
+    },
+  });
+
+  const embed = commandInteraction.reply.embeds[0].toJSON();
+  assert.equal(embed.title, "Other User's Bag");
+  assert.match(embed.description, /1,250/);
+  assert.equal(embed.thumbnail.url, "https://cdn.example/other.png");
+});
+
+test("/bag declares an optional Discord user option", () => {
+  const option = bagCommand.data.toJSON().options[0];
+  assert.equal(option.name, "user");
+  assert.notEqual(option.required, true);
 });
 
 test("Inventory includes configured zero balances and discovers future item types", async () => {

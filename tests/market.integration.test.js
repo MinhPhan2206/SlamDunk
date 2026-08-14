@@ -189,6 +189,42 @@ test("Market listing purchase atomically transfers Gold and card ownership", asy
       { database },
     );
     assert.equal(cancelledCard.marketLock, false);
+
+    const expiringCard = await cardInstanceService.mintCard(
+      {
+        cardTemplateId: template.cardTemplateId,
+        ownerPlayerId: sellerId,
+        cardLevel: 2,
+        obtainedMethod: "ADMIN_GRANT",
+      },
+      { database },
+    );
+    const expiring = await marketService.createListing(
+      {
+        sellerPlayerId: sellerId,
+        cardInstanceId: expiringCard.instance.cardInstanceId,
+        priceGold: 300,
+        durationCode: "1h",
+      },
+      { database },
+    );
+    await database.query(
+      "UPDATE market_listings SET expires_at = CURRENT_TIMESTAMP - INTERVAL '1 second' WHERE listing_id = $1",
+      [expiring.listing.listingId],
+    );
+    const expired = await marketService.expireDueListings({}, { database });
+    assert.ok(expired.some((listing) => listing.listingId === expiring.listing.listingId));
+    const expiredCard = await cardInstanceService.getInstance(
+      expiringCard.instance.cardInstanceId,
+      { database },
+    );
+    assert.equal(expiredCard.marketLock, false);
+    const expiredState = await database.query(
+      "SELECT status, expired_at FROM market_listings WHERE listing_id = $1",
+      [expiring.listing.listingId],
+    );
+    assert.equal(expiredState.rows[0].status, "EXPIRED");
+    assert.ok(expiredState.rows[0].expired_at);
   } finally {
     await database.query("ROLLBACK");
     database.release();

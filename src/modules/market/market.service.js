@@ -3,6 +3,10 @@ import { CardError } from "../card/index.js";
 import { EconomyCurrency, EconomyError } from "../economy/index.js";
 import { MarketError } from "./market.errors.js";
 import { marketRepository } from "./market.repository.js";
+import {
+  DEFAULT_MARKET_DURATION_CODE,
+  resolveMarketDuration,
+} from "./market-duration.js";
 
 const MAX_BIGINT = 9_223_372_036_854_775_807n;
 const MARKET_PAGE_SIZE = 10;
@@ -48,14 +52,57 @@ export function createMarketService({
   cardInstanceService,
   economyService,
 }) {
+  async function expireDueListings(
+    { limit = 100 } = {},
+    { database } = {},
+  ) {
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 500) {
+      throw new TypeError("limit must be an integer from 1 through 500.");
+    }
+    return useTransaction(databasePool, database, async (transactionDatabase) => {
+      const listings = await marketRepository.findDueActiveForUpdate(
+        transactionDatabase,
+        limit,
+      );
+      const expired = [];
+      for (const listing of listings) {
+        try {
+          await cardInstanceService.unlockFromMarket(
+            {
+              cardInstanceId: listing.cardInstanceId,
+              ownerPlayerId: listing.sellerPlayerId,
+            },
+            { database: transactionDatabase },
+          );
+        } catch (error) {
+          if (error instanceof CardError) {
+            throw new MarketError("MARKET_LOCK_INVALID", error.message);
+          }
+          throw error;
+        }
+        const updated = await marketRepository.markExpired(
+          transactionDatabase,
+          listing.listingId,
+        );
+        if (updated) expired.push(updated);
+      }
+      return Object.freeze(expired);
+    });
+  }
+
   return Object.freeze({
+    expireDueListings,
+
     async createListing(
-      { sellerPlayerId, cardInstanceId, priceGold },
+      { sellerPlayerId, cardInstanceId, priceGold, durationCode },
       { database } = {},
     ) {
       const sellerId = normalizeId(sellerPlayerId, "sellerPlayerId");
       const cardId = normalizeId(cardInstanceId, "cardInstanceId");
       const price = normalizePrice(priceGold);
+      const duration = resolveMarketDuration(
+        durationCode ?? DEFAULT_MARKET_DURATION_CODE,
+      );
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         let card;
@@ -78,9 +125,14 @@ export function createMarketService({
               sellerPlayerId: sellerId,
               cardInstanceId: cardId,
               priceGold: price,
+              durationSeconds: duration.seconds,
             },
           );
-          return Object.freeze({ listing, card });
+          const hydratedListing = await marketRepository.findByIdForUpdate(
+            transactionDatabase,
+            listing.listingId,
+          );
+          return Object.freeze({ listing: hydratedListing, card });
         } catch (error) {
           if (error?.code === "23505") {
             throw new MarketError(
@@ -108,6 +160,7 @@ export function createMarketService({
         throw new TypeError("listingId or publicCardId is required.");
       }
 
+      await expireDueListings({}, { database });
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         const listing = normalizedPublicCardId
           ? await marketRepository.findActiveByPublicCardIdForUpdate(
@@ -152,7 +205,9 @@ export function createMarketService({
         if (!cancelledListing) {
           throw listingNotActive();
         }
-        return Object.freeze({ listing: cancelledListing });
+        return Object.freeze({
+          listing: Object.freeze({ ...listing, ...cancelledListing }),
+        });
       });
     },
 
@@ -163,6 +218,7 @@ export function createMarketService({
       if (!Number.isSafeInteger(page) || page < 1 || page > 1_000_000) {
         throw new TypeError("page must be a positive safe integer.");
       }
+      await expireDueListings({}, { database });
       const result = await marketRepository.listActive(database, {
         limit: MARKET_PAGE_SIZE,
         offset: (page - 1) * MARKET_PAGE_SIZE,
@@ -195,6 +251,7 @@ export function createMarketService({
         throw new TypeError("listingId or publicCardId is required.");
       }
 
+      await expireDueListings({}, { database });
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         const listing = normalizedPublicCardId
           ? await marketRepository.findActiveByPublicCardIdForUpdate(
@@ -210,6 +267,9 @@ export function createMarketService({
         }
         if (listing.status !== "ACTIVE") {
           throw listingNotActive();
+        }
+        if (listing.pastDue) {
+          throw new MarketError("LISTING_EXPIRED", "This Market listing has expired.");
         }
         if (listing.sellerPlayerId === buyerId) {
           throw new MarketError(
@@ -281,7 +341,7 @@ export function createMarketService({
         }
 
         return Object.freeze({
-          listing: soldListing,
+          listing: Object.freeze({ ...listing, ...soldListing }),
           card: ownership.instance,
           economy,
         });

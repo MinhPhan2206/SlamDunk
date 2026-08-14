@@ -22,10 +22,10 @@ test("trade command creates an interactive Direct Trade", async () => {
       async createTrade(input) {
         assert.deepEqual(input, { initiatorPlayerId: "7", invitedPlayerId: "8" });
         return {
-          trade: { tradeId: "9", status: "OPEN", expiresAt: new Date(Date.now() + 60_000) },
+          trade: { tradeId: "9", status: "OPEN", expiresAt: new Date(Date.now() + 60_000), offerRevision: 0, reviewStartedAt: null },
           participants: [
-            { playerId: "7", discordUserId: interaction.user.id, username: "TradeTester", goldOffered: "0", acceptedAt: null, confirmedAt: null },
-            { playerId: "8", discordUserId: invited.id, username: "OtherPlayer", goldOffered: "0", acceptedAt: null, confirmedAt: null },
+            { playerId: "7", discordUserId: interaction.user.id, username: "TradeTester", goldOffered: "0", acceptedAt: null, readyAt: null, readyRevision: null, finalAcceptedAt: null, finalAcceptedRevision: null },
+            { playerId: "8", discordUserId: invited.id, username: "OtherPlayer", goldOffered: "0", acceptedAt: null, readyAt: null, readyRevision: null, finalAcceptedAt: null, finalAcceptedRevision: null },
           ],
           cards: [],
         };

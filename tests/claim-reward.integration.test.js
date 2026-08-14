@@ -32,6 +32,7 @@ test("claim atomically credits Gold, records cooldown, and supports replay", asy
   const testRunId = Date.now().toString();
   const firstInteractionId = `995${testRunId}`;
   const secondInteractionId = `996${testRunId}`;
+  const thirdInteractionId = `997${testRunId}`;
 
   try {
     await database.query("BEGIN");
@@ -61,6 +62,7 @@ test("claim atomically credits Gold, records cooldown, and supports replay", asy
     assert.equal(firstClaim.rewardGold, "100");
     assert.equal(firstClaim.balanceAfter, "100");
     assert.equal(firstClaim.replayed, false);
+    assert.equal(firstClaim.charges, 1);
     assert.equal(
       firstClaim.availableAt.getTime() - transactionTime.getTime(),
       15 * 60_000,
@@ -75,9 +77,18 @@ test("claim atomically credits Gold, records cooldown, and supports replay", asy
     assert.equal(replayedClaim.replayed, true);
     assert.equal(rollCount, 1);
 
+    const secondClaim = await rewardService.claimReward(
+      { playerId, interactionId: secondInteractionId },
+      { database },
+    );
+    assert.equal(secondClaim.rewardGold, "100");
+    assert.equal(secondClaim.balanceAfter, "200");
+    assert.equal(secondClaim.charges, 0);
+    assert.equal(secondClaim.availableAt.getTime(), firstClaim.availableAt.getTime());
+
     await assert.rejects(
       rewardService.claimReward(
-        { playerId, interactionId: secondInteractionId },
+        { playerId, interactionId: thirdInteractionId },
         { database },
       ),
       (error) =>
@@ -95,19 +106,19 @@ test("claim atomically credits Gold, records cooldown, and supports replay", asy
       [playerId],
     );
 
-    const secondClaim = await rewardService.claimReward(
-      { playerId, interactionId: secondInteractionId },
+    const thirdClaim = await rewardService.claimReward(
+      { playerId, interactionId: thirdInteractionId },
       { database },
     );
-    assert.equal(secondClaim.rewardGold, "100");
-    assert.equal(secondClaim.balanceAfter, "200");
-    assert.equal(rollCount, 2);
+    assert.equal(thirdClaim.rewardGold, "100");
+    assert.equal(thirdClaim.balanceAfter, "300");
+    assert.equal(rollCount, 3);
 
     const walletResult = await database.query(
       "SELECT gold_balance FROM wallets WHERE player_id = $1",
       [playerId],
     );
-    assert.equal(walletResult.rows[0].gold_balance, "200");
+    assert.equal(walletResult.rows[0].gold_balance, "300");
 
     const ledgerResult = await database.query(
       `
@@ -119,6 +130,11 @@ test("claim atomically credits Gold, records cooldown, and supports replay", asy
       [playerId],
     );
     assert.deepEqual(ledgerResult.rows, [
+      {
+        amount: "100",
+        transaction_type: "CLAIM",
+        reference_type: "DISCORD_INTERACTION",
+      },
       {
         amount: "100",
         transaction_type: "CLAIM",

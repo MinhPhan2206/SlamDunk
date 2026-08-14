@@ -5,6 +5,7 @@ import { STRATEGY_EDITOR_TIMEOUT_MS } from "../strategy/strategy-draft-store.js"
 
 export const strategyCommand = Object.freeze({
   componentInactivityTimeoutMs: STRATEGY_EDITOR_TIMEOUT_MS,
+  managesOwnComponentTimeout: true,
 
   data: new SlashCommandBuilder()
     .setName("strategy")
@@ -30,7 +31,11 @@ export const strategyCommand = Object.freeze({
       const message = await interaction.editReply(
         createStrategyEditorPayload(session),
       );
-      strategyDrafts.bindMessage(session.sessionId, message);
+      strategyDrafts.bindMessage(
+        session.sessionId,
+        message,
+        (payload) => interaction.editReply(payload),
+      );
     } catch (error) {
       strategyDrafts.remove(session.sessionId);
       throw error;

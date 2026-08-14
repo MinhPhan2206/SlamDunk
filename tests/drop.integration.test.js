@@ -151,6 +151,7 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
         transactionTimeResult.rows[0].current_time.getTime(),
       15 * 60_000,
     );
+    assert.equal(selection.cooldown.charges, 1);
 
     const instanceCount = await database.query(
       `
@@ -186,9 +187,27 @@ test("Free Drop persists candidates and mints only one selected Card Instance", 
         error instanceof DropError && error.code === "DROP_ALREADY_COMPLETED",
     );
 
+    const secondOffer = await dropService.createOffer(
+      { playerId, interactionId: `989${testRunId}` },
+      { database },
+    );
+    const secondSelection = await dropService.confirmSelection(
+      {
+        playerId,
+        dropSessionId: secondOffer.session.dropSessionId,
+        candidatePosition: 1,
+      },
+      { database },
+    );
+    assert.equal(secondSelection.cooldown.charges, 0);
+    assert.equal(
+      secondSelection.cooldown.nextChargeAt.getTime(),
+      selection.cooldown.nextChargeAt.getTime(),
+    );
+
     await assert.rejects(
       dropService.createOffer(
-        { playerId, interactionId: `989${testRunId}` },
+        { playerId, interactionId: `988${testRunId}` },
         { database },
       ),
       (error) =>

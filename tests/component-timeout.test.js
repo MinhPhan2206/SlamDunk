@@ -106,3 +106,31 @@ test("preserveEmbeds disables components without relying on attachment metadata"
   assert.deepEqual(Object.keys(edits[0]), ["components"]);
   assert.equal(edits[0].components[0].components[0].disabled, true);
 });
+
+test("ephemeral timeout edits through the interaction webhook without fetching the message", async () => {
+  const edits = [];
+  let fetchCount = 0;
+  const message = {
+    id: "ephemeral-timeout-message",
+    components: [{
+      type: 1,
+      components: [{ type: 2, custom_id: "strategy:save:test", style: 3 }],
+    }],
+    embeds: [{ toJSON() { return { title: "Team Strategy" }; } }],
+    async fetch() {
+      fetchCount += 1;
+      throw Object.assign(new Error("Unknown Message"), { code: 10_008 });
+    },
+  };
+  const interaction = {
+    async fetchReply() { return message; },
+    async editReply(payload) { edits.push(payload); },
+  };
+
+  await scheduleComponentTimeout(interaction, { timeoutMs: 5 });
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(fetchCount, 0);
+  assert.equal(edits.length, 1);
+  assert.equal(edits[0].components[0].components[0].disabled, true);
+});

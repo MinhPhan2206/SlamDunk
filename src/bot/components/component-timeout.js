@@ -50,6 +50,10 @@ async function resolveMessage(interaction) {
   return interaction.message ?? null;
 }
 
+function isUnknownMessage(error) {
+  return error?.code === 10_008 || error?.rawError?.code === 10_008;
+}
+
 export async function scheduleComponentTimeout(
   interaction,
   {
@@ -58,7 +62,12 @@ export async function scheduleComponentTimeout(
   } = {},
 ) {
   const message = await resolveMessage(interaction);
-  if (!message?.id || typeof message.edit !== "function") return;
+  const editMessage = typeof interaction.editReply === "function"
+    ? (payload) => interaction.editReply(payload)
+    : typeof message?.edit === "function"
+      ? (payload) => message.edit(payload)
+      : null;
+  if (!message?.id || !editMessage) return;
 
   const previous = activeTimeouts.get(message.id);
   if (previous) clearTimeout(previous);
@@ -72,18 +81,17 @@ export async function scheduleComponentTimeout(
     if (activeTimeouts.get(message.id) !== timer) return;
     activeTimeouts.delete(message.id);
     try {
-      const current = typeof message.fetch === "function"
-        ? await message.fetch()
-        : message;
-      if (!current.components?.length) return;
-      const update = { components: disabledRows(current.components) };
-      const attachments = attachmentList(current.attachments);
-      if (!preserveEmbeds && current.embeds?.length && attachments.length === 0) {
-        update.embeds = expiredEmbeds(current.embeds);
+      if (!message.components?.length) return;
+      const update = { components: disabledRows(message.components) };
+      const attachments = attachmentList(message.attachments);
+      if (!preserveEmbeds && message.embeds?.length && attachments.length === 0) {
+        update.embeds = expiredEmbeds(message.embeds);
       }
-      await current.edit(update);
+      await editMessage(update);
     } catch (error) {
-      console.warn(`Component timeout update failed: ${error.message}`);
+      if (!isUnknownMessage(error)) {
+        console.warn(`Component timeout update failed: ${error.message}`);
+      }
     }
   }, timeoutMs);
   timer.unref?.();

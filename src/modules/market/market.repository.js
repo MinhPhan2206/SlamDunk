@@ -14,6 +14,9 @@ function mapListing(row) {
     createdAt: row.created_at,
     soldAt: row.sold_at,
     cancelledAt: row.cancelled_at,
+    expiresAt: row.expires_at,
+    expiredAt: row.expired_at,
+    pastDue: row.past_due ?? false,
     sellerName: row.seller_name,
     playerName: row.player_name,
     rarityCode: row.rarity_code,
@@ -33,22 +36,30 @@ const LISTING_COLUMNS = `
   buyer_player_id,
   created_at,
   sold_at,
-  cancelled_at
+  cancelled_at,
+  expires_at,
+  expired_at
 `;
 
 export const marketRepository = Object.freeze({
-  async createListing(database, { sellerPlayerId, cardInstanceId, priceGold }) {
+  async createListing(database, {
+    sellerPlayerId,
+    cardInstanceId,
+    priceGold,
+    durationSeconds,
+  }) {
     const result = await database.query(
       `
         INSERT INTO market_listings (
           seller_player_id,
           card_instance_id,
-          price_gold
+          price_gold,
+          expires_at
         )
-        VALUES ($1, $2, $3)
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP + ($4 * INTERVAL '1 second'))
         RETURNING ${LISTING_COLUMNS}
       `,
-      [sellerPlayerId, cardInstanceId, priceGold],
+      [sellerPlayerId, cardInstanceId, priceGold, durationSeconds],
     );
 
     return mapListing(result.rows[0]);
@@ -68,6 +79,9 @@ export const marketRepository = Object.freeze({
           ml.created_at,
           ml.sold_at,
           ml.cancelled_at,
+          ml.expires_at,
+          ml.expired_at,
+          ml.expires_at <= CURRENT_TIMESTAMP AS past_due,
           p.username_snapshot AS seller_name,
           ct.player_name,
           ct.primary_position,
@@ -103,6 +117,9 @@ export const marketRepository = Object.freeze({
           ml.created_at,
           ml.sold_at,
           ml.cancelled_at,
+          ml.expires_at,
+          ml.expired_at,
+          ml.expires_at <= CURRENT_TIMESTAMP AS past_due,
           p.username_snapshot AS seller_name,
           ct.player_name,
           ct.primary_position,
@@ -125,7 +142,9 @@ export const marketRepository = Object.freeze({
 
   async listActive(database, { limit, offset }) {
     const countResult = await database.query(
-      `SELECT COUNT(*) AS total FROM market_listings WHERE status = 'ACTIVE'`,
+      `SELECT COUNT(*) AS total
+       FROM market_listings
+       WHERE status = 'ACTIVE' AND expires_at > CURRENT_TIMESTAMP`,
     );
     const result = await database.query(
       `
@@ -140,6 +159,8 @@ export const marketRepository = Object.freeze({
           ml.created_at,
           ml.sold_at,
           ml.cancelled_at,
+          ml.expires_at,
+          ml.expired_at,
           p.username_snapshot AS seller_name,
           ct.player_name,
           ct.primary_position,
@@ -152,7 +173,7 @@ export const marketRepository = Object.freeze({
         JOIN card_instances ci ON ci.card_instance_id = ml.card_instance_id
         JOIN card_templates ct ON ct.card_template_id = ci.card_template_id
         JOIN rarities r ON r.rarity_id = ct.rarity_id
-        WHERE ml.status = 'ACTIVE'
+        WHERE ml.status = 'ACTIVE' AND ml.expires_at > CURRENT_TIMESTAMP
         ORDER BY ml.created_at DESC, ml.listing_id DESC
         LIMIT $1 OFFSET $2
       `,
@@ -193,6 +214,36 @@ export const marketRepository = Object.freeze({
       [listingId, buyerPlayerId],
     );
 
+    return mapListing(result.rows[0]);
+  },
+
+  async findDueActiveForUpdate(database, limit) {
+    const result = await database.query(
+      `
+        SELECT ${LISTING_COLUMNS}
+        FROM market_listings
+        WHERE status = 'ACTIVE' AND expires_at <= CURRENT_TIMESTAMP
+        ORDER BY expires_at, listing_id
+        LIMIT $1
+        FOR UPDATE SKIP LOCKED
+      `,
+      [limit],
+    );
+    return result.rows.map(mapListing);
+  },
+
+  async markExpired(database, listingId) {
+    const result = await database.query(
+      `
+        UPDATE market_listings
+        SET status = 'EXPIRED', expired_at = CURRENT_TIMESTAMP
+        WHERE listing_id = $1
+          AND status = 'ACTIVE'
+          AND expires_at <= CURRENT_TIMESTAMP
+        RETURNING ${LISTING_COLUMNS}
+      `,
+      [listingId],
+    );
     return mapListing(result.rows[0]);
   },
 });

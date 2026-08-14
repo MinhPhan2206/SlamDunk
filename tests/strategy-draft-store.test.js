@@ -27,15 +27,20 @@ test("Strategy draft expiry discards the session and disables its controls", asy
     strategyRevision: 1,
     players: [{ slot: "PG", cardInstanceId: "101", playerName: "Guard" }],
   });
-  store.bindMessage(session.sessionId, {
+  const message = {
     id: "message-1",
     components: [{
       type: 1,
       components: [{ type: 2, custom_id: "strategy:save:test", style: 3 }],
     }],
     embeds: [{ toJSON() { return { title: "Team Strategy" }; } }],
-    async edit(payload) { edits.push(payload); },
-  });
+    async fetch() { throw Object.assign(new Error("Unknown Message"), { code: 10_008 }); },
+  };
+  store.bindMessage(
+    session.sessionId,
+    message,
+    async (payload) => { edits.push(payload); },
+  );
 
   currentTime = 20;
   store.touch(session.sessionId);

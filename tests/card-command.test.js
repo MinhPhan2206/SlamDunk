@@ -188,6 +188,45 @@ test("Card Battle Stats tab is vertical and restricted to the original viewer", 
   assert.match(denied.content, /Only the user/);
 });
 
+test("Card Traits tab groups Traits and mentions the owner", async () => {
+  let reply;
+  await cardComponent.execute({
+    customId: "card:805986648973770783:instance:10:traits",
+    user: { id: "805986648973770783" },
+    async deferUpdate() {},
+    async editReply(payload) { reply = payload; },
+  }, {
+    services: {
+      cardView: {
+        async getInstance() { return card(); },
+        async getTraits() {
+          return [
+            { traitName: "Catch & Shoot", traitType: "SHOOTING", traitTier: 4, traitTierLabel: "IV" },
+            { traitName: "Floor General", traitType: "PLAYMAKING", traitTier: 3, traitTierLabel: "III" },
+            { traitName: "Rim Protector", traitType: "DEFENSE", traitTier: 2, traitTierLabel: "II" },
+            { traitName: "Glass Cleaner", traitType: "REBOUNDING", traitTier: 2, traitTierLabel: "II" },
+            { traitName: "Clutch Gene", traitType: "CLUTCH", traitTier: 5, traitTierLabel: "V" },
+          ];
+        },
+      },
+    },
+  });
+
+  const embed = reply.embeds[0].toJSON();
+  assert.match(embed.description, /Owned by <@805986648973770783>/);
+  assert.deepEqual(embed.fields.map((field) => field.name), [
+    "⚔️ OFFENSE",
+    "🎯 PLAYMAKING",
+    "🛡️ DEFENSE",
+    "💪 PHYSICAL & REBOUNDING",
+    "⏱️ SITUATIONAL & CLUTCH",
+  ]);
+  assert.match(embed.fields[0].value, /Catch & Shoot.*IV/);
+  assert.equal(embed.thumbnail, undefined);
+  assert.deepEqual(reply.attachments, []);
+  assert.equal(reply.files, undefined);
+});
+
 test("Template view exposes Stats and Traits without Battle Stats", async () => {
   let reply;
   await cardCommand.execute({

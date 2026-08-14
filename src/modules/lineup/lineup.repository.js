@@ -29,6 +29,7 @@ function mapSlot(row) {
     perimeterDefense: row.perimeter_defense,
     interiorDefense: row.interior_defense,
     strength: row.strength,
+    heightCm: row.height_cm,
   });
 }
 
@@ -75,7 +76,8 @@ export const lineupRepository = Object.freeze({
           ct.playmaking,
           ct.perimeter_defense,
           ct.interior_defense,
-          ct.strength
+          ct.strength,
+          ct.height_cm
         FROM lineup_slots ls
         JOIN card_instances ci
           ON ci.card_instance_id = ls.card_instance_id

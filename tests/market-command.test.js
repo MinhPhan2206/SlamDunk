@@ -7,6 +7,7 @@ import {
   sellCommand,
   unlistCommand,
 } from "../src/bot/commands/market.command.js";
+import { marketSellComponent } from "../src/bot/components/market-sell.component.js";
 
 function createInteraction(subcommand, values = {}) {
   const replies = [];
@@ -28,6 +29,12 @@ function createInteraction(subcommand, values = {}) {
       async deferReply() {
         replies.push({ type: "defer" });
       },
+      async reply(payload) {
+        replies.push({ type: "reply", payload });
+      },
+      async showModal(payload) {
+        replies.push({ type: "modal", payload });
+      },
       async editReply(payload) {
         replies.push({ type: "edit", payload });
       },
@@ -48,43 +55,94 @@ test("Market actions are separate slash commands", () => {
   assert.equal(buyCommand.data.name, "buy");
 });
 
-test("market sell command creates a fixed-price listing", async () => {
+test("market sell command opens button controls defaulting to 12 hours", async () => {
   const { interaction, replies } = createInteraction("sell", {
     card_id: "42",
     price: 500,
   });
-  const services = {
+  await sellCommand.execute(interaction, { services: {
     player: playerService,
     collection: {
-      async resolveOwnedCardReference() {
-        return "42";
-      },
+      async resolveOwnedCardReference() { return "81"; },
     },
-    market: {
-      async createListing(input) {
-        assert.deepEqual(input, {
-          sellerPlayerId: "7",
-          cardInstanceId: "42",
-          priceGold: 500,
-        });
+    cardView: {
+      async getInstance() {
         return {
-          listing: {
-            listingId: "9",
-            cardInstanceId: "42",
-            priceGold: "500",
-          },
-          card: { publicCardId: "123456789" },
+          cardInstanceId: "81",
+          publicCardId: "123456789",
+          playerName: "Test Guard",
+          rarityCode: "COMMON",
         };
       },
     },
-  };
-
-  await sellCommand.execute(interaction, { services });
+  } });
 
   assert.equal(replies[0].type, "defer");
-  const embed = replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.title, /Market Listing Created/);
-  assert.match(embed.description, /500 Gold/);
+  assert.equal(replies[1].type, "edit");
+  const payload = replies[1].payload;
+  assert.match(payload.embeds[0].toJSON().description, /Expires.*12 hours/s);
+  assert.equal(payload.components[0].components.length, 5);
+  assert.equal(
+    payload.components[0].components[0].data.custom_id,
+    "market-sell:decrease:234567890123456789:81:500:2",
+  );
+});
+
+test("market sell buttons adjust duration and confirm the timed listing", async () => {
+  const card = {
+    cardInstanceId: "81",
+    publicCardId: "123456789",
+    playerName: "Test Guard",
+    rarityCode: "COMMON",
+  };
+  let adjusted;
+  await marketSellComponent.execute({
+    customId: "market-sell:increase:234567890123456789:81:500:2",
+    user: { id: "234567890123456789", username: "MarketTester" },
+    async update(payload) { adjusted = payload; },
+  }, {
+    services: { cardView: { async getInstance() { return card; } } },
+  });
+  assert.match(adjusted.embeds[0].toJSON().description, /Expires.*1 day/s);
+  assert.match(
+    adjusted.components[0].components[3].data.custom_id,
+    /:3$/,
+  );
+
+  let reply;
+  const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1_000);
+  await marketSellComponent.execute({
+    customId: "market-sell:confirm:234567890123456789:81:500:2",
+    user: { id: "234567890123456789", username: "MarketTester" },
+    async deferUpdate() { this.deferred = true; },
+    async editReply(payload) { reply = payload; },
+  }, {
+    services: {
+      cardView: { async getInstance() { return card; } },
+      player: playerService,
+      market: {
+        async createListing(input) {
+          assert.deepEqual(input, {
+            sellerPlayerId: "7",
+            cardInstanceId: "81",
+            priceGold: "500",
+            durationCode: "12h",
+          });
+          return {
+            listing: {
+              playerName: "Test Guard",
+              rarityCode: "COMMON",
+              priceGold: "500",
+              expiresAt,
+            },
+            card: { publicCardId: "123456789" },
+          };
+        },
+      },
+    },
+  });
+  assert.match(reply.embeds[0].toJSON().description, /Test Guard.*!123456789/s);
+  assert.deepEqual(reply.components, []);
 });
 
 test("market browse command displays active listings", async () => {
@@ -105,8 +163,12 @@ test("market browse command displays active listings", async () => {
               rarityCode: "COMMON",
               serialNumber: "3",
               cardLevel: 4,
+              expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1_000),
             },
           ],
+          total: "11",
+          page: 1,
+          totalPages: 2,
         };
       },
     },
@@ -118,6 +180,10 @@ test("market browse command displays active listings", async () => {
   assert.match(embed.description, /Test Guard/);
   assert.match(embed.description, /500 Gold/);
   assert.doesNotMatch(embed.description, /Seller|#9/);
+  const buttons = replies[1].payload.components[0].components;
+  assert.equal(buttons.length, 2);
+  assert.equal(buttons[0].data.emoji.name, "◀️");
+  assert.equal(buttons[1].data.emoji.name, "▶️");
 });
 
 test("buy and unlist resolve an active listing by public Card ID", async () => {
@@ -134,11 +200,21 @@ test("buy and unlist resolve an active listing by public Card ID", async () => {
           assert.equal(input.publicCardId, "123456789");
           return serviceMethod === "buyListing"
             ? {
-                listing: { priceGold: "500" },
+                listing: {
+                  priceGold: "500",
+                  playerName: "Test Guard",
+                  rarityCode: "COMMON",
+                },
                 card: { publicCardId: "123456789" },
                 economy: { debit: { balanceAfter: "500" } },
               }
-            : { listing: {} };
+            : {
+                listing: {
+                  publicCardId: "123456789",
+                  playerName: "Test Guard",
+                  rarityCode: "COMMON",
+                },
+              };
         },
       },
     };

@@ -49,20 +49,23 @@ function expiredEmbeds(embeds) {
   });
 }
 
-async function disableExpiredMessage(message) {
+function isUnknownMessage(error) {
+  return error?.code === 10_008 || error?.rawError?.code === 10_008;
+}
+
+async function disableExpiredMessage(message, editMessage) {
   try {
-    const current = typeof message?.fetch === "function"
-      ? await message.fetch()
-      : message;
-    if (!current?.components?.length || typeof current.edit !== "function") return;
-    await current.edit({
-      components: disabledRows(current.components),
-      ...(current.embeds?.length
-        ? { embeds: expiredEmbeds(current.embeds) }
+    if (!message?.components?.length || typeof editMessage !== "function") return;
+    await editMessage({
+      components: disabledRows(message.components),
+      ...(message.embeds?.length
+        ? { embeds: expiredEmbeds(message.embeds) }
         : {}),
     });
   } catch (error) {
-    console.warn(`Strategy editor timeout update failed: ${error.message}`);
+    if (!isUnknownMessage(error)) {
+      console.warn(`Strategy editor timeout update failed: ${error.message}`);
+    }
   }
 }
 
@@ -97,7 +100,10 @@ export function createStrategyDraftStore({
   async function expire(sessionId, expectedSession) {
     if (sessions.get(sessionId) !== expectedSession) return;
     sessions.delete(sessionId);
-    await disableExpiredMessage(expectedSession.message);
+    await disableExpiredMessage(
+      expectedSession.message,
+      expectedSession.editMessage,
+    );
   }
 
   function scheduleExpiry(session) {
@@ -153,6 +159,7 @@ export function createStrategyDraftStore({
         selectedTendencyCardId: lineupPlayers[0]?.cardInstanceId ?? null,
         message: null,
         messageId: null,
+        editMessage: null,
         expiresAt: 0,
         timer: null,
         operation: Promise.resolve(),
@@ -164,11 +171,12 @@ export function createStrategyDraftStore({
 
     get,
 
-    bindMessage(sessionId, message) {
+    bindMessage(sessionId, message, editMessage) {
       const session = get(sessionId);
       if (!session || !message) return null;
       session.message = message;
       session.messageId = message.id ? String(message.id) : null;
+      if (typeof editMessage === "function") session.editMessage = editMessage;
       return session;
     },
 

@@ -9,6 +9,7 @@ const PLAYER_COLUMNS = `
   games_lost,
   current_win_streak,
   highest_win_streak,
+  starter_lineup_granted_at,
   created_at,
   last_active_at
 `;
@@ -29,6 +30,7 @@ function mapPlayer(row) {
     gamesLost: row.games_lost,
     currentWinStreak: row.current_win_streak,
     highestWinStreak: row.highest_win_streak,
+    starterLineupGrantedAt: row.starter_lineup_granted_at,
     createdAt: row.created_at,
     lastActiveAt: row.last_active_at,
   });

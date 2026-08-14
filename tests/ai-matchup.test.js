@@ -45,7 +45,7 @@ function select(seed) {
   });
 }
 
-test("AI matchup selection is seeded, varied, and Level-matched by slot", () => {
+test("AI matchup selection is seeded, varied, and always uses Level 5 AI Cards", () => {
   assert.deepEqual(select(12345), select(12345));
 
   const signatures = new Set();
@@ -55,7 +55,7 @@ test("AI matchup selection is seeded, varied, and Level-matched by slot", () => 
     assert.deepEqual(matchup.map((entry) => entry.slot), SLOTS);
     assert.deepEqual(
       matchup.map((entry) => entry.cardLevel),
-      playerTeam.map((entry) => entry.cardLevel),
+      [5, 5, 5, 5, 5],
     );
     assert.equal(new Set(matchup.map((entry) => entry.template.playerName)).size, 5);
   }

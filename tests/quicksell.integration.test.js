@@ -191,7 +191,7 @@ test("lock protects cards and batch Quicksell requires a persisted confirmation"
     assert.equal(preview.cards.length, 1);
     assert.equal(preview.cards[0].cardInstanceId, first.instance.cardInstanceId);
     assert.equal(preview.session.totalGold, "20");
-    assert.equal(preview.session.totalShards, "4");
+    assert.equal(preview.session.totalShards, "2");
 
     const completed = await quicksellService.confirmPreview({
       playerId,
@@ -199,14 +199,14 @@ test("lock protects cards and batch Quicksell requires a persisted confirmation"
     }, { database });
     assert.equal(completed.session.status, "COMPLETED");
     assert.equal(completed.session.goldBalanceAfter, "20");
-    assert.equal(completed.session.shardBalanceAfter, "4");
+    assert.equal(completed.session.shardBalanceAfter, "2");
 
     const replayed = await quicksellService.confirmPreview({
       playerId,
       quicksellSessionId: preview.session.quicksellSessionId,
     }, { database });
     assert.equal(replayed.session.goldBalanceAfter, "20");
-    assert.equal(replayed.session.shardBalanceAfter, "4");
+    assert.equal(replayed.session.shardBalanceAfter, "2");
 
     const states = await database.query(
       `SELECT card_instance_id, status, user_lock FROM card_instances

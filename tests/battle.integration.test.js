@@ -130,7 +130,7 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     );
     assert.deepEqual(
       result.match.inputSnapshot.aiTeam.map((player) => player.cardLevel),
-      result.match.inputSnapshot.playerTeam.map((player) => player.cardLevel),
+      [5, 5, 5, 5, 5],
     );
     assert.ok(result.match.inputSnapshot.playerTeam.every((player) =>
       player.overall && player.rarityCode && player.rarityName

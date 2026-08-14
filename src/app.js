@@ -31,8 +31,9 @@ import { createMarketService } from "./modules/market/index.js";
 import { createTradeService } from "./modules/trade/index.js";
 import { createExchangeService } from "./modules/exchange/index.js";
 import { createInventoryService } from "./modules/inventory/index.js";
+import { createOnboardingService } from "./modules/onboarding/index.js";
 
-export function createApplication({ discordToken, databaseUrl }) {
+export function createApplication({ discordToken, databaseUrl, communityInviteUrl }) {
   const client = createDiscordClient();
   const databasePool = createPostgresPool({ connectionString: databaseUrl });
   const economyService = createEconomyService({ databasePool });
@@ -84,6 +85,12 @@ export function createApplication({ discordToken, databaseUrl }) {
   });
   const collectionService = createCollectionService({ databasePool });
   const lineupService = createLineupService({ databasePool });
+  const onboardingService = createOnboardingService({
+    databasePool,
+    cardTemplateService,
+    cardInstanceService,
+    lineupService,
+  });
   const battleService = createBattleService({
     databasePool,
     lineupService,
@@ -145,6 +152,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     trade: tradeService,
     trait: traitService,
     inventory: inventoryService,
+    onboarding: onboardingService,
   });
   const commandRegistry = new Map(
     commands.map((command) => [command.data.name, command]),
@@ -153,6 +161,15 @@ export function createApplication({ discordToken, databaseUrl }) {
     components.map((component) => [component.namespace, component]),
   );
   let isStopped = false;
+  let marketExpirationTimer = null;
+
+  const expireMarketListings = async () => {
+    try {
+      await marketService.expireDueListings();
+    } catch (error) {
+      console.error(`Market expiration failed: ${error.message}`);
+    }
+  };
 
   client.once(Events.ClientReady, (readyClient) => {
     console.log(`SlamDunk is online as ${readyClient.user.tag}`);
@@ -162,7 +179,7 @@ export function createApplication({ discordToken, databaseUrl }) {
     Events.InteractionCreate,
     createInteractionCreateHandler(
       commandRegistry,
-      { services, battlePlayback, strategyDrafts },
+      { services, battlePlayback, strategyDrafts, communityInviteUrl },
       componentRegistry,
     ),
   );
@@ -175,6 +192,11 @@ export function createApplication({ discordToken, databaseUrl }) {
       console.log("PostgreSQL connection established.");
       await dropService.completeExpiredOffers();
       await tradeService.expireDueTrades();
+      await marketService.expireDueListings();
+      marketExpirationTimer = setInterval(() => {
+        void expireMarketListings();
+      }, 60_000);
+      marketExpirationTimer.unref?.();
       await client.login(discordToken);
     },
 
@@ -184,6 +206,10 @@ export function createApplication({ discordToken, databaseUrl }) {
       }
 
       isStopped = true;
+      if (marketExpirationTimer) {
+        clearInterval(marketExpirationTimer);
+        marketExpirationTimer = null;
+      }
       battlePlayback.stop();
       strategyDrafts.stop();
       client.destroy();

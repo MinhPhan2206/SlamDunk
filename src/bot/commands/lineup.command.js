@@ -96,9 +96,7 @@ export const lineupCommand = Object.freeze({
 
       await interaction.editReply(
         await createLineupPayload(result, {
-          title: viewingSelf
-            ? "Active Lineup"
-            : `${targetUser.globalName ?? targetUser.username}'s Active Lineup`,
+          title: `${targetUser.globalName ?? targetUser.username}'s Lineup`,
           player,
         }),
       );

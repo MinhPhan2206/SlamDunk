@@ -5,6 +5,7 @@ import {
 import { BattleError } from "./battle.errors.js";
 
 const SLOTS = Object.freeze(["PG", "SG", "SF", "PF", "C"]);
+const AI_CARD_LEVEL = 5;
 
 function createSeededRandom(seed) {
   let state = (seed ^ 0x9e3779b9) >>> 0;
@@ -79,7 +80,7 @@ export function selectAiMatchup({
       )
       .map((template) => ({
         template,
-        distance: Math.abs(strength(template, opponent.cardLevel) - target),
+        distance: Math.abs(strength(template, AI_CARD_LEVEL) - target),
       }))
       .sort((left, right) =>
         left.distance - right.distance || templateIdOrder(left, right)
@@ -103,7 +104,7 @@ export function selectAiMatchup({
     return Object.freeze({
       slot,
       template: selected.template,
-      cardLevel: opponent.cardLevel,
+      cardLevel: AI_CARD_LEVEL,
     });
   }));
 }

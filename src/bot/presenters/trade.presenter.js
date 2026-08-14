@@ -44,13 +44,26 @@ function offeredCardLine(card) {
     `Lv.${card.cardLevel} · \`!${card.publicCardId}\``;
 }
 
-function participantField(participant, cards) {
+function participantStatus(participant, trade) {
+  if (
+    participant.finalAcceptedAt &&
+    participant.finalAcceptedRevision === trade.offerRevision
+  ) return "✅ FINAL ACCEPTED";
+  if (
+    participant.readyAt &&
+    participant.readyRevision === trade.offerRevision
+  ) return trade.reviewStartedAt ? "🔒 REVIEWING" : "🔒 READY";
+  return "✏️ EDITING";
+}
+
+function participantField(participant, cards, trade) {
   const offeredCards = cards.filter((card) =>
     card.offeredByPlayerId === participant.playerId
   );
   return {
-    name: `${participant.confirmedAt ? "✅" : "✏️"} ${participant.username}`,
+    name: `${participant.username} GIVES`,
     value: [
+      `**${participantStatus(participant, trade)}**`,
       `🪙 **${formatNumber(participant.goldOffered)} Gold**`,
       `🃏 **Cards ${offeredCards.length}/${MAX_TRADE_CARDS}**`,
       offeredCards.length
@@ -63,25 +76,35 @@ function participantField(participant, cards) {
 
 function tradeEmbed(result) {
   const open = result.trade.status === "OPEN";
+  const reviewing = open && Boolean(result.trade.reviewStartedAt);
   const color = result.trade.status === "COMPLETED"
     ? UI_COLORS.success
     : open ? UI_COLORS.secondary : UI_COLORS.neutral;
   const embed = new EmbedBuilder()
     .setColor(color)
-    .setTitle(open ? "Direct Trade" : `Trade ${result.trade.status}`)
+    .setTitle(reviewing ? "Final Trade Review" : open ? "Direct Trade" : `Trade ${result.trade.status}`)
     .setDescription(open
-      ? `Edit your offer, then confirm it. Any change clears both confirmations.\n` +
-        `Expires <t:${expiryTimestamp(result.trade)}:R>.`
+      ? reviewing
+        ? `Offers are frozen. Check exactly what each Player gives, then select **Final Accept**.\n` +
+          `Either Player may return to Editing or cancel before completion.\n` +
+          `Expires <t:${expiryTimestamp(result.trade)}:R>.`
+        : `Edit your offer, then select **Ready**. A changed offer clears both Ready states.\n` +
+          `You can use **Undo Ready** before Final Accept.\n` +
+          `Expires <t:${expiryTimestamp(result.trade)}:R>.`
       : "This Direct Trade is closed.");
   for (const participant of result.participants) {
-    embed.addFields(participantField(participant, result.cards));
+    embed.addFields(participantField(participant, result.cards, result.trade));
   }
-  return embed.setFooter({ text: `Trade #${result.trade.tradeId}` });
+  return embed.setFooter({
+    text: `Trade #${result.trade.tradeId} • Offer version ${result.trade.offerRevision}`,
+  });
 }
 
 export function createTradePayload(result) {
   const pending = invitationPending(result);
   const open = result.trade.status === "OPEN";
+  const reviewing = open && Boolean(result.trade.reviewStartedAt);
+  const revision = result.trade.offerRevision ?? 0;
   const components = pending
     ? [new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -93,22 +116,37 @@ export function createTradePayload(result) {
         .setLabel("Decline")
         .setStyle(ButtonStyle.Danger),
     )]
-    : open
+    : reviewing
       ? [new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId(`trade:cards:${result.trade.tradeId}`)
+          .setCustomId(`trade:final:${result.trade.tradeId}:${revision}`)
+          .setLabel("Final Accept").setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId(`trade:undo:${result.trade.tradeId}:${revision}`)
+          .setLabel("Back to Editing").setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId(`trade:cancel:${result.trade.tradeId}:${revision}`)
+          .setLabel("Cancel Trade").setStyle(ButtonStyle.Danger),
+      )]
+      : open
+        ? [new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`trade:cards:${result.trade.tradeId}:${revision}`)
           .setLabel("Cards").setEmoji("🃏").setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-          .setCustomId(`trade:gold:${result.trade.tradeId}`)
+          .setCustomId(`trade:gold:${result.trade.tradeId}:${revision}`)
           .setLabel("Gold").setEmoji("🪙").setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-          .setCustomId(`trade:confirm:${result.trade.tradeId}`)
-          .setLabel("Confirm").setStyle(ButtonStyle.Success),
+          .setCustomId(`trade:ready:${result.trade.tradeId}:${revision}`)
+          .setLabel("Ready").setStyle(ButtonStyle.Success),
         new ButtonBuilder()
-          .setCustomId(`trade:cancel:${result.trade.tradeId}`)
-          .setLabel("Cancel").setStyle(ButtonStyle.Danger),
+          .setCustomId(`trade:undo:${result.trade.tradeId}:${revision}`)
+          .setLabel("Undo Ready").setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId(`trade:cancel:${result.trade.tradeId}:${revision}`)
+          .setLabel("Cancel Trade").setStyle(ButtonStyle.Danger),
       )]
-      : [];
+        : [];
   const discordUserIds = result.participants
     .map((participant) => participant.discordUserId)
     .filter(Boolean);

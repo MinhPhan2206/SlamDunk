@@ -1,12 +1,16 @@
 import { SlashCommandBuilder } from "discord.js";
 
 import { CardError } from "../../modules/card/index.js";
-import { MarketError } from "../../modules/market/index.js";
+import {
+  DEFAULT_MARKET_DURATION_CODE,
+  MARKET_DURATION_CODES,
+  MarketError,
+} from "../../modules/market/index.js";
 import {
   createMarketBrowsePayload,
   createMarketCancellationEmbed,
-  createMarketListingEmbed,
   createMarketPurchaseEmbed,
+  createMarketSellDraftPayload,
 } from "../presenters/market.presenter.js";
 
 function cardIdOption(option, description) {
@@ -68,25 +72,31 @@ export const sellCommand = Object.freeze({
     .addStringOption((option) => cardIdOption(
       option,
       "Public Card ID or number in /collection.",
-    ))
+    ).setMaxLength(10))
     .addIntegerOption((option) => option
       .setName("price")
       .setDescription("Sale price in Gold.")
       .setMinValue(1)
       .setRequired(true)),
   async execute(interaction, { services }) {
+    const cardReference = interaction.options.getString("card_id", true).trim();
+    if (!/^!?\d+$/.test(cardReference)) {
+      await interaction.reply({ content: "Card ID must be a public Card ID or Collection number." });
+      return;
+    }
     await executeSafely(interaction, async () => {
       const player = await playerFor(interaction, services);
       const cardInstanceId = await services.collection.resolveOwnedCardReference({
         playerId: player.playerId,
-        cardReference: interaction.options.getString("card_id", true),
+        cardReference,
       });
-      const result = await services.market.createListing({
-        sellerPlayerId: player.playerId,
-        cardInstanceId,
+      const card = await services.cardView.getInstance(cardInstanceId);
+      await interaction.editReply(createMarketSellDraftPayload({
+        viewerDiscordUserId: interaction.user.id,
+        card,
         priceGold: interaction.options.getInteger("price", true),
-      });
-      await interaction.editReply({ embeds: [createMarketListingEmbed(result)] });
+        durationIndex: MARKET_DURATION_CODES.indexOf(DEFAULT_MARKET_DURATION_CODE),
+      }));
     });
   },
 });

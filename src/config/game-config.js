@@ -1,11 +1,13 @@
 export const gameConfig = Object.freeze({
   claim: Object.freeze({
     cooldownMinutes: 15,
+    maximumCharges: 2,
     minimumGold: 80,
     maximumGold: 120,
   }),
   drop: Object.freeze({
     cooldownMinutes: 15,
+    maximumCharges: 2,
     candidateCount: 3,
     selectionSeconds: 20,
     levelWeights: Object.freeze([
@@ -102,6 +104,7 @@ export const gameConfig = Object.freeze({
     maximumCardsPerPlayer: 10,
     maximumGoldPerPlayer: 20_000_000,
     expiryMinutes: 3,
+    reviewDelaySeconds: 5,
   }),
   battle: Object.freeze({
     engineVersion: "3.3.0",
@@ -193,9 +196,9 @@ export const gameConfig = Object.freeze({
   }),
   quicksell: Object.freeze({
     rewards: Object.freeze({
-      BASE: Object.freeze({ gold: 10, shards: 2 }),
-      COMMON: Object.freeze({ gold: 20, shards: 4 }),
-      UNCOMMON: Object.freeze({ gold: 40, shards: 8 }),
+        BASE: Object.freeze({ gold: 10, shards: 1 }),
+        COMMON: Object.freeze({ gold: 20, shards: 2 }),
+        UNCOMMON: Object.freeze({ gold: 40, shards: 4 }),
       ALPHA: Object.freeze({ gold: 250, shards: 30 }),
       ALL_STAR: Object.freeze({ gold: 7_000, shards: 350 }),
       SUPERSTAR: Object.freeze({ gold: 15_000, shards: 1_500 }),

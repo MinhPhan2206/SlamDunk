@@ -2,6 +2,10 @@ import { randomInt } from "node:crypto";
 
 import { withTransaction } from "../../database/transaction/transaction-manager.js";
 import { EconomyCurrency, EconomyError } from "../economy/index.js";
+import {
+  consumeChargeCooldown,
+  resolveChargeCooldown,
+} from "./charge-cooldown.js";
 import { cooldownRepository } from "./cooldown.repository.js";
 import { RewardError } from "./reward.errors.js";
 
@@ -52,6 +56,10 @@ function validateClaimConfig(claimConfig) {
     claimConfig?.maximumGold,
     "claimConfig.maximumGold",
   );
+  const maximumCharges = normalizePositiveInteger(
+    claimConfig?.maximumCharges,
+    "claimConfig.maximumCharges",
+  );
 
   if (minimumGold > maximumGold) {
     throw new TypeError(
@@ -59,7 +67,12 @@ function validateClaimConfig(claimConfig) {
     );
   }
 
-  return Object.freeze({ cooldownMinutes, minimumGold, maximumGold });
+  return Object.freeze({
+    cooldownMinutes,
+    maximumCharges,
+    minimumGold,
+    maximumGold,
+  });
 }
 
 function validateDailyConfig(dailyConfig) {
@@ -99,10 +112,6 @@ function validateWeeklyConfig(weeklyConfig) {
   return Object.freeze(result);
 }
 
-function addMinutes(date, minutes) {
-  return new Date(date.getTime() + minutes * 60_000);
-}
-
 function addHours(date, hours) {
   return new Date(date.getTime() + hours * 3_600_000);
 }
@@ -129,11 +138,14 @@ function assertExistingClaim(transaction, { playerId, interactionId }) {
   }
 }
 
-function createClaimResult({ transaction, availableAt, replayed }) {
+function createClaimResult({ transaction, chargeState, replayed }) {
   return Object.freeze({
     rewardGold: transaction.amount,
     balanceAfter: transaction.balanceAfter,
-    availableAt,
+    charges: chargeState.charges,
+    maximumCharges: chargeState.maximumCharges,
+    availableAt: chargeState.nextChargeAt,
+    nextChargeAt: chargeState.nextChargeAt,
     replayed,
   });
 }
@@ -182,7 +194,21 @@ export function createRewardService({
       playerId,
       { database = databasePool } = {},
     ) {
-      return getCooldown(playerId, CLAIM_COOLDOWN_TYPE, database);
+      const normalizedPlayerId = normalizePlayerId(playerId);
+      const currentTime = await cooldownRepository.getDatabaseTime(database);
+      const cooldown = await cooldownRepository.find(database, {
+        playerId: normalizedPlayerId,
+        cooldownType: CLAIM_COOLDOWN_TYPE,
+      });
+      return Object.freeze({
+        cooldownType: CLAIM_COOLDOWN_TYPE,
+        ...resolveChargeCooldown({
+          cooldown,
+          currentTime,
+          maximumCharges: config.maximumCharges,
+          rechargeMinutes: config.cooldownMinutes,
+        }),
+      });
     },
 
     async getDailyCooldown(playerId, { database = databasePool } = {}) {
@@ -216,6 +242,12 @@ export function createRewardService({
               idempotencyKey,
               { database: transactionDatabase },
             );
+          const chargeState = resolveChargeCooldown({
+            cooldown,
+            currentTime,
+            maximumCharges: config.maximumCharges,
+            rechargeMinutes: config.cooldownMinutes,
+          });
 
           if (existingTransaction) {
             assertExistingClaim(existingTransaction, {
@@ -225,16 +257,16 @@ export function createRewardService({
 
             return createClaimResult({
               transaction: existingTransaction,
-              availableAt: cooldown.availableAt,
+              chargeState,
               replayed: true,
             });
           }
 
-          if (cooldown.availableAt > currentTime) {
+          if (!chargeState.available) {
             throw new RewardError(
               "CLAIM_COOLDOWN_ACTIVE",
               "The claim cooldown is still active.",
-              { availableAt: cooldown.availableAt },
+              { availableAt: chargeState.nextChargeAt },
             );
           }
 
@@ -263,19 +295,31 @@ export function createRewardService({
             },
             { database: transactionDatabase },
           );
-          const availableAt = addMinutes(currentTime, config.cooldownMinutes);
-          const updatedCooldown = await cooldownRepository.setAvailableAt(
+          const consumed = consumeChargeCooldown({
+            state: chargeState,
+            currentTime,
+            rechargeMinutes: config.cooldownMinutes,
+          });
+          await cooldownRepository.setChargeState(
             transactionDatabase,
             {
               playerId: normalizedPlayerId,
               cooldownType: CLAIM_COOLDOWN_TYPE,
-              availableAt,
+              chargesRemaining: consumed.chargesRemaining,
+              nextChargeAt: consumed.nextChargeAt,
             },
           );
+          const updatedChargeState = Object.freeze({
+            ...chargeState,
+            charges: consumed.chargesRemaining,
+            available: consumed.chargesRemaining > 0,
+            availableAt: consumed.nextChargeAt,
+            nextChargeAt: consumed.nextChargeAt,
+          });
 
           return createClaimResult({
             transaction: economyResult.transaction,
-            availableAt: updatedCooldown.availableAt,
+            chargeState: updatedChargeState,
             replayed: false,
           });
         },

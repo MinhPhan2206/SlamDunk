@@ -46,6 +46,9 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
           cooldownType: "CLAIM",
           available: false,
           availableAt,
+          charges: 0,
+          maximumCharges: 2,
+          nextChargeAt: availableAt,
         };
       },
       async getDailyCooldown(playerId) {
@@ -72,6 +75,9 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
           cooldownType: "FREE_DROP",
           available: true,
           availableAt: null,
+          charges: 2,
+          maximumCharges: 2,
+          nextChargeAt: null,
         };
       },
     },
@@ -100,6 +106,8 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
     embed.fields[0].value,
     new RegExp(`<t:${Math.floor(availableAt.getTime() / 1_000)}:R>`),
   );
+  assert.match(embed.fields[0].value, /0\/2 charges/);
+  assert.equal(embed.fields[3].value, "2/2 charges · Ready");
 });
 
 test("rarity command lists Card Templates for the requested rarity", async () => {

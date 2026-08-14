@@ -12,9 +12,26 @@ function requireEnvironmentVariable(name) {
   return value;
 }
 
+function optionalUrl(name) {
+  const value = process.env[name]?.trim();
+  if (!value) return null;
+
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`${name} must be a valid HTTPS URL.`);
+  }
+  if (url.protocol !== "https:") {
+    throw new Error(`${name} must be a valid HTTPS URL.`);
+  }
+  return url.toString();
+}
+
 export function getApplicationRuntimeConfig() {
   return Object.freeze({
     discordToken: requireEnvironmentVariable("DISCORD_TOKEN"),
+    communityInviteUrl: optionalUrl("DISCORD_COMMUNITY_INVITE_URL"),
     ...getDatabaseConfig(),
   });
 }

@@ -27,6 +27,14 @@ function normalizeGold(value, maximumGold) {
   return amount.toString();
 }
 
+function normalizeRevision(value) {
+  const revision = Number(value);
+  if (!Number.isSafeInteger(revision) || revision < 0) {
+    throw new TradeError("TRADE_REVISION_INVALID", "Trade offer version is invalid.");
+  }
+  return revision;
+}
+
 function normalizeOfferOperation(value, { allowSet = false } = {}) {
   const operation = String(value ?? (allowSet ? "SET" : "")).trim().toUpperCase();
   const allowed = allowSet ? ["ADD", "REMOVE", "SET"] : ["ADD", "REMOVE"];
@@ -78,6 +86,40 @@ function assertAcceptedTrade(participants) {
   }
 }
 
+function assertCurrentRevision(trade, offerRevision) {
+  if (trade.offerRevision !== offerRevision) {
+    throw new TradeError(
+      "TRADE_OFFER_CHANGED",
+      "The offer changed. Review the latest Trade before continuing.",
+    );
+  }
+}
+
+function isReadyForRevision(participant, offerRevision) {
+  return Boolean(participant.readyAt) && participant.readyRevision === offerRevision;
+}
+
+function isFinalForRevision(participant, offerRevision) {
+  return Boolean(participant.finalAcceptedAt) &&
+    participant.finalAcceptedRevision === offerRevision;
+}
+
+function assertCanEditOffer(trade, participants, playerId) {
+  if (trade.reviewStartedAt) {
+    throw new TradeError(
+      "TRADE_IN_FINAL_REVIEW",
+      "The offer is in Final Review. Return to Editing before changing it.",
+    );
+  }
+  const participant = participants.find((entry) => entry.playerId === playerId);
+  if (participant?.readyAt) {
+    throw new TradeError(
+      "TRADE_PLAYER_READY",
+      "Undo Ready before changing your offer.",
+    );
+  }
+}
+
 async function getState(database, trade) {
   const [participants, cards] = await Promise.all([
     tradeRepository.findParticipants(database, trade.tradeId),
@@ -100,7 +142,8 @@ export function createTradeService({
   if (
     !Number.isSafeInteger(tradeConfig?.maximumCardsPerPlayer) ||
     !Number.isSafeInteger(tradeConfig?.maximumGoldPerPlayer) ||
-    !Number.isSafeInteger(tradeConfig?.expiryMinutes)
+    !Number.isSafeInteger(tradeConfig?.expiryMinutes) ||
+    !Number.isSafeInteger(tradeConfig?.reviewDelaySeconds)
   ) throw new TypeError("Valid tradeConfig is required.");
   const service = {
     async createTrade(
@@ -171,12 +214,13 @@ export function createTradeService({
     },
 
     async addCard(
-      { tradeId, playerId, cardInstanceId },
+      { tradeId, playerId, cardInstanceId, offerRevision },
       { database } = {},
     ) {
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       const normalizedCardId = normalizeId(cardInstanceId, "cardInstanceId");
+      const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         const trade = await tradeRepository.findByIdForUpdate(
@@ -184,12 +228,14 @@ export function createTradeService({
           normalizedTradeId,
         );
         assertOpenTrade(trade);
+        assertCurrentRevision(trade, normalizedRevision);
         const participants = await tradeRepository.findParticipants(
           transactionDatabase,
           trade.tradeId,
         );
         assertParticipant(participants, normalizedPlayerId);
         assertAcceptedTrade(participants);
+        assertCanEditOffer(trade, participants, normalizedPlayerId);
         const currentCards = await tradeRepository.findCards(transactionDatabase, trade.tradeId);
         if (currentCards.filter((card) => card.offeredByPlayerId === normalizedPlayerId).length >= tradeConfig.maximumCardsPerPlayer) {
           throw new TradeError("TRADE_CARD_LIMIT", `Each Player can offer at most ${tradeConfig.maximumCardsPerPlayer} cards.`);
@@ -220,18 +266,22 @@ export function createTradeService({
           throw error;
         }
 
-        await tradeRepository.clearConfirmations(transactionDatabase, trade.tradeId);
-        return getState(transactionDatabase, trade);
+        const updatedTrade = await tradeRepository.advanceOfferRevision(
+          transactionDatabase,
+          trade.tradeId,
+        );
+        return getState(transactionDatabase, updatedTrade);
       });
     },
 
     async removeCard(
-      { tradeId, playerId, cardInstanceId },
+      { tradeId, playerId, cardInstanceId, offerRevision },
       { database } = {},
     ) {
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       const normalizedCardId = normalizeId(cardInstanceId, "cardInstanceId");
+      const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         const trade = await tradeRepository.findByIdForUpdate(
@@ -239,12 +289,14 @@ export function createTradeService({
           normalizedTradeId,
         );
         assertOpenTrade(trade);
+        assertCurrentRevision(trade, normalizedRevision);
         const participants = await tradeRepository.findParticipants(
           transactionDatabase,
           trade.tradeId,
         );
         assertParticipant(participants, normalizedPlayerId);
         assertAcceptedTrade(participants);
+        assertCanEditOffer(trade, participants, normalizedPlayerId);
         const tradeCard = await tradeRepository.findActiveCard(
           transactionDatabase,
           { tradeId: trade.tradeId, cardInstanceId: normalizedCardId },
@@ -264,19 +316,23 @@ export function createTradeService({
           tradeCardId: tradeCard.trade_card_id,
           outcome: "REMOVED",
         });
-        await tradeRepository.clearConfirmations(transactionDatabase, trade.tradeId);
-        return getState(transactionDatabase, trade);
+        const updatedTrade = await tradeRepository.advanceOfferRevision(
+          transactionDatabase,
+          trade.tradeId,
+        );
+        return getState(transactionDatabase, updatedTrade);
       });
     },
 
     async setGoldOffer(
-      { tradeId, playerId, goldOffered, operation = "SET" },
+      { tradeId, playerId, goldOffered, operation = "SET", offerRevision },
       { database } = {},
     ) {
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       const normalizedOperation = normalizeOfferOperation(operation, { allowSet: true });
       const requestedGold = normalizeGold(goldOffered, tradeConfig.maximumGoldPerPlayer);
+      const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         const trade = await tradeRepository.findByIdForUpdate(
@@ -284,12 +340,14 @@ export function createTradeService({
           normalizedTradeId,
         );
         assertOpenTrade(trade);
+        assertCurrentRevision(trade, normalizedRevision);
         const participants = await tradeRepository.findParticipants(
           transactionDatabase,
           trade.tradeId,
         );
         assertParticipant(participants, normalizedPlayerId);
         assertAcceptedTrade(participants);
+        assertCanEditOffer(trade, participants, normalizedPlayerId);
         const participant = participants.find(
           (entry) => entry.playerId === normalizedPlayerId,
         );
@@ -314,14 +372,18 @@ export function createTradeService({
           playerId: normalizedPlayerId,
           goldOffered: normalizedGold,
         });
-        await tradeRepository.clearConfirmations(transactionDatabase, trade.tradeId);
-        return getState(transactionDatabase, trade);
+        const updatedTrade = await tradeRepository.advanceOfferRevision(
+          transactionDatabase,
+          trade.tradeId,
+        );
+        return getState(transactionDatabase, updatedTrade);
       });
     },
 
-    async confirmTrade({ tradeId, playerId }, { database } = {}) {
+    async readyTrade({ tradeId, playerId, offerRevision }, { database } = {}) {
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
+      const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         const trade = await tradeRepository.findByIdForUpdate(
@@ -329,9 +391,16 @@ export function createTradeService({
           normalizedTradeId,
         );
         assertOpenTrade(trade);
+        assertCurrentRevision(trade, normalizedRevision);
         let state = await getState(transactionDatabase, trade);
         assertParticipant(state.participants, normalizedPlayerId);
         assertAcceptedTrade(state.participants);
+        if (trade.reviewStartedAt) {
+          throw new TradeError(
+            "TRADE_ALREADY_IN_REVIEW",
+            "This Trade is already in Final Review.",
+          );
+        }
         const hasValue =
           state.cards.length > 0 ||
           state.participants.some(
@@ -340,16 +409,111 @@ export function createTradeService({
         if (!hasValue) {
           throw new TradeError(
             "TRADE_EMPTY",
-            "Add a card or Gold before confirming this Direct Trade.",
+            "Add a Card or Gold before marking this Direct Trade Ready.",
           );
         }
 
-        await tradeRepository.confirm(transactionDatabase, {
+        await tradeRepository.markReady(transactionDatabase, {
+          tradeId: trade.tradeId,
+          playerId: normalizedPlayerId,
+          offerRevision: normalizedRevision,
+        });
+        state = await getState(transactionDatabase, trade);
+        if (state.participants.every((participant) =>
+          isReadyForRevision(participant, normalizedRevision))) {
+          const reviewingTrade = await tradeRepository.beginReview(
+            transactionDatabase,
+            { tradeId: trade.tradeId, offerRevision: normalizedRevision },
+          );
+          state = await getState(transactionDatabase, reviewingTrade);
+        }
+        return Object.freeze({ ...state, completed: false });
+      });
+    },
+
+    async undoReady({ tradeId, playerId, offerRevision }, { database } = {}) {
+      const normalizedTradeId = normalizeId(tradeId, "tradeId");
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      const normalizedRevision = normalizeRevision(offerRevision);
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const trade = await tradeRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedTradeId,
+        );
+        assertOpenTrade(trade);
+        assertCurrentRevision(trade, normalizedRevision);
+        const state = await getState(transactionDatabase, trade);
+        assertParticipant(state.participants, normalizedPlayerId);
+        assertAcceptedTrade(state.participants);
+        const participant = state.participants.find(
+          (entry) => entry.playerId === normalizedPlayerId,
+        );
+        if (!isReadyForRevision(participant, normalizedRevision)) {
+          throw new TradeError("TRADE_NOT_READY", "Your offer is not marked Ready.");
+        }
+
+        if (trade.reviewStartedAt) {
+          const editingTrade = await tradeRepository.clearReview(
+            transactionDatabase,
+            trade.tradeId,
+          );
+          return getState(transactionDatabase, editingTrade);
+        }
+        await tradeRepository.clearPlayerReady(transactionDatabase, {
           tradeId: trade.tradeId,
           playerId: normalizedPlayerId,
         });
+        return getState(transactionDatabase, trade);
+      });
+    },
+
+    async finalAcceptTrade(
+      { tradeId, playerId, offerRevision },
+      { database } = {},
+    ) {
+      const normalizedTradeId = normalizeId(tradeId, "tradeId");
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      const normalizedRevision = normalizeRevision(offerRevision);
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const trade = await tradeRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedTradeId,
+        );
+        assertOpenTrade(trade);
+        assertCurrentRevision(trade, normalizedRevision);
+        let state = await getState(transactionDatabase, trade);
+        assertParticipant(state.participants, normalizedPlayerId);
+        assertAcceptedTrade(state.participants);
+        if (
+          !trade.reviewStartedAt ||
+          !state.participants.every((participant) =>
+            isReadyForRevision(participant, normalizedRevision))
+        ) {
+          throw new TradeError(
+            "TRADE_NOT_IN_FINAL_REVIEW",
+            "Both Players must be Ready before Final Accept.",
+          );
+        }
+        const reviewAvailableAt = new Date(trade.reviewStartedAt).getTime() +
+          tradeConfig.reviewDelaySeconds * 1_000;
+        if (Date.now() < reviewAvailableAt) {
+          const seconds = Math.max(1, Math.ceil((reviewAvailableAt - Date.now()) / 1_000));
+          throw new TradeError(
+            "TRADE_REVIEW_DELAY",
+            `Review the final offer for ${seconds} more second${seconds === 1 ? "" : "s"}.`,
+          );
+        }
+
+        await tradeRepository.markFinalAccepted(transactionDatabase, {
+          tradeId: trade.tradeId,
+          playerId: normalizedPlayerId,
+          offerRevision: normalizedRevision,
+        });
         state = await getState(transactionDatabase, trade);
-        if (!state.participants.every((participant) => participant.confirmedAt)) {
+        if (!state.participants.every((participant) =>
+          isFinalForRevision(participant, normalizedRevision))) {
           return Object.freeze({ ...state, completed: false });
         }
 
@@ -394,7 +558,7 @@ export function createTradeService({
               transactionType: "DIRECT_TRADE",
               referenceType: "TRADE",
               referenceId: trade.tradeId,
-              idempotencyKey: `trade:${trade.tradeId}`,
+              idempotencyKey: `trade:${trade.tradeId}:revision:${normalizedRevision}`,
             },
             { database: transactionDatabase },
           );
@@ -492,11 +656,12 @@ export function createTradeService({
     },
 
     async setCardOffer(
-      { tradeId, playerId, cardInstanceIds, operation = "SET" },
+      { tradeId, playerId, cardInstanceIds, operation = "SET", offerRevision },
       { database } = {},
     ) {
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
+      const normalizedRevision = normalizeRevision(offerRevision);
       if (!Array.isArray(cardInstanceIds)) throw new TypeError("cardInstanceIds must be an array.");
       const requestedIds = [...new Set(cardInstanceIds.map((id) =>
         normalizeId(id, "cardInstanceId")))];
@@ -507,9 +672,11 @@ export function createTradeService({
       return useTransaction(databasePool, database, async (transactionDatabase) => {
         const trade = await tradeRepository.findByIdForUpdate(transactionDatabase, normalizedTradeId);
         assertOpenTrade(trade);
+        assertCurrentRevision(trade, normalizedRevision);
         const participants = await tradeRepository.findParticipants(transactionDatabase, trade.tradeId);
         assertParticipant(participants, normalizedPlayerId);
         assertAcceptedTrade(participants);
+        assertCanEditOffer(trade, participants, normalizedPlayerId);
         const state = await getState(transactionDatabase, trade);
         const current = state.cards.filter((card) => card.offeredByPlayerId === normalizedPlayerId);
         const currentIds = new Set(current.map((card) => card.cardInstanceId));
@@ -551,8 +718,11 @@ export function createTradeService({
             }
           }
         }
-        await tradeRepository.clearConfirmations(transactionDatabase, trade.tradeId);
-        return getState(transactionDatabase, trade);
+        const updatedTrade = await tradeRepository.advanceOfferRevision(
+          transactionDatabase,
+          trade.tradeId,
+        );
+        return getState(transactionDatabase, updatedTrade);
       });
     },
 

@@ -53,7 +53,8 @@ Card Templates with the Player Card occupying that slot. It builds a bounded
 pool of the closest candidates and performs a seeded weighted roll that favors
 smaller rating distance without always choosing the same Template.
 
-The selected AI Card uses the opposing Player Card's Level. A single AI lineup
+The selected AI Card always uses Level 5, and candidate distance is evaluated
+with its Level 5 stats. A single AI lineup
 cannot repeat a Card Template or Player name. The Match seed makes selection
 reproducible for idempotent retries, while different Matches normally receive
 different opponents. Candidate-pool size and acceptable rating distance remain

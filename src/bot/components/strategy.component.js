@@ -71,6 +71,7 @@ function selectedValue(interaction) {
 export const strategyComponent = Object.freeze({
   namespace: "strategy",
   componentInactivityTimeoutMs: STRATEGY_EDITOR_TIMEOUT_MS,
+  managesOwnComponentTimeout: true,
 
   async execute(interaction, { services, strategyDrafts }) {
     const match = CUSTOM_ID_PATTERN.exec(interaction.customId);
@@ -198,7 +199,14 @@ export const strategyComponent = Object.freeze({
       }
 
       if (!session) return null;
-      await interaction.editReply(createStrategyEditorPayload(session));
+      const message = await interaction.editReply(
+        createStrategyEditorPayload(session),
+      );
+      strategyDrafts.bindMessage(
+        sessionId,
+        message,
+        (payload) => interaction.editReply(payload),
+      );
       return true;
     });
 

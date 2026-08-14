@@ -5,6 +5,10 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { formatRarity } from "../../config/rarity-config.js";
+import {
+  MARKET_DURATION_CODES,
+  resolveMarketDuration,
+} from "../../modules/market/index.js";
 import { formatNumber, formatPositions } from "../ui/formatters.js";
 import { UI_COLORS } from "../ui/theme.js";
 
@@ -17,7 +21,8 @@ function listingBlock(listing) {
   return [
     `**${listing.playerName} • ${gold(listing.priceGold)}**`,
     `${formatRarity(listing.rarityCode)}${positions ? ` • ${positions}` : ""} • ` +
-      `Lv.${listing.cardLevel} • \`!${listing.publicCardId}\``,
+      `Lv.${listing.cardLevel} • \`!${listing.publicCardId}\` • ` +
+      `⏳ <t:${Math.floor(new Date(listing.expiresAt).getTime() / 1_000)}:R>`,
   ].join("\n");
 }
 
@@ -62,30 +67,83 @@ export function createMarketBrowsePayload(result, { discordUserId }) {
 export function createMarketListingEmbed({ listing, card }) {
   return new EmbedBuilder()
     .setColor(UI_COLORS.success)
-    .setTitle("Market Listing Created")
     .setDescription(
-      `Card \`!${card.publicCardId}\` is listed for **${gold(listing.priceGold)}**.`,
+      `✅ **${listing.playerName} (${formatRarity(listing.rarityCode)})** ` +
+      `\`!${card.publicCardId}\` listed for **${gold(listing.priceGold)}**.\n` +
+      `Expires <t:${Math.floor(new Date(listing.expiresAt).getTime() / 1_000)}:R>.`,
     );
 }
 
 export function createMarketCancellationEmbed({ listing }) {
   return new EmbedBuilder()
     .setColor(UI_COLORS.neutral)
-    .setTitle("Market Listing Cancelled")
-    .setDescription("Your card has been removed from the Market.");
+    .setDescription(
+      `↩️ **${listing.playerName} (${formatRarity(listing.rarityCode)})** ` +
+      `\`!${listing.publicCardId}\` was removed from the Market.`,
+    );
 }
 
-export function createMarketPurchaseEmbed({ listing, card, economy }) {
+export function createMarketPurchaseEmbed({ listing, card }) {
   return new EmbedBuilder()
     .setColor(UI_COLORS.success)
-    .setTitle("Market Purchase Complete")
-    .setDescription(`You now own Card \`!${card.publicCardId}\`.`)
-    .addFields(
-      { name: "Price", value: gold(listing.priceGold), inline: true },
-      {
-        name: "Gold Balance",
-        value: formatNumber(economy.debit.balanceAfter),
-        inline: true,
-      },
+    .setDescription(
+      `✅ You bought **${listing.playerName} (${formatRarity(listing.rarityCode)})** ` +
+      `\`!${card.publicCardId}\` for **${gold(listing.priceGold)}**.`,
     );
+}
+
+export function createMarketSellDraftPayload({
+  viewerDiscordUserId,
+  card,
+  priceGold,
+  durationIndex,
+}) {
+  const durationCode = MARKET_DURATION_CODES[durationIndex];
+  const duration = resolveMarketDuration(durationCode);
+  const state = `${viewerDiscordUserId}:${card.cardInstanceId}:${priceGold}:${durationIndex}`;
+  const embed = new EmbedBuilder()
+    .setColor(UI_COLORS.secondary)
+    .setTitle("Market Listing")
+    .setDescription([
+      `**${card.playerName} (${formatRarity(card.rarityCode)})** \`!${card.publicCardId}\``,
+      `Price · **${gold(priceGold)}**`,
+      `Expires · **${duration.label}**`,
+    ].join("\n"));
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`market-sell:decrease:${state}`)
+      .setEmoji("➖")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(durationIndex === 0),
+    new ButtonBuilder()
+      .setCustomId(`market-sell:duration:${state}`)
+      .setLabel(duration.code)
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(true),
+    new ButtonBuilder()
+      .setCustomId(`market-sell:increase:${state}`)
+      .setEmoji("➕")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(durationIndex === MARKET_DURATION_CODES.length - 1),
+    new ButtonBuilder()
+      .setCustomId(`market-sell:confirm:${state}`)
+      .setLabel("Confirm")
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId(`market-sell:cancel:${state}`)
+      .setLabel("Cancel")
+      .setStyle(ButtonStyle.Danger),
+  );
+  return { embeds: [embed], components: [row] };
+}
+
+export function createMarketSellCancelledPayload(card) {
+  return {
+    embeds: [new EmbedBuilder()
+      .setColor(UI_COLORS.neutral)
+      .setDescription(
+        `Listing cancelled for **${card.playerName}** \`!${card.publicCardId}\`.`,
+      )],
+    components: [],
+  };
 }

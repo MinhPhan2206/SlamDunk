@@ -144,6 +144,23 @@ Fee:
 
 Seller receives full price.
 
+## Listing Expiration
+
+```text
+BEGIN
+
+1. Lock due ACTIVE MarketListing rows
+2. Verify expires_at <= now
+3. Lock the listed CardInstance
+4. Clear market lock
+5. Mark listing EXPIRED and set expired_at
+
+COMMIT
+```
+
+Market browse excludes overdue rows. Purchase and cancellation run expiration
+cleanup first, while a periodic cleanup also releases due Cards automatically.
+
 ---
 
 # 6. Direct Trade Execution
@@ -154,8 +171,10 @@ Seller receives full price.
 Trade OPEN
 Exactly intended participants
 Both participants accepted the invitation
-Both sides confirmed final offer
-No offer changed after confirmation
+Both sides marked the same offer revision Ready
+The Trade entered Final Review
+The 5-second review safety delay elapsed
+Both sides Final Accepted the same unchanged offer revision
 All offered cards still valid
 All offered Gold still available
 ```
@@ -166,7 +185,7 @@ All offered Gold still available
 BEGIN
 
 1. Lock Trade
-2. Revalidate confirmations
+2. Revalidate Ready and Final Accept revisions
 
 3. Lock all offered CardInstances
 4. Verify ownership and trade locks
@@ -186,7 +205,11 @@ BEGIN
 COMMIT
 ```
 
-Any change to a trade offer before execution must clear confirmations.
+Any change to a trade offer must increment `offer_revision`, leave Final Review,
+and clear every Ready and Final Accept state. Stale component interactions are
+rejected when their revision differs from the current offer revision.
+Either participant may undo Ready before completion. During Final Review this
+returns the whole Trade to Editing and clears both participants' approvals.
 Card and Gold offers cannot be edited until both persisted invitation
 acceptances exist.
 
@@ -376,7 +399,7 @@ BEGIN
 5. Roll initial level 1–5
 6. Mint selected Card Instance
 7. Mark session COMPLETED
-8. Update FREE_DROP cooldown
+8. Consume one FREE_DROP charge and persist its next recovery time
 
 COMMIT
 ```
@@ -389,7 +412,7 @@ M9 persists the Free Drop offer before rendering Discord buttons. Selection
 locks the Player's `FREE_DROP` cooldown row and DropSession in a consistent
 order, validates ownership and candidate membership, then mints through the Card
 module. Mint counters, Card Instance, ownership history, completed DropSession,
-and cooldown commit together. Replaying the selected button returns the stored
+and charge state commit together. Replaying the selected button returns the stored
 Card Instance.
 
 Cooldown begins on successful selection. Open sessions are reused and do not

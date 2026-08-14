@@ -67,6 +67,7 @@ test("/strategy opens an ephemeral editor from the saved Lineup strategy", async
     );
     assert.equal(strategyDrafts.get(sessionId).messageId, message.id);
     assert.equal(strategyCommand.componentInactivityTimeoutMs, 60_000);
+    assert.equal(strategyCommand.managesOwnComponentTimeout, true);
     assert.deepEqual(strategyCommand.data.toJSON().options ?? [], []);
   } finally {
     strategyDrafts.stop();

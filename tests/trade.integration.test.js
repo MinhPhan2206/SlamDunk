@@ -31,7 +31,7 @@ function templateInput(testRunId) {
   };
 }
 
-test("Direct Trade clears confirmations and atomically exchanges cards and Gold", async () => {
+test("Direct Trade revisions support two-phase approval and atomic settlement", async () => {
   const pool = createPostgresPool({
     connectionString: getDatabaseConfig().databaseUrl,
   });
@@ -49,7 +49,7 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
     cardInstanceService,
     economyService,
     playerService,
-    tradeConfig: gameConfig.trade,
+    tradeConfig: { ...gameConfig.trade, reviewDelaySeconds: 0 },
   });
   const testRunId = Date.now().toString();
 
@@ -138,7 +138,7 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
     const tradeId = state.trade.tradeId;
     await assert.rejects(
       tradeService.setGoldOffer(
-        { tradeId, playerId: playerAId, goldOffered: 1, operation: "ADD" },
+        { tradeId, playerId: playerAId, goldOffered: 1, operation: "ADD", offerRevision: 0 },
         { database },
       ),
       (error) =>
@@ -147,49 +147,98 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
     );
     state = await acceptBoth(tradeId);
     assert.ok(state.participants.every((participant) => participant.acceptedAt));
-    await tradeService.setCardOffer(
+    state = await tradeService.setCardOffer(
       {
         tradeId,
         playerId: playerAId,
         cardInstanceIds: [cardA.instance.cardInstanceId],
         operation: "ADD",
+        offerRevision: state.trade.offerRevision,
       },
       { database },
     );
-    await tradeService.setCardOffer(
+    state = await tradeService.setCardOffer(
       {
         tradeId,
         playerId: playerBId,
         cardInstanceIds: [cardB.instance.cardInstanceId],
         operation: "ADD",
+        offerRevision: state.trade.offerRevision,
       },
       { database },
     );
-    await tradeService.setGoldOffer(
-      { tradeId, playerId: playerAId, goldOffered: 120, operation: "ADD" },
+    state = await tradeService.setGoldOffer(
+      { tradeId, playerId: playerAId, goldOffered: 120, operation: "ADD", offerRevision: state.trade.offerRevision },
       { database },
     );
-    await tradeService.setGoldOffer(
-      { tradeId, playerId: playerAId, goldOffered: 20, operation: "REMOVE" },
+    state = await tradeService.setGoldOffer(
+      { tradeId, playerId: playerAId, goldOffered: 20, operation: "REMOVE", offerRevision: state.trade.offerRevision },
       { database },
     );
-    state = await tradeService.confirmTrade(
-      { tradeId, playerId: playerAId },
+    state = await tradeService.readyTrade(
+      { tradeId, playerId: playerAId, offerRevision: state.trade.offerRevision },
       { database },
     );
     assert.equal(state.completed, false);
+    await assert.rejects(
+      tradeService.setGoldOffer(
+        { tradeId, playerId: playerAId, goldOffered: 1, operation: "ADD", offerRevision: state.trade.offerRevision },
+        { database },
+      ),
+      (error) => error instanceof TradeError && error.code === "TRADE_PLAYER_READY",
+    );
     state = await tradeService.setGoldOffer(
-      { tradeId, playerId: playerBId, goldOffered: 40 },
+      { tradeId, playerId: playerBId, goldOffered: 40, offerRevision: state.trade.offerRevision },
       { database },
     );
-    assert.ok(state.participants.every((participant) => !participant.confirmedAt));
+    assert.ok(state.participants.every((participant) => !participant.readyAt));
 
-    await tradeService.confirmTrade(
-      { tradeId, playerId: playerAId },
+    await assert.rejects(
+      tradeService.readyTrade(
+        { tradeId, playerId: playerAId, offerRevision: state.trade.offerRevision - 1 },
+        { database },
+      ),
+      (error) => error instanceof TradeError && error.code === "TRADE_OFFER_CHANGED",
+    );
+    state = await tradeService.readyTrade(
+      { tradeId, playerId: playerAId, offerRevision: state.trade.offerRevision },
       { database },
     );
-    state = await tradeService.confirmTrade(
-      { tradeId, playerId: playerBId },
+    state = await tradeService.undoReady(
+      { tradeId, playerId: playerAId, offerRevision: state.trade.offerRevision },
+      { database },
+    );
+    assert.ok(state.participants.every((participant) => !participant.readyAt));
+    state = await tradeService.readyTrade(
+      { tradeId, playerId: playerAId, offerRevision: state.trade.offerRevision },
+      { database },
+    );
+    state = await tradeService.readyTrade(
+      { tradeId, playerId: playerBId, offerRevision: state.trade.offerRevision },
+      { database },
+    );
+    assert.ok(state.trade.reviewStartedAt);
+    state = await tradeService.undoReady(
+      { tradeId, playerId: playerAId, offerRevision: state.trade.offerRevision },
+      { database },
+    );
+    assert.equal(state.trade.reviewStartedAt, null);
+    assert.ok(state.participants.every((participant) => !participant.readyAt));
+    state = await tradeService.readyTrade(
+      { tradeId, playerId: playerAId, offerRevision: state.trade.offerRevision },
+      { database },
+    );
+    state = await tradeService.readyTrade(
+      { tradeId, playerId: playerBId, offerRevision: state.trade.offerRevision },
+      { database },
+    );
+    state = await tradeService.finalAcceptTrade(
+      { tradeId, playerId: playerAId, offerRevision: state.trade.offerRevision },
+      { database },
+    );
+    assert.equal(state.completed, false);
+    state = await tradeService.finalAcceptTrade(
+      { tradeId, playerId: playerBId, offerRevision: state.trade.offerRevision },
       { database },
     );
     assert.equal(state.completed, true);
@@ -251,6 +300,7 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
         tradeId: cancellable.trade.tradeId,
         playerId: playerAId,
         cardInstanceId: cancelCard.instance.cardInstanceId,
+        offerRevision: cancellable.trade.offerRevision,
       },
       { database },
     );
@@ -284,6 +334,7 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
         tradeId: expiring.trade.tradeId,
         playerId: playerAId,
         cardInstanceId: expiryCard.instance.cardInstanceId,
+        offerRevision: expiring.trade.offerRevision,
       },
       { database },
     );
@@ -299,7 +350,7 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
 
     await assert.rejects(
       tradeService.setGoldOffer(
-        { tradeId: cancellable.trade.tradeId, playerId: playerAId, goldOffered: 20_000_001 },
+        { tradeId: cancellable.trade.tradeId, playerId: playerAId, goldOffered: 20_000_001, offerRevision: 0 },
         { database },
       ),
       (error) => error instanceof TradeError && error.code === "TRADE_GOLD_LIMIT",
@@ -315,28 +366,80 @@ test("Direct Trade clears confirmations and atomically exchanges cards and Gold"
         tradeId: insufficientTrade.trade.tradeId,
         playerId: playerAId,
         goldOffered: 1_000,
+        offerRevision: insufficientTrade.trade.offerRevision,
       },
       { database },
     );
-    await tradeService.confirmTrade(
-      { tradeId: insufficientTrade.trade.tradeId, playerId: playerBId },
+    let insufficientState = await tradeService.getTrade(
+      { tradeId: insufficientTrade.trade.tradeId, playerId: playerAId },
+      { database },
+    );
+    insufficientState = await tradeService.readyTrade(
+      { tradeId: insufficientTrade.trade.tradeId, playerId: playerBId, offerRevision: insufficientState.trade.offerRevision },
+      { database },
+    );
+    insufficientState = await tradeService.readyTrade(
+      { tradeId: insufficientTrade.trade.tradeId, playerId: playerAId, offerRevision: insufficientState.trade.offerRevision },
+      { database },
+    );
+    insufficientState = await tradeService.finalAcceptTrade(
+      { tradeId: insufficientTrade.trade.tradeId, playerId: playerBId, offerRevision: insufficientState.trade.offerRevision },
       { database },
     );
     await database.query("SAVEPOINT insufficient_trade");
     await assert.rejects(
-      tradeService.confirmTrade(
-        { tradeId: insufficientTrade.trade.tradeId, playerId: playerAId },
+      tradeService.finalAcceptTrade(
+        { tradeId: insufficientTrade.trade.tradeId, playerId: playerAId, offerRevision: insufficientState.trade.offerRevision },
         { database },
       ),
       (error) =>
         error instanceof TradeError && error.code === "INSUFFICIENT_GOLD",
     );
     await database.query("ROLLBACK TO SAVEPOINT insufficient_trade");
-    const insufficientState = await tradeService.getTrade(
+    insufficientState = await tradeService.getTrade(
       { tradeId: insufficientTrade.trade.tradeId, playerId: playerAId },
       { database },
     );
     assert.equal(insufficientState.trade.status, "OPEN");
+
+    const delayedTradeService = createTradeService({
+      databasePool: pool,
+      cardInstanceService,
+      economyService,
+      playerService,
+      tradeConfig: { ...gameConfig.trade, reviewDelaySeconds: 5 },
+    });
+    let delayedState = await delayedTradeService.createTrade(
+      { initiatorPlayerId: playerAId, invitedPlayerId: playerBId },
+      { database },
+    );
+    await delayedTradeService.acceptTrade(
+      { tradeId: delayedState.trade.tradeId, playerId: playerAId },
+      { database },
+    );
+    delayedState = await delayedTradeService.acceptTrade(
+      { tradeId: delayedState.trade.tradeId, playerId: playerBId },
+      { database },
+    );
+    delayedState = await delayedTradeService.setGoldOffer(
+      { tradeId: delayedState.trade.tradeId, playerId: playerAId, goldOffered: 1, offerRevision: delayedState.trade.offerRevision },
+      { database },
+    );
+    delayedState = await delayedTradeService.readyTrade(
+      { tradeId: delayedState.trade.tradeId, playerId: playerAId, offerRevision: delayedState.trade.offerRevision },
+      { database },
+    );
+    delayedState = await delayedTradeService.readyTrade(
+      { tradeId: delayedState.trade.tradeId, playerId: playerBId, offerRevision: delayedState.trade.offerRevision },
+      { database },
+    );
+    await assert.rejects(
+      delayedTradeService.finalAcceptTrade(
+        { tradeId: delayedState.trade.tradeId, playerId: playerAId, offerRevision: delayedState.trade.offerRevision },
+        { database },
+      ),
+      (error) => error instanceof TradeError && error.code === "TRADE_REVIEW_DELAY",
+    );
   } finally {
     await database.query("ROLLBACK");
     database.release();

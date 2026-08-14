@@ -1,4 +1,9 @@
-import { EmbedBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+} from "discord.js";
 
 import { UI_COLORS } from "../ui/theme.js";
 
@@ -43,6 +48,57 @@ const TRAITS = Object.freeze([
   ["Cold-Blooded", "Provides an additional accuracy bonus on a potential game-winning shot."],
 ]);
 
+const TRAIT_BY_NAME = new Map(TRAITS);
+const TRAIT_GROUPS = Object.freeze([
+  Object.freeze({
+    code: "scoring",
+    label: "Scoring",
+    emoji: "⚔️",
+    description: "Traits that improve shot creation and finishing in their matching situations.",
+    names: Object.freeze([
+      "Perimeter Gravity", "Range Extender", "Midrange Assassin", "Paint Finisher",
+      "Catch & Shoot", "Post Technician", "Separation Artist", "Contact Finisher",
+    ]),
+  }),
+  Object.freeze({
+    code: "creation",
+    label: "Creation",
+    emoji: "🧠",
+    description: "Traits that improve passing, movement, screening reads, and possession creation.",
+    names: Object.freeze([
+      "Floor General", "Pick & Roll Maestro", "Creative Passer", "Connector",
+      "Off-Ball Mover", "Transition Engine",
+    ]),
+  }),
+  Object.freeze({
+    code: "defense",
+    label: "Defense",
+    emoji: "🛡️",
+    description: "Traits that improve on-ball coverage, switching, steals, rim protection, and late defense.",
+    names: Object.freeze([
+      "Point-of-Attack Stopper", "Switchable Defender", "Screen Navigator",
+      "Rim Protector", "Active Hands", "Moment Saver",
+    ]),
+  }),
+  Object.freeze({
+    code: "physical",
+    label: "Physical",
+    emoji: "💪",
+    description: "Traits that create physical advantages away from the ball and on the glass.",
+    names: Object.freeze(["Screen Setter", "Glass Cleaner"]),
+  }),
+  Object.freeze({
+    code: "clutch",
+    label: "Clutch",
+    emoji: "🔥",
+    description: "Traits activated by pressure, momentum, comeback, or game-winning situations.",
+    names: Object.freeze([
+      "Mamba Instinct", "Clutch Gene", "Comeback Catalyst", "Momentum Scorer",
+      "Cold-Blooded",
+    ]),
+  }),
+]);
+
 function addFields(embed, fields) {
   return embed.addFields(fields.map(([name, value]) => ({ name, value, inline: false })));
 }
@@ -57,7 +113,7 @@ function strategyHelp() {
   );
 
   const team = new EmbedBuilder()
-    .setColor(UI_COLORS.secondary)
+    .setColor(UI_COLORS.primary)
     .setTitle("🛡️ Strategy Guide · Team Settings")
     .addFields(
       {
@@ -95,7 +151,7 @@ function strategyHelp() {
     );
 
   const tendencies = new EmbedBuilder()
-    .setColor(UI_COLORS.neutral)
+    .setColor(UI_COLORS.primary)
     .setTitle("🧠 Strategy Guide · Player Tendencies")
     .setDescription("Tendencies are configured per player. They change decisions and action frequency—not raw Stats or base shot accuracy.")
     .addFields(
@@ -122,18 +178,209 @@ function strategyHelp() {
 }
 
 function traitsHelp() {
-  const intro = "Traits activate only in relevant Battle situations. Levels I–V increase the effect; Traits do not grant a universal Stats bonus.";
-  return [TRAITS.slice(0, 14), TRAITS.slice(14)].map((traits, index) => addFields(
+  return TRAIT_GROUPS.map((group) => addFields(
     new EmbedBuilder()
-      .setColor(index === 0 ? UI_COLORS.primary : UI_COLORS.secondary)
-      .setTitle(index === 0 ? "✨ Trait Guide · Offense & Creation" : "✨ Trait Guide · Defense & Situations")
-      .setDescription(index === 0 ? intro : "Trait effects are contextual and may not activate on every possession."),
-    traits,
+      .setColor(UI_COLORS.primary)
+      .setTitle(`${group.emoji} Trait Guide · ${group.label}`)
+      .setDescription(group.description),
+    group.names.map((name) => [name, TRAIT_BY_NAME.get(name)]),
   ));
 }
 
-export function createHelpEmbeds(topic) {
-  if (topic === "strategy") return strategyHelp();
-  if (topic === "traits") return traitsHelp();
-  throw new TypeError(`Unsupported help topic: ${topic}.`);
+function manualHelp() {
+  const gettingStarted = new EmbedBuilder()
+    .setColor(UI_COLORS.primary)
+    .setTitle("🏀 SlamDunk Manual · Getting Started")
+    .setDescription(
+      "Collect basketball Cards, build a five-player lineup, customize your strategy, and compete against AI opponents.",
+    )
+    .addFields(
+      {
+        name: "Quick Start",
+        value: [
+          "**1.** Use `/claim` and `/drop` for your first resources and Cards.",
+          "**2.** Use `/collection` to view your Cards.",
+          "**3.** Fill PG, SG, SF, PF, and C with `/lineup set`.",
+          "**4.** Configure your team with `/strategy`.",
+          "**5.** Use `/battle` to earn Gold and XP.",
+        ].join("\n"),
+      },
+      {
+        name: "Free Resources",
+        value: [
+          "`/claim` · Receive Gold. Stores **2 charges** and recovers 1 every **15 minutes**.",
+          "`/drop` · Choose 1 of 3 Cards. Stores **2 charges** and recovers 1 every **15 minutes**.",
+          "`/daily` · Receive daily Gold, Shards, and XP.",
+          "`/weekly` · Receive weekly Gold, Shards, and XP.",
+          "`/cooldowns` · Check charges and reward timers.",
+        ].join("\n"),
+      },
+    )
+    .setFooter({ text: "Tip · Start by completing your five-player lineup." });
+
+  const cardsAndLineup = new EmbedBuilder()
+    .setColor(UI_COLORS.primary)
+    .setTitle("🃏 SlamDunk Manual · Cards & Lineup")
+    .addFields(
+      {
+        name: "Your Cards",
+        value: [
+          "`/collection [user]` · View a Player's collection.",
+          "`/card card:<reference>` · View Stats, Traits, Battle Stats, and artwork.",
+          "`/sort [sort_by]` · Sort your collection.",
+          "`/rarity rarity:<rarity>` · View Card Templates in a rarity.",
+          "`/lock card_id:<reference>` · Protect a Card from Quicksell.",
+          "`/unlock card_id:<reference>` · Remove Quicksell protection.",
+        ].join("\n"),
+      },
+      {
+        name: "Build Your Lineup",
+        value: [
+          "`/lineup set slot:<position> card_id:<reference>` · Assign a Card.",
+          "`/lineup remove slot:<position>` · Clear a position.",
+          "`/lineup view [user]` · View a Player's lineup.",
+          "`/strategy` · Configure team settings and Player Tendencies.",
+        ].join("\n"),
+      },
+      {
+        name: "Card References",
+        value: [
+          "Commands that request a Card accept either:",
+          "• Public Card ID, such as `!915287361`",
+          "• Current collection number, such as `4`",
+        ].join("\n"),
+      },
+    );
+
+  const progression = new EmbedBuilder()
+    .setColor(UI_COLORS.primary)
+    .setTitle("💰 SlamDunk Manual · Progression")
+    .addFields(
+      {
+        name: "Packs & Resources",
+        value: [
+          "`/pack pack_type:<type>` · Purchase and open a Pack.",
+          "`/odds [pack_type]` · View Drop or Pack rarity odds.",
+          "`/wallet` · View your Gold.",
+          "`/bag` · View Shards, Level Up items, and other inventory items.",
+        ].join("\n"),
+      },
+      {
+        name: "Card Progression",
+        value: [
+          "`/level-up card_id:<reference>` · Consume one Level Up item.",
+          "`/upgrade card_a:<reference> card_b:<reference>` · Fuse two matching Cards.",
+          "`/quicksell params:<filter>` · Sell unlocked Cards for Gold and Shards.",
+          "`/exchange item:shard` · Exchange Shards for available rewards.",
+        ].join("\n"),
+      },
+      {
+        name: "Quicksell Filters",
+        value: "Use `all`, a rarity, a position, a public Card ID, or a collection number.",
+      },
+      {
+        name: "Important",
+        value: "Upgrade consumes both source Cards. Quicksell is permanent—lock valuable Cards first.",
+      },
+    );
+
+  const competitive = new EmbedBuilder()
+    .setColor(UI_COLORS.primary)
+    .setTitle("⚔️ SlamDunk Manual · Compete & Trade")
+    .addFields(
+      {
+        name: "Battle",
+        value: [
+          "`/battle opponent_bracket:<difficulty>` · Battle an AI lineup.",
+          "Wins earn more Gold and continue your Win Streak. A loss still grants Gold and XP but resets the streak.",
+          "Use `/help topic:strategy` and `/help topic:traits` for detailed guides.",
+        ].join("\n"),
+      },
+      {
+        name: "Market",
+        value: [
+          "`/market [page]` · Browse active listings.",
+          "`/sell card_id:<reference> price:<Gold>` · List a Card.",
+          "`/buy card_id:<Card ID>` · Purchase a listing.",
+          "`/unlist card_id:<Card ID>` · Remove your listing.",
+        ].join("\n"),
+      },
+      {
+        name: "Direct Trade",
+        value: [
+          "`/trade user:<player>` · Start a protected Direct Trade.",
+          "**Invitation → Editing → Ready → Final Review → Final Accept**",
+          "Check exactly what both Players give. Any offer change invalidates previous approval.",
+        ].join("\n"),
+      },
+      {
+        name: "Player Information",
+        value: [
+          "`/profile [user]` · View Player Level and Battle record.",
+          "`/ping` · Check whether SlamDunk is online.",
+        ].join("\n"),
+      },
+    )
+    .setFooter({ text: "Use /help again whenever you need a system guide." });
+
+  return [gettingStarted, cardsAndLineup, progression, competitive];
+}
+
+const MANUAL_TABS = Object.freeze([
+  Object.freeze({ code: "start", label: "Start", emoji: "🏀" }),
+  Object.freeze({ code: "cards", label: "Cards", emoji: "🃏" }),
+  Object.freeze({ code: "progress", label: "Progress", emoji: "💰" }),
+  Object.freeze({ code: "compete", label: "Compete", emoji: "⚔️" }),
+]);
+
+const STRATEGY_TABS = Object.freeze([
+  Object.freeze({ code: "offense", label: "Offense", emoji: "🏀" }),
+  Object.freeze({ code: "team", label: "Team", emoji: "🛡️" }),
+  Object.freeze({ code: "tendencies", label: "Tendencies", emoji: "🧠" }),
+]);
+
+const TRAIT_TABS = Object.freeze(TRAIT_GROUPS.map(({ code, label, emoji }) =>
+  Object.freeze({ code, label, emoji })));
+
+const HELP_TOPICS = Object.freeze({
+  manual: Object.freeze({ tabs: MANUAL_TABS, buildEmbeds: manualHelp }),
+  strategy: Object.freeze({ tabs: STRATEGY_TABS, buildEmbeds: strategyHelp }),
+  traits: Object.freeze({ tabs: TRAIT_TABS, buildEmbeds: traitsHelp }),
+});
+
+export function createHelpTopicPayload({
+  topic,
+  viewerDiscordUserId,
+  selectedTab,
+}) {
+  const definition = HELP_TOPICS[topic];
+  if (!definition) throw new TypeError(`Unsupported help topic: ${topic}.`);
+  const activeTab = selectedTab ?? definition.tabs[0].code;
+  const tabIndex = definition.tabs.findIndex((tab) => tab.code === activeTab);
+  if (tabIndex < 0) {
+    throw new TypeError(`Unsupported ${topic} tab: ${activeTab}.`);
+  }
+  const row = new ActionRowBuilder().addComponents(
+    definition.tabs.map((tab) => new ButtonBuilder()
+      .setCustomId(`help:${topic}:${viewerDiscordUserId}:${tab.code}`)
+      .setLabel(tab.label)
+      .setEmoji(tab.emoji)
+      .setStyle(tab.code === activeTab ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setDisabled(tab.code === activeTab)),
+  );
+  return {
+    embeds: [definition.buildEmbeds()[tabIndex]],
+    components: [row],
+  };
+}
+
+export function createManualHelpPayload({
+  viewerDiscordUserId,
+  selectedTab = "start",
+}) {
+  return createHelpTopicPayload({
+    topic: "manual",
+    viewerDiscordUserId,
+    selectedTab,
+  });
 }

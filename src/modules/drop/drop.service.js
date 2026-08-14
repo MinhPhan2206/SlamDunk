@@ -5,6 +5,10 @@ import {
   normalizeCardLevelWeights,
   rollCardLevel,
 } from "../card/card-level-roll.js";
+import {
+  consumeChargeCooldown,
+  resolveChargeCooldown,
+} from "../reward/charge-cooldown.js";
 import { cooldownRepository } from "../reward/cooldown.repository.js";
 import { buildRarityOdds } from "../rarity/rarity-odds.js";
 import { DropError } from "./drop.errors.js";
@@ -58,6 +62,12 @@ function validateConfig(config) {
   ) {
     throw new TypeError("dropConfig.cooldownMinutes must be positive.");
   }
+  if (
+    !Number.isSafeInteger(config?.maximumCharges) ||
+    config.maximumCharges <= 0
+  ) {
+    throw new TypeError("dropConfig.maximumCharges must be positive.");
+  }
 
   if (
     !Number.isSafeInteger(config?.candidateCount) ||
@@ -90,15 +100,12 @@ function validateConfig(config) {
 
   return Object.freeze({
     cooldownMinutes: config.cooldownMinutes,
+    maximumCharges: config.maximumCharges,
     candidateCount: config.candidateCount,
     selectionSeconds: config.selectionSeconds,
     levelWeights: normalizeCardLevelWeights(config.levelWeights),
     rarityWeights: Object.freeze(rarityWeights),
   });
-}
-
-function addMinutes(date, minutes) {
-  return new Date(date.getTime() + minutes * 60_000);
 }
 
 function addSeconds(date, seconds) {
@@ -229,12 +236,16 @@ export function createDropService({
         playerId: normalizedPlayerId,
         cooldownType: FREE_DROP_COOLDOWN_TYPE,
       });
+      const chargeState = resolveChargeCooldown({
+        cooldown,
+        currentTime,
+        maximumCharges: config.maximumCharges,
+        rechargeMinutes: config.cooldownMinutes,
+      });
 
       return Object.freeze({
         cooldownType: FREE_DROP_COOLDOWN_TYPE,
-        available: !cooldown || cooldown.availableAt <= currentTime,
-        availableAt: cooldown?.availableAt ?? null,
-        checkedAt: currentTime,
+        ...chargeState,
       });
     },
 
@@ -278,11 +289,17 @@ export function createDropService({
           });
         }
 
-        if (cooldown.availableAt > currentTime) {
+        const chargeState = resolveChargeCooldown({
+          cooldown,
+          currentTime,
+          maximumCharges: config.maximumCharges,
+          rechargeMinutes: config.cooldownMinutes,
+        });
+        if (!chargeState.available) {
           throw new DropError(
             "FREE_DROP_COOLDOWN_ACTIVE",
             "The Free Drop cooldown is still active.",
-            { availableAt: cooldown.availableAt },
+            { availableAt: chargeState.nextChargeAt },
           );
         }
 
@@ -401,12 +418,31 @@ export function createDropService({
             resultCardInstanceId: mint.instance.cardInstanceId,
           },
         );
-        const updatedCooldown = await cooldownRepository.setAvailableAt(
+        const chargeState = resolveChargeCooldown({
+          cooldown,
+          currentTime,
+          maximumCharges: config.maximumCharges,
+          rechargeMinutes: config.cooldownMinutes,
+        });
+        if (!chargeState.available) {
+          throw new DropError(
+            "FREE_DROP_COOLDOWN_ACTIVE",
+            "The Free Drop cooldown is still active.",
+            { availableAt: chargeState.nextChargeAt },
+          );
+        }
+        const consumed = consumeChargeCooldown({
+          state: chargeState,
+          currentTime,
+          rechargeMinutes: config.cooldownMinutes,
+        });
+        const updatedCooldown = await cooldownRepository.setChargeState(
           transactionDatabase,
           {
             playerId: normalizedPlayerId,
             cooldownType: FREE_DROP_COOLDOWN_TYPE,
-            availableAt: addMinutes(currentTime, config.cooldownMinutes),
+            chargesRemaining: consumed.chargesRemaining,
+            nextChargeAt: consumed.nextChargeAt,
           },
         );
         const hydrated = await hydrateSession(
@@ -414,7 +450,15 @@ export function createDropService({
           completedSession,
         );
 
-        return Object.freeze({ ...hydrated, cooldown: updatedCooldown });
+        return Object.freeze({
+          ...hydrated,
+          cooldown: Object.freeze({
+            ...updatedCooldown,
+            charges: consumed.chargesRemaining,
+            maximumCharges: config.maximumCharges,
+            nextChargeAt: consumed.nextChargeAt,
+          }),
+        });
       });
     },
 

@@ -29,6 +29,7 @@ import { walletCommand } from "./wallet.command.js";
 import { bagCommand } from "./bag.command.js";
 import { strategyCommand } from "./strategy.command.js";
 import { helpCommand } from "./help.command.js";
+import { welcomeCommand } from "./welcome.command.js";
 
 export const commands = Object.freeze([
   pingCommand,
@@ -61,4 +62,5 @@ export const commands = Object.freeze([
   bagCommand,
   strategyCommand,
   helpCommand,
+  welcomeCommand,
 ]);
