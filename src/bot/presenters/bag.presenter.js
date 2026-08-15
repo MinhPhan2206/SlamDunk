@@ -1,10 +1,11 @@
 import { EmbedBuilder } from "discord.js";
 
 import { formatNumber } from "../ui/formatters.js";
+import { UI_EMOJIS } from "../ui/emojis.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 const ITEM_ICONS = Object.freeze({
-  LEVEL_UP: "⬆️",
+  LEVEL_UP: UI_EMOJIS.levelUp.mention,
   EVENT_TICKET: "🎟️",
   PACK_TICKET: "🎟️",
   CARD_KEY: "🗝️",
@@ -16,7 +17,7 @@ function itemIcon(itemType) {
 
 export function createBagEmbed({ shardBalance, items, displayName, thumbnailUrl }) {
   const lines = [
-    `💎 **Shards** · ${formatNumber(shardBalance)}`,
+    `${UI_EMOJIS.shard.mention} **Shards** · ${formatNumber(shardBalance)}`,
     ...items.map((item) =>
       `${itemIcon(item.itemType)} **${item.itemName}** · ${formatNumber(item.quantity)}`
     ),

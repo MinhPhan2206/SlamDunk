@@ -9,11 +9,11 @@ import {
   MARKET_DURATION_CODES,
   resolveMarketDuration,
 } from "../../modules/market/index.js";
-import { formatNumber, formatPositions } from "../ui/formatters.js";
+import { formatGold, formatPositions } from "../ui/formatters.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 function gold(value) {
-  return `${formatNumber(value)} Gold`;
+  return formatGold(value);
 }
 
 function listingBlock(listing) {

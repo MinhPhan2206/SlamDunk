@@ -1,11 +1,11 @@
-import { formatNumber } from "../ui/formatters.js";
+import { formatGold, formatNumber, formatShards } from "../ui/formatters.js";
 
 const relative = (date) => `<t:${Math.floor(date.getTime() / 1_000)}:R>`;
 
 export function createDailySuccessPayload(result) {
   return {
-    content: `You received ${formatNumber(result.rewardGold)} Gold and ` +
-      `${formatNumber(result.rewardShards)} Shards, and ` +
+    content: `You received ${formatGold(result.rewardGold)} and ` +
+      `${formatShards(result.rewardShards)}, and ` +
       `${formatNumber(result.rewardXp)} XP.`,
     embeds: [],
   };

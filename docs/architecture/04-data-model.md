@@ -113,8 +113,28 @@ cumulative XP, Level 2 at 3,000, Level 3 at 6,000, and so on.
 
 `player_xp_transactions` is the immutable, idempotent audit trail for XP from
 Battle, Daily, and Weekly rewards. It stores source, reference, amount, XP after
-the award, and Player Level after the award. Level milestone rewards are not
-implemented yet.
+the award, and Player Level after the award. Level milestone rewards are
+approved in `docs/requirements/game-requirements.md` but are not implemented yet.
+
+A future milestone implementation should add an idempotent milestone-claim
+record keyed by `(player_id, milestone_level)`. Titles, profile frames,
+backgrounds, and badges should use one stable cosmetic catalog rather than
+adding a column for every cosmetic. A minimal future model is:
+
+```text
+cosmetic_definitions(cosmetic_id, cosmetic_code, cosmetic_type, display_name, asset_key, active)
+player_cosmetics(player_id, cosmetic_id, unlocked_at, source_type, source_reference)
+player_cosmetic_loadouts(player_id, title_id, frame_id, background_id, badge_id)
+```
+
+Planned `cosmetic_type` values are `TITLE`, `PROFILE_FRAME`,
+`PROFILE_BACKGROUND`, and `BADGE`. The exact migration is deferred until the
+cosmetic milestone.
+
+Milestone-granted Superstar and GOAT Card Instances require a persistent
+account-binding flag or binding relation. Binding is permanent and must be
+checked by Market, Trade, Quicksell, and Fusion transaction rules. This field
+and its constraints are also deferred to the milestone implementation.
 
 ---
 

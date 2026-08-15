@@ -5,6 +5,7 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { createBattleTimeline } from "../battle/battle-timeline.js";
+import { UI_EMOJIS } from "../ui/emojis.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 const TEAM_ONE_COLOR = UI_COLORS.primary;
@@ -18,7 +19,7 @@ export function createBattleRewardSummary(result) {
   const streak = result.reward.won
     ? ` • ${result.reward.winStreakAfter} Win Streak`
     : " • Win Streak Reset";
-  return `**${outcome}** • +${Number(result.reward.rewardGold).toLocaleString("en-US")} Gold • +${Number(result.reward.rewardXp ?? 0).toLocaleString("en-US")} XP • ${result.reward.bracketName}${streak}`;
+  return `**${outcome}** • ${UI_EMOJIS.gold.mention} +${Number(result.reward.rewardGold).toLocaleString("en-US")} Gold • +${Number(result.reward.rewardXp ?? 0).toLocaleString("en-US")} XP • ${result.reward.bracketName}${streak}`;
 }
 
 function signedGold(value) {
@@ -78,7 +79,7 @@ export function createBattleRewardBreakdownEmbed(
     .setTitle(
       `${truncate(String(ownerDisplayName), 70)} · ${reward.won ? "Battle Winnings" : "Battle Compensation"}`,
     )
-    .setDescription(`**Gold Breakdown 🪙**\n\`\`\`text\n${rows.join("\n")}\n\`\`\``)
+    .setDescription(`**${UI_EMOJIS.gold.mention} Gold Breakdown**\n\`\`\`text\n${rows.join("\n")}\n\`\`\``)
     .addFields({
       name: "🔥 Current Win Streak",
       value: reward.won

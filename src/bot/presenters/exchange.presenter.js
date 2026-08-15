@@ -5,7 +5,8 @@ import {
   EmbedBuilder,
   StringSelectMenuBuilder,
 } from "discord.js";
-import { formatNumber } from "../ui/formatters.js";
+import { formatNumber, formatShards } from "../ui/formatters.js";
+import { UI_EMOJIS } from "../ui/emojis.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 function buttons(playerId, confirmDisabled = true) {
@@ -37,6 +38,7 @@ export function createExchangeMenu({
         `${formatNumber(offer.inputAmount)} Shards • ` +
         `${offer.outputQuantity} ${offer.outputItemName}`,
       value: offer.offerCode,
+      emoji: offer.offerCode === "level_up" ? UI_EMOJIS.levelUp.component : undefined,
       default: selected && offer.offerCode === "level_up",
     })));
   return {
@@ -44,10 +46,11 @@ export function createExchangeMenu({
       .setColor(UI_COLORS.secondary)
       .setTitle("Exchange")
       .setDescription([
-        `Available: **${formatNumber(shardBalance)} Shards**`,
+        `Available: **${formatShards(shardBalance)}**`,
         "",
         ...offers.map((offer) =>
-          `**${offer.outputItemName}** • ${formatNumber(offer.inputAmount)} Shards`
+          `${offer.offerCode === "level_up" ? `${UI_EMOJIS.levelUp.mention} ` : ""}` +
+          `**${offer.outputItemName}** • ${formatShards(offer.inputAmount)}`
         ),
       ].join("\n"))],
     components: [new ActionRowBuilder().addComponents(select), buttons(playerId, !selected)],
@@ -60,9 +63,10 @@ export function createExchangeResult(result) {
       .setColor(UI_COLORS.success)
       .setTitle("Exchange Complete")
       .setDescription(
-        `Received **${result.offer.outputQuantity} ${result.offer.outputItemName}** ` +
-        `for **${formatNumber(result.offer.inputAmount)} Shards**.\n` +
-        `Shards Remaining: **${formatNumber(result.shardBalanceAfter)}**`,
+        `Received ${UI_EMOJIS.levelUp.mention} ` +
+        `**${result.offer.outputQuantity} ${result.offer.outputItemName}** ` +
+        `for **${formatShards(result.offer.inputAmount)}**.\n` +
+        `Remaining: **${formatShards(result.shardBalanceAfter)}**`,
       )],
     components: [],
   };

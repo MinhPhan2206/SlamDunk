@@ -20,8 +20,8 @@ Drop, and Standard Pack values elsewhere in this document.
 | Daily | 24-hour cooldown; 1,500-2,000 Gold and 20-30 Shards |
 | Weekly | 168-hour cooldown; 3,000-4,000 Gold and 200-300 Shards |
 | Free Drop | Up to 2 charges; recover 1 every 15 minutes; 3 independent candidates; choose 1 |
-| Standard Pack | 3,000 Gold; 3 independent Cards; 1-second anti-spam cooldown |
-| Super Pack | 1,300 Shards; 1 Card; Alpha or higher; 1-second anti-spam cooldown |
+| Standard Pack | 5,000 Gold; 3 independent Cards; 1-second anti-spam cooldown |
+| Super Pack | 2,000 Shards; 1 Card; Alpha or higher; 1-second anti-spam cooldown |
 | Battle | 60-minute cooldown; Player selects an eligible opponent bracket |
 
 Free Drop per-candidate odds:
@@ -69,7 +69,7 @@ Super Pack odds:
 | Superstar | 0.769231% |
 | Goat | 0.076923% |
 
-Super Pack costs 1,300 Shards and grants one independently rolled Card.
+Super Pack costs 2,000 Shards and grants one independently rolled Card.
 
 Battle Gold uses these base formulas:
 

@@ -4,14 +4,13 @@ import {
   getRarityDefinition,
 } from "../../config/rarity-config.js";
 import { createCardStripImage } from "../ui/card-strip-image.js";
-import { formatNumber, formatPositions } from "../ui/formatters.js";
+import { formatCurrency, formatPositions } from "../ui/formatters.js";
 import { rarityColor } from "../ui/theme.js";
 
 const PACK_IMAGE_NAME = "pack-result.png";
 
 export async function createPackOpeningPayload(result) {
   const { pack } = result;
-  const currency = pack.priceCurrency === "GOLD" ? "Gold" : "Shards";
   const cards = result.cards ?? [Object.freeze({
     template: result.template,
     instance: result.instance,
@@ -34,10 +33,9 @@ export async function createPackOpeningPayload(result) {
           `**${index + 1}. ${template.playerName}** • ${formatRarity(template.rarityCode)} • ` +
           `${formatPositions(template)} • Lv.${instance.cardLevel} • ` +
           `\`!${instance.publicCardId}\``
-        ).join("\n"),
+        ).join("\n") + `\n\n**Cost** · ${formatCurrency(pack.priceCurrency, pack.priceAmount)}`,
       )
-      .setImage(`attachment://${PACK_IMAGE_NAME}`)
-      .setFooter({ text: `Cost: ${formatNumber(pack.priceAmount)} ${currency}` })],
+      .setImage(`attachment://${PACK_IMAGE_NAME}`)],
     files: [{ attachment: image, name: PACK_IMAGE_NAME }],
   };
 }

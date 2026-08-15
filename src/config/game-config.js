@@ -33,7 +33,7 @@ export const gameConfig = Object.freeze({
       displayName: "Standard Pack",
       default: true,
       priceCurrency: "GOLD",
-      priceAmount: 3_000,
+      priceAmount: 5_000,
       cooldownSeconds: 1,
       cardCount: 3,
       levelWeights: Object.freeze([
@@ -57,7 +57,7 @@ export const gameConfig = Object.freeze({
       packCode: "super",
       displayName: "Super Pack",
       priceCurrency: "SHARDS",
-      priceAmount: 1_300,
+      priceAmount: 2_000,
       cooldownSeconds: 1,
       cardCount: 1,
       levelWeights: Object.freeze([

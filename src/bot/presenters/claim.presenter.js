@@ -1,4 +1,4 @@
-import { formatNumber } from "../ui/formatters.js";
+import { formatGold } from "../ui/formatters.js";
 
 function relative(date) {
   return `<t:${Math.floor(date.getTime() / 1_000)}:R>`;
@@ -6,7 +6,7 @@ function relative(date) {
 
 export function createClaimSuccessPayload(claim) {
   return {
-    content: `You received ${formatNumber(claim.rewardGold)} Gold.`,
+    content: `You received ${formatGold(claim.rewardGold)}.`,
     embeds: [],
   };
 }

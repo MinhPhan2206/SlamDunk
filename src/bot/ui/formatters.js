@@ -1,7 +1,22 @@
 import { formatRarity } from "../../config/rarity-config.js";
+import { UI_EMOJIS } from "./emojis.js";
 
 export function formatNumber(value) {
   return BigInt(value).toLocaleString("en-US");
+}
+
+export function formatGold(value) {
+  return `${UI_EMOJIS.gold.mention} ${formatNumber(value)} Gold`;
+}
+
+export function formatShards(value) {
+  return `${UI_EMOJIS.shard.mention} ${formatNumber(value)} Shards`;
+}
+
+export function formatCurrency(currency, value) {
+  if (currency === "GOLD") return formatGold(value);
+  if (currency === "SHARDS") return formatShards(value);
+  return `${formatNumber(value)} ${currency}`;
 }
 
 export function formatPositions(card) {

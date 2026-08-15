@@ -136,6 +136,21 @@ Both false means the card is normally available.
 
 ---
 
+## 6.1 Planned Account-Bound Cards
+
+Superstar and GOAT Cards granted by Player Level milestones will be permanently
+account-bound. A bound Card remains `ACTIVE` and may be used in Lineup, Battle,
+Lock, and Upgrade, but it cannot be listed on Market, transferred through
+Trade, or quicksold.
+
+Account binding is not a temporary availability lock. It must survive ownership
+history and transformations. If a future Fusion accepts a bound source, its
+result must also be bound so the restriction cannot be laundered away. The
+persistent binding field and transaction enforcement are approved future work
+and are not implemented yet.
+
+---
+
 ## 7. Card Lifecycle Diagram
 
 ```mermaid

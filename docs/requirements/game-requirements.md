@@ -66,7 +66,7 @@
 - Standard Pack odds are: Base 13.877323%, Common 43.936835%, Uncommon
   38.053618%, Alpha 3.451062%, All-Star 0.671161%, Superstar 0.008334%, and
   Goat 0.001667%.
-- Super Pack costs 1,300 Shards and grants one Card. Its odds are Alpha 75%,
+- Super Pack costs 2,000 Shards and grants one Card. Its odds are Alpha 75%,
   All-Star 24.153846%, Superstar 0.769231%, and Goat 0.076923%; lower rarities
   have zero probability.
 - Pack definitions are keyed by stable Pack codes so each future Pack can own
@@ -77,7 +77,7 @@
 ## Pack Purchase
 
 - `/pack pack_type:<code>` buys and opens the selected Pack immediately.
-- Standard Pack costs 3,000 Gold, grants three independently rolled Cards, and has a one-second
+- Standard Pack costs 5,000 Gold, grants three independently rolled Cards, and has a one-second
   anti-spam cooldown with no purchase limit.
 - Currency debit, ledger entry, rarity roll, Card mint, PackOpening completion, and
   cooldown update are one PostgreSQL transaction.
@@ -124,6 +124,32 @@
 - A successful Weekly also grants 1,000 XP.
 - All ledger entries and the cooldown update are one atomic, idempotent
   PostgreSQL transaction.
+
+## Player Level Milestone Rewards (Approved, Not Implemented)
+
+Player Level milestone rewards are approved for a future implementation:
+
+| Level | Reward |
+| ---: | --- |
+| 1 | 5,000 Gold |
+| 3 | 300 Shards |
+| 5 | One random Alpha Card |
+| 10 | One Level Up item |
+| 15 | One random All-Star Card |
+| 20 | 2,000 Shards |
+| 25 | Two Level Up items |
+| 30 | 4,000 Shards and a special title |
+| 40 | 100,000 Gold |
+| 50 | One random Superstar Card at Level 1, two Level Up items, and a profile cosmetic |
+| 75 | One random Superstar Card at Level 3 and an exclusive title |
+| 100 | One player-selected GOAT Card at Level 1 |
+
+The Superstar and GOAT Cards granted by these milestones are account-bound.
+They may be used in Lineup, Battle, Lock, and Upgrade, but may not be traded,
+listed or purchased on Market, or quicksold. Account binding must propagate to
+any Card produced from a bound Card so that Fusion cannot remove the binding.
+Milestone claims must be persistent, atomic, and idempotent. No milestone
+reward, title, cosmetic, account-binding field, or claim flow is implemented yet.
 
 ## Battle Rewards
 

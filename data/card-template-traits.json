@@ -1,141 +1,7815 @@
 [
   {
     "rarityCode": "GOAT",
-    "playerName": "LeBron James",
+    "playerName": "Lebron James",
     "traits": [
-      { "traitCode": "PERIMETER_GRAVITY", "traitTier": 2 },
-      { "traitCode": "RANGE_EXTENDER", "traitTier": 2 },
-      { "traitCode": "MIDRANGE_ASSASSIN", "traitTier": 3 },
-      { "traitCode": "PAINT_FINISHER", "traitTier": 5 },
-      { "traitCode": "POST_TECHNICIAN", "traitTier": 4 },
-      { "traitCode": "SEPARATION_ARTIST", "traitTier": 4 },
-      { "traitCode": "FLOOR_GENERAL", "traitTier": 5 },
-      { "traitCode": "PICK_ROLL_MAESTRO", "traitTier": 5 },
-      { "traitCode": "CREATIVE_PASSER", "traitTier": 4 },
-      { "traitCode": "CONNECTOR", "traitTier": 4 },
-      { "traitCode": "OFF_BALL_MOVER", "traitTier": 3 },
-      { "traitCode": "POINT_OF_ATTACK_STOPPER", "traitTier": 3 },
-      { "traitCode": "SWITCHABLE_DEFENDER", "traitTier": 5 },
-      { "traitCode": "RIM_PROTECTOR", "traitTier": 2 },
-      { "traitCode": "ACTIVE_HANDS", "traitTier": 2 },
-      { "traitCode": "GLASS_CLEANER", "traitTier": 4 },
-      { "traitCode": "TRANSITION_ENGINE", "traitTier": 5 },
-      { "traitCode": "TOUGH_SHOT_MAKER", "traitTier": 3 },
-      { "traitCode": "CONTACT_FINISHER", "traitTier": 5 },
-      { "traitCode": "CLUTCH_PERFORMER", "traitTier": 4 },
-      { "traitCode": "CLUTCH_DEFENDER", "traitTier": 3 },
-      { "traitCode": "COMEBACK_CATALYST", "traitTier": 5 },
-      { "traitCode": "COLD_BLOODED", "traitTier": 5 }
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 4
+      }
     ]
   },
   {
     "rarityCode": "GOAT",
     "playerName": "Stephen Curry",
     "traits": [
-      { "traitCode": "PERIMETER_GRAVITY", "traitTier": 5 },
-      { "traitCode": "RANGE_EXTENDER", "traitTier": 5 },
-      { "traitCode": "MIDRANGE_ASSASSIN", "traitTier": 4 },
-      { "traitCode": "PAINT_FINISHER", "traitTier": 3 },
-      { "traitCode": "CATCH_AND_SHOOT", "traitTier": 5 },
-      { "traitCode": "SEPARATION_ARTIST", "traitTier": 5 },
-      { "traitCode": "FLOOR_GENERAL", "traitTier": 5 },
-      { "traitCode": "PICK_ROLL_MAESTRO", "traitTier": 4 },
-      { "traitCode": "CREATIVE_PASSER", "traitTier": 4 },
-      { "traitCode": "CONNECTOR", "traitTier": 4 },
-      { "traitCode": "OFF_BALL_MOVER", "traitTier": 5 },
-      { "traitCode": "POINT_OF_ATTACK_STOPPER", "traitTier": 1 },
-      { "traitCode": "SWITCHABLE_DEFENDER", "traitTier": 2 },
-      { "traitCode": "ACTIVE_HANDS", "traitTier": 2 },
-      { "traitCode": "TRANSITION_ENGINE", "traitTier": 3 },
-      { "traitCode": "TOUGH_SHOT_MAKER", "traitTier": 5 },
-      { "traitCode": "CLUTCH_PERFORMER", "traitTier": 5 },
-      { "traitCode": "CLUTCH_DEFENDER", "traitTier": 2 },
-      { "traitCode": "COMEBACK_CATALYST", "traitTier": 3 },
-      { "traitCode": "MOMENTUM_SCORER", "traitTier": 5 },
-      { "traitCode": "COLD_BLOODED", "traitTier": 5 }
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 5
+      }
     ]
   },
   {
     "rarityCode": "GOAT",
     "playerName": "Michael Jordan",
     "traits": [
-      { "traitCode": "PERIMETER_GRAVITY", "traitTier": 2 },
-      { "traitCode": "RANGE_EXTENDER", "traitTier": 1 },
-      { "traitCode": "MIDRANGE_ASSASSIN", "traitTier": 5 },
-      { "traitCode": "PAINT_FINISHER", "traitTier": 5 },
-      { "traitCode": "SEPARATION_ARTIST", "traitTier": 5 },
-      { "traitCode": "FLOOR_GENERAL", "traitTier": 3 },
-      { "traitCode": "CREATIVE_PASSER", "traitTier": 3 },
-      { "traitCode": "CONNECTOR", "traitTier": 2 },
-      { "traitCode": "OFF_BALL_MOVER", "traitTier": 3 },
-      { "traitCode": "POINT_OF_ATTACK_STOPPER", "traitTier": 5 },
-      { "traitCode": "SWITCHABLE_DEFENDER", "traitTier": 4 },
-      { "traitCode": "RIM_PROTECTOR", "traitTier": 3 },
-      { "traitCode": "ACTIVE_HANDS", "traitTier": 4 },
-      { "traitCode": "GLASS_CLEANER", "traitTier": 3 },
-      { "traitCode": "TRANSITION_ENGINE", "traitTier": 5 },
-      { "traitCode": "TOUGH_SHOT_MAKER", "traitTier": 5 },
-      { "traitCode": "CONTACT_FINISHER", "traitTier": 5 },
-      { "traitCode": "CLUTCH_PERFORMER", "traitTier": 5 },
-      { "traitCode": "CLUTCH_DEFENDER", "traitTier": 5 },
-      { "traitCode": "COMEBACK_CATALYST", "traitTier": 5 },
-      { "traitCode": "MOMENTUM_SCORER", "traitTier": 4 },
-      { "traitCode": "COLD_BLOODED", "traitTier": 5 }
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 5
+      }
     ]
   },
   {
     "rarityCode": "GOAT",
     "playerName": "Kobe Bryant",
     "traits": [
-      { "traitCode": "PERIMETER_GRAVITY", "traitTier": 4 },
-      { "traitCode": "RANGE_EXTENDER", "traitTier": 3 },
-      { "traitCode": "MIDRANGE_ASSASSIN", "traitTier": 5 },
-      { "traitCode": "PAINT_FINISHER", "traitTier": 5 },
-      { "traitCode": "CATCH_AND_SHOOT", "traitTier": 4 },
-      { "traitCode": "POST_TECHNICIAN", "traitTier": 2 },
-      { "traitCode": "SEPARATION_ARTIST", "traitTier": 5 },
-      { "traitCode": "FLOOR_GENERAL", "traitTier": 3 },
-      { "traitCode": "CREATIVE_PASSER", "traitTier": 3 },
-      { "traitCode": "CONNECTOR", "traitTier": 2 },
-      { "traitCode": "OFF_BALL_MOVER", "traitTier": 4 },
-      { "traitCode": "POINT_OF_ATTACK_STOPPER", "traitTier": 5 },
-      { "traitCode": "SWITCHABLE_DEFENDER", "traitTier": 3 },
-      { "traitCode": "SCREEN_NAVIGATOR", "traitTier": 4 },
-      { "traitCode": "ACTIVE_HANDS", "traitTier": 3 },
-      { "traitCode": "GLASS_CLEANER", "traitTier": 2 },
-      { "traitCode": "TOUGH_SHOT_MAKER", "traitTier": 5 },
-      { "traitCode": "CONTACT_FINISHER", "traitTier": 4 },
-      { "traitCode": "CLUTCH_PERFORMER", "traitTier": 5 },
-      { "traitCode": "CLUTCH_DEFENDER", "traitTier": 3 },
-      { "traitCode": "COMEBACK_CATALYST", "traitTier": 4 },
-      { "traitCode": "MOMENTUM_SCORER", "traitTier": 3 },
-      { "traitCode": "COLD_BLOODED", "traitTier": 5 }
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 5
+      }
     ]
   },
   {
     "rarityCode": "GOAT",
     "playerName": "Kareem Abdul-Jabbar",
     "traits": [
-      { "traitCode": "MIDRANGE_ASSASSIN", "traitTier": 2 },
-      { "traitCode": "PAINT_FINISHER", "traitTier": 5 },
-      { "traitCode": "POST_TECHNICIAN", "traitTier": 5 },
-      { "traitCode": "SEPARATION_ARTIST", "traitTier": 3 },
-      { "traitCode": "CREATIVE_PASSER", "traitTier": 1 },
-      { "traitCode": "CONNECTOR", "traitTier": 1 },
-      { "traitCode": "SCREEN_SETTER", "traitTier": 5 },
-      { "traitCode": "OFF_BALL_MOVER", "traitTier": 3 },
-      { "traitCode": "POINT_OF_ATTACK_STOPPER", "traitTier": 5 },
-      { "traitCode": "SWITCHABLE_DEFENDER", "traitTier": 5 },
-      { "traitCode": "RIM_PROTECTOR", "traitTier": 5 },
-      { "traitCode": "ACTIVE_HANDS", "traitTier": 3 },
-      { "traitCode": "GLASS_CLEANER", "traitTier": 5 },
-      { "traitCode": "TOUGH_SHOT_MAKER", "traitTier": 4 },
-      { "traitCode": "CONTACT_FINISHER", "traitTier": 5 },
-      { "traitCode": "CLUTCH_PERFORMER", "traitTier": 4 },
-      { "traitCode": "CLUTCH_DEFENDER", "traitTier": 5 },
-      { "traitCode": "COMEBACK_CATALYST", "traitTier": 4 },
-      { "traitCode": "MOMENTUM_SCORER", "traitTier": 4 },
-      { "traitCode": "COLD_BLOODED", "traitTier": 4 }
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 4
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Kevin Durant",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Giannis Antetokounmpo",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Nikola Jokić",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Shai Gilgeous-Alexander",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Victor Wembanyama",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Luka Dončić",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 4
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Jayson Tatum",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Anthony Edwards",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Jalen Brunson",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "SUPERSTAR",
+    "playerName": "Kawhi Leonard",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Cade Cunningham",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Kyrie Irving",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Joel Embiid",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Bam Adebayo",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Karl-Anthony Towns",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Ja Morant",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Jaylen Brown",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Donovan Mitchell",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Anthony Davis",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Devin Booker",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Lamelo Ball",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Tyrese Haliburton",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Scottie Barnes",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Jimmy Butler",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Paul George",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COMEBACK_CATALYST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Jaren Jackson Jr",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 4
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Zion Williamson",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALL_STAR",
+    "playerName": "Chet Holmgren",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 5
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Paolo Banchero",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "OG Anunoby",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "James Harden",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Pascal Siakam",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Trae Young",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Jamal Murray",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Evan Mobley",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Alperen Sengun",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Tyrese Maxey",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "De'Aaron Fox",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Jalen Williams",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Austin Reaves",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "COLD_BLOODED",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Deni Avdija",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Josh Giddey",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Amen Thompson",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Jalen Duren",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Brandon Ingram",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Norman Powell",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "VJ Edgecombe",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Domantas Sabonis",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Rudy Gobert",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Damian Lillard",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Stephon Castle",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Cooper Flagg",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Jalen Johnson",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Lauri Markkanen",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Julius Randle",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Darius Garland",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Zach LaVine",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "DeMar DeRozan",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Brandon Miller",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Desmond Bane",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CLUTCH_PERFORMER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Franz Wagner",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Tyler Herro",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Derrick White",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "ALPHA",
+    "playerName": "Trey Murphy III",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Nickeil Alexander-Walker",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 4
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Coby White",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Immanuel Quickley",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "RJ Barrett",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Andrew Nembhard",
+    "traits": [
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Bennedict Mathurin",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Shaedon Sharpe",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "P.J. Washington",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Daniel Gafford",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Dereck Lively II",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Tari Eason",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Jabari Smith Jr.",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Devin Vassell",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Toumani Camara",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Dyson Daniels",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Jaden McDaniels",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Naz Reid",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Mikal Bridges",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Fred VanVleet",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Josh Hart",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Aaron Gordon",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Jrue Holiday",
+    "traits": [
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Myles Turner",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Jarrett Allen",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Kristaps Porzingis",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Michael Porter Jr.",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "CJ McCollum",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Jalen Suggs",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Draymond Green",
+    "traits": [
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CLUTCH_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Dillon Brooks",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TOUGH_SHOT_MAKER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Nikola Vucevic",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Andrew Wiggins",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Jalen Green",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Alex Sarr",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Kon Knueppel",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Isaiah Hartenstein",
+    "traits": [
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Klay Thompson",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Ausar Thompson",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Deandre Ayton",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Kel'el Ware",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Ace Bailey",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Payton Pritchard",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Ryan Rollins",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "UNCOMMON",
+    "playerName": "Anfernee Simons",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Jakob Poeltl",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Quentin Grimes",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Gradey Dick",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Ochai Agbaji",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Davion Mitchell",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Nikola Jović",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Santi Aldama",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Luke Kennard",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Keon Ellis",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Moses Moody",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Trayce Jackson-Davis",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Quinten Post",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "AJ Green",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Isaiah Stewart",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Caris LeVert",
+    "traits": [
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Tobias Harris",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Isaiah Joe",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Aaron Wiggins",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Cason Wallace",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Bub Carrington",
+    "traits": [
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Corey Kispert",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Noah Clowney",
+    "traits": [
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Day'Ron Sharpe",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Matas Buzelis",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Kevin Huerter",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Kris Dunn",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "John Collins",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Walker Kessler",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Keyonte George",
+    "traits": [
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Brook Lopez",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Alex Caruso",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Herb Jones",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 3
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Donte DiVincenzo",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Malik Monk",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Buddy Hield",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Cameron Johnson",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Keegan Murray",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Rui Hachimura",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Mike Conley",
+    "traits": [
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Marcus Smart",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Al Horford",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Clint Capela",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Ivica Zubac",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Jonas Valanciunas",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Mitchell Robinson",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Wendell Carter Jr.",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Onyeka Okongwu",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Jonathan Kuminga",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Bobby Portis",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Kelly Oubre Jr.",
+    "traits": [
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Gary Trent Jr.",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Grayson Allen",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Dennis Schroder",
+    "traits": [
+      {
+        "traitCode": "PERIMETER_GRAVITY",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "D'Angelo Russell",
+    "traits": [
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "T.J. McConnell",
+    "traits": [
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Christian Braun",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Aaron Nesmith",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Miles McBride",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Ayo Dosunmu",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Anthony Black",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Duncan Robinson",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Jaime Jaquez Jr.",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Naji Marshall",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Dylan Harper",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Brandin Podziemski",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Jordan Poole",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "PICK_ROLL_MAESTRO",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Luguentz Dort",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "ACTIVE_HANDS",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Reed Sheppard",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Derik Queen",
+    "traits": [
+      {
+        "traitCode": "POST_TECHNICIAN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Egor Demin",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CREATIVE_PASSER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Cam Thomas",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Bilal Coulibaly",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Cedric Coward",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Keldon Johnson",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Tre Johnson",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "MOMENTUM_SCORER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "COMMON",
+    "playerName": "Jaden Ivey",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "TRANSITION_ENGINE",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Harrison Barnes",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      },
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Vince Williams Jr.",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Xavier Tillman Sr.",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Baylor Scheierman",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Tyler Kolek",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Pacome Dadiet",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Ariel Hukporti",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Johnny Furphy",
+    "traits": [
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Thomas Bryant",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Craig Porter Jr.",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jaylon Tyson",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Dalen Terry",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jevon Carter",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jett Howard",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Tristan da Silva",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Goga Bitadze",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Pelle Larsson",
+    "traits": [
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Keshad Johnson",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Vit Krejci",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Mouhamed Gueye",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Tidjane Salaün",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Nick Smith Jr.",
+    "traits": [
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jalen Wilson",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Ziaire Williams",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jamal Shead",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jonathan Mogbo",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Ja'Kobe Walter",
+    "traits": [
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Tristan Vukcevic",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "AJ Johnson",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Ron Holland II",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Marcus Sasser",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jaylin Williams",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Kenrich Williams",
+    "traits": [
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Ousmane Dieng",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Dillon Jones",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jalen Pickett",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Hunter Tyson",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "DaRon Holmes II",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Terrence Shannon Jr.",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Rob Dillingham",
+    "traits": [
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Kris Murray",
+    "traits": [
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Rayan Rupert",
+    "traits": [
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Trey Lyles",
+    "traits": [
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Dalton Knecht",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jaxson Hayes",
+    "traits": [
+      {
+        "traitCode": "PAINT_FINISHER",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Oso Ighodaro",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Cody Williams",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Taylor Hendricks",
+    "traits": []
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Malaki Branham",
+    "traits": [
+      {
+        "traitCode": "MIDRANGE_ASSASSIN",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Olivier-Maxence Prosper",
+    "traits": [
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Sam Hauser",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Luke Kornet",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Neemias Queta",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jordan Walsh",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Landry Shamet",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Precious Achiuwa",
+    "traits": [
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Cameron Payne",
+    "traits": [
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Ben Sheppard",
+    "traits": [
+      {
+        "traitCode": "OFF_BALL_MOVER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Obi Toppin",
+    "traits": [
+      {
+        "traitCode": "CONTACT_FINISHER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jarace Walker",
+    "traits": [
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Isaiah Jackson",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Max Strus",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Dean Wade",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Sam Merrill",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Isaac Okoro",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Patrick Williams",
+    "traits": [
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jalen Smith",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Julian Phillips",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Gary Harris",
+    "traits": [
+      {
+        "traitCode": "SCREEN_NAVIGATOR",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Cole Anthony",
+    "traits": [
+      {
+        "traitCode": "SEPARATION_ARTIST",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jonathan Isaac",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Moritz Wagner",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Caleb Houstan",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Haywood Highsmith",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Kevin Love",
+    "traits": [
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jose Alvarado",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Jordan Hawkins",
+    "traits": [
+      {
+        "traitCode": "RANGE_EXTENDER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Larry Nance Jr.",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Julian Strawther",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Peyton Watson",
+    "traits": [
+      {
+        "traitCode": "RIM_PROTECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Zeke Nnaji",
+    "traits": [
+      {
+        "traitCode": "SCREEN_SETTER",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Kyle Anderson",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 1
+      },
+      {
+        "traitCode": "SWITCHABLE_DEFENDER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Taurean Prince",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Royce O'Neale",
+    "traits": [
+      {
+        "traitCode": "POINT_OF_ATTACK_STOPPER",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Trendon Watford",
+    "traits": [
+      {
+        "traitCode": "CONNECTOR",
+        "traitTier": 2
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Shake Milton",
+    "traits": [
+      {
+        "traitCode": "FLOOR_GENERAL",
+        "traitTier": 1
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Andre Drummond",
+    "traits": [
+      {
+        "traitCode": "GLASS_CLEANER",
+        "traitTier": 3
+      }
+    ]
+  },
+  {
+    "rarityCode": "BASE",
+    "playerName": "Julian Champagnie",
+    "traits": [
+      {
+        "traitCode": "CATCH_AND_SHOOT",
+        "traitTier": 1
+      }
     ]
   }
 ]

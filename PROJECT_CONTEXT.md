@@ -322,7 +322,27 @@ begins at 1,000 total XP, Level 2 at 3,000, Level 3 at 6,000, and so on. Battle
 grants 150 XP for a win or 50 XP for a loss; Daily grants 300 XP; Weekly grants
 1,000 XP. Migration 039 adds the idempotent `player_xp_transactions` ledger;
 Migration 040 changes the starting level and existing progress to Level 0.
-Player-level milestone rewards remain TBD.
+Player-level milestone rewards are approved but not implemented:
+
+| Level | Reward |
+| ---: | --- |
+| 1 | 5,000 Gold |
+| 3 | 300 Shards |
+| 5 | One random Alpha Card |
+| 10 | One Level Up item |
+| 15 | One random All-Star Card |
+| 20 | 2,000 Shards |
+| 25 | Two Level Up items |
+| 30 | 4,000 Shards and a special title |
+| 40 | 100,000 Gold |
+| 50 | One random Superstar Card at Level 1, two Level Up items, and a profile cosmetic |
+| 75 | One random Superstar Card at Level 3 and an exclusive title |
+| 100 | One player-selected GOAT Card at Level 1 |
+
+Superstar and GOAT Cards granted by these milestones will be account-bound:
+usable in Lineup, Battle, Lock, and Upgrade, but unavailable to Trade, Market,
+and Quicksell. Binding must survive any future transformation such as Fusion.
+Milestone claims, cosmetics, titles, and account binding remain future work.
 
 ---
 
@@ -380,7 +400,7 @@ Historical simulation baseline (superseded):
 /challenge: point margin × 50 Gold, 60-minute cooldown
 Challenge streak: +5% per win, capped at ×1.5
 
-Standard Pack: 3,000 Gold (confirmed)
+Standard Pack: 5,000 Gold (confirmed)
 Premium Pack: 6,000 Gold
 Promo/Event Pack: 10,000–12,000 Gold
 ```
@@ -1374,7 +1394,7 @@ Confirmed Standard Pack behavior:
 
 ```text
 Command: /pack pack_type:standard
-Cost: 3,000 Gold
+Cost: 5,000 Gold
 Result: 3 independently rolled Cards
 Cooldown: 1 second
 Purchase limit: none during test
@@ -1394,7 +1414,7 @@ Confirmed Super Pack behavior:
 
 ```text
 Command: /pack pack_type:super
-Cost: 1,300 Shards
+Cost: 2,000 Shards
 Result: 1 Card
 Cooldown: 1 second
 Odds: Alpha 75%, All-Star 24.153846%, Superstar 0.769231%, Goat 0.076923%

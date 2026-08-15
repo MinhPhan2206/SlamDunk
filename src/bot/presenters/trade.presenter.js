@@ -5,7 +5,8 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { formatRarity } from "../../config/rarity-config.js";
-import { formatNumber } from "../ui/formatters.js";
+import { formatGold } from "../ui/formatters.js";
+import { UI_EMOJIS } from "../ui/emojis.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 const MAX_TRADE_CARDS = 10;
@@ -64,7 +65,7 @@ function participantField(participant, cards, trade) {
     name: `${participant.username} GIVES`,
     value: [
       `**${participantStatus(participant, trade)}**`,
-      `🪙 **${formatNumber(participant.goldOffered)} Gold**`,
+      `**${formatGold(participant.goldOffered)}**`,
       `🃏 **Cards ${offeredCards.length}/${MAX_TRADE_CARDS}**`,
       offeredCards.length
         ? offeredCards.map(offeredCardLine).join("\n")
@@ -135,7 +136,7 @@ export function createTradePayload(result) {
           .setLabel("Cards").setEmoji("🃏").setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
           .setCustomId(`trade:gold:${result.trade.tradeId}:${revision}`)
-          .setLabel("Gold").setEmoji("🪙").setStyle(ButtonStyle.Primary),
+          .setLabel("Gold").setEmoji(UI_EMOJIS.gold.component).setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
           .setCustomId(`trade:ready:${result.trade.tradeId}:${revision}`)
           .setLabel("Ready").setStyle(ButtonStyle.Success),

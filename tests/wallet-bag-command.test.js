@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { bagCommand } from "../src/bot/commands/bag.command.js";
 import { walletCommand } from "../src/bot/commands/wallet.command.js";
+import { UI_EMOJIS } from "../src/bot/ui/emojis.js";
 import { createInventoryService } from "../src/modules/inventory/index.js";
 
 function interaction() {
@@ -67,8 +68,8 @@ test("/bag shows Shards, Level Up, future items, and the Discord avatar", async 
     },
   });
   const embed = commandInteraction.reply.embeds[0].toJSON();
-  assert.match(embed.description, /💎.*Shards.*500/);
-  assert.match(embed.description, /⬆️.*Level Up.*2/);
+  assert.match(embed.description, new RegExp(`${UI_EMOJIS.shard.id}.*Shards.*500`));
+  assert.match(embed.description, new RegExp(`${UI_EMOJIS.levelUp.id}.*Level Up.*2`));
   assert.match(embed.description, /🎟️.*Event Ticket.*3/);
   assert.doesNotMatch(embed.description, /Gold/i);
   assert.equal(embed.thumbnail.url, "https://cdn.example/avatar.png");

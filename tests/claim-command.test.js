@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { claimCommand } from "../src/bot/commands/claim.command.js";
+import { UI_EMOJIS } from "../src/bot/ui/emojis.js";
 import { RewardError } from "../src/modules/reward/index.js";
 
 function createInteraction() {
@@ -48,7 +49,7 @@ test("claim command sends a compact Gold reward message", async () => {
   assert.equal(interaction.replies[0].type, "defer");
   assert.equal(
     interaction.replies[1].payload.content,
-    "You received 350 Gold.",
+    `You received ${UI_EMOJIS.gold.mention} 350 Gold.`,
   );
   assert.deepEqual(interaction.replies[1].payload.embeds, []);
 });

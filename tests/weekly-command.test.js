@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { weeklyCommand } from "../src/bot/commands/weekly.command.js";
+import { UI_EMOJIS } from "../src/bot/ui/emojis.js";
 
 test("weekly command sends one compact reward line", async () => {
   const replies = [];
@@ -26,6 +27,10 @@ test("weekly command sends one compact reward line", async () => {
 
   await weeklyCommand.execute(interaction, { services });
 
-  assert.equal(replies[0].content, "You received 3,500 Gold and 250 Shards, and 1,000 XP.");
+  assert.equal(
+    replies[0].content,
+    `You received ${UI_EMOJIS.gold.mention} 3,500 Gold and ` +
+      `${UI_EMOJIS.shard.mention} 250 Shards, and 1,000 XP.`,
+  );
   assert.deepEqual(replies[0].embeds, []);
 });

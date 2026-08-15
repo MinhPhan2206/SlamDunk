@@ -39,7 +39,7 @@ test("approved Drop and Standard Pack economy configuration is exact", () => {
   );
 
   assert.equal(standard.priceCurrency, "GOLD");
-  assert.equal(standard.priceAmount, 3_000);
+  assert.equal(standard.priceAmount, 5_000);
   assert.equal(standard.cardCount, 3);
   assert.ok(Math.abs(dropOdds.get("ALPHA") - 0.075132) < 1e-9);
   assert.ok(Math.abs(dropOdds.get("GOAT") - 0.0000833) < 1e-9);
@@ -57,7 +57,7 @@ test("Super Pack costs Shards and only rolls Alpha or higher", () => {
   );
 
   assert.equal(superPack.priceCurrency, "SHARDS");
-  assert.equal(superPack.priceAmount, 1_300);
+  assert.equal(superPack.priceAmount, 2_000);
   assert.equal(superPack.cardCount, 1);
   assert.equal(odds.get("BASE"), 0);
   assert.ok(Math.abs(odds.get("ALPHA") - 75) < 1e-9);
