@@ -3696,22 +3696,6 @@
     "packable": true
   },
   {
-    "playerName": "Trey Lyles",
-    "primaryPosition": "PF",
-    "secondaryPosition": "C",
-    "rarityCode": "BASE",
-    "overall": 64,
-    "finishing": 70,
-    "midRange": 64,
-    "threePoint": 69,
-    "playmaking": 53,
-    "perimeterDefense": 55,
-    "interiorDefense": 61,
-    "strength": 76,
-    "heightCm": 206,
-    "packable": true
-  },
-  {
     "playerName": "Dalton Knecht",
     "primaryPosition": "SG",
     "secondaryPosition": "SF",
@@ -3789,22 +3773,6 @@
     "interiorDefense": 70,
     "strength": 81,
     "heightCm": 206,
-    "packable": true
-  },
-  {
-    "playerName": "Malaki Branham",
-    "primaryPosition": "SG",
-    "secondaryPosition": "SF",
-    "rarityCode": "BASE",
-    "overall": 62,
-    "finishing": 77,
-    "midRange": 63,
-    "threePoint": 66,
-    "playmaking": 47,
-    "perimeterDefense": 62,
-    "interiorDefense": 58,
-    "strength": 63,
-    "heightCm": 193,
     "packable": true
   },
   {

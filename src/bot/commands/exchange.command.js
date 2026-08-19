@@ -19,6 +19,7 @@ export const exchangeCommand = Object.freeze({
       playerId: player.playerId,
       shardBalance: wallet.shardBalance,
       offers: services.exchange.listOffers(item),
+      maximumQuantity: services.exchange.maximumQuantity,
     }));
   },
 });

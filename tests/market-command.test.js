@@ -80,7 +80,7 @@ test("market sell command opens button controls defaulting to 12 hours", async (
   assert.equal(replies[0].type, "defer");
   assert.equal(replies[1].type, "edit");
   const payload = replies[1].payload;
-  assert.match(payload.embeds[0].toJSON().description, /Expires.*12 hours/s);
+  assert.equal(payload.embeds[0].toJSON().fields[1].value, "12 hours");
   assert.equal(payload.components[0].components.length, 5);
   assert.equal(
     payload.components[0].components[0].data.custom_id,
@@ -103,7 +103,7 @@ test("market sell buttons adjust duration and confirm the timed listing", async 
   }, {
     services: { cardView: { async getInstance() { return card; } } },
   });
-  assert.match(adjusted.embeds[0].toJSON().description, /Expires.*1 day/s);
+  assert.equal(adjusted.embeds[0].toJSON().fields[1].value, "1 day");
   assert.match(
     adjusted.components[0].components[3].data.custom_id,
     /:3$/,
@@ -159,7 +159,7 @@ test("market browse command displays active listings", async () => {
               publicCardId: "123456789",
               priceGold: "500",
               sellerName: "Seller",
-              playerName: "Test Guard",
+              playerName: "Tyrese Haliburton",
               rarityCode: "COMMON",
               serialNumber: "3",
               cardLevel: 4,
@@ -177,8 +177,10 @@ test("market browse command displays active listings", async () => {
   await marketCommand.execute(interaction, { services });
 
   const embed = replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.description, /Test Guard/);
-  assert.match(embed.description, /500 Gold/);
+  assert.match(embed.description, /T\. Haliburton/);
+  assert.match(embed.description, /500/);
+  assert.match(embed.description, /!123456789/);
+  assert.doesNotMatch(embed.description, /\+-+/);
   assert.doesNotMatch(embed.description, /Seller|#9/);
   const buttons = replies[1].payload.components[0].components;
   assert.equal(buttons.length, 2);
@@ -191,7 +193,7 @@ test("buy and unlist resolve an active listing by public Card ID", async () => {
     [buyCommand, "buyListing", "buyerPlayerId"],
     [unlistCommand, "cancelListing", "sellerPlayerId"],
   ]) {
-    const { interaction } = createInteraction(null, { card_id: "!123456789" });
+    const { interaction, replies } = createInteraction(null, { card_id: "!123456789" });
     const services = {
       player: playerService,
       market: {
@@ -213,11 +215,20 @@ test("buy and unlist resolve an active listing by public Card ID", async () => {
                   publicCardId: "123456789",
                   playerName: "Test Guard",
                   rarityCode: "COMMON",
+                  cardLevel: 2,
                 },
               };
         },
       },
     };
     await command.execute(interaction, { services });
+    const description = replies[1].payload.embeds[0].toJSON().description;
+    assert.match(description, /Test Guard/);
+    assert.match(description, /!123456789/);
+    assert.doesNotMatch(description, /undefined/);
+    assert.doesNotMatch(description, /Â/);
+    if (serviceMethod === "cancelListing") {
+      assert.match(description, /\*\*Test Guard\*\* \u00B7 Common \u00B7 Lv\.2/);
+    }
   }
 });

@@ -28,10 +28,21 @@ function optionalUrl(name) {
   return url.toString();
 }
 
+function commandPrefix() {
+  const value = process.env.COMMAND_PREFIX?.trim().toLowerCase() || "dunk";
+  if (!/^[a-z][a-z0-9_-]{0,15}$/.test(value)) {
+    throw new Error(
+      "COMMAND_PREFIX must contain 1-16 lowercase letters, numbers, underscores, or hyphens.",
+    );
+  }
+  return value;
+}
+
 export function getApplicationRuntimeConfig() {
   return Object.freeze({
     discordToken: requireEnvironmentVariable("DISCORD_TOKEN"),
     communityInviteUrl: optionalUrl("DISCORD_COMMUNITY_INVITE_URL"),
+    commandPrefix: commandPrefix(),
     ...getDatabaseConfig(),
   });
 }

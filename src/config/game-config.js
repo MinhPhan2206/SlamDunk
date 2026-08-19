@@ -95,7 +95,8 @@ export const gameConfig = Object.freeze({
     maximumShards: 300,
   }),
   exchange: Object.freeze({
-    shard: Object.freeze({
+      maximumQuantity: 100,
+      shard: Object.freeze({
       levelUpCost: 1_500,
       levelUpQuantity: 1,
     }),
@@ -139,9 +140,59 @@ export const gameConfig = Object.freeze({
     actionHistoryLimit: 6,
     repetitionPenaltyAfter: 3,
     repetitionPenaltyMultiplier: 0.65,
-    // Temporary playtest override. The approved production cooldown is 60 minutes.
-    cooldownSeconds: 10,
-    winXp: 150,
+    cooldownSeconds: 60 * 60,
+      practice: Object.freeze({
+        cooldownSeconds: 10,
+      candidatePoolSize: 20,
+      beamWidth: 100,
+      rookiePowerThreshold: 67,
+      rookieAiStatAdjustment: -6,
+      streetPowerBands: Object.freeze([
+        Object.freeze({ maximumPower: 67, powerOffset: -10 }),
+        Object.freeze({ maximumPower: 75, powerOffset: -14 }),
+        Object.freeze({ maximumPower: 1_000, powerOffset: -17 }),
+      ]),
+      bracketRules: Object.freeze([
+        Object.freeze({
+          code: "street",
+          aiLevelDelta: -1,
+          minimumAiLevel: 1,
+          maximumAiLevel: 5,
+          traitCapBasisPoints: 6_000,
+          balancedAi: true,
+        }),
+        Object.freeze({
+          code: "pro",
+          aiLevelDelta: 0,
+          minimumAiLevel: 1,
+          maximumAiLevel: 5,
+          powerOffset: -7,
+          traitCapBasisPoints: 8_000,
+          balancedAi: false,
+        }),
+        Object.freeze({
+          code: "all-star",
+          aiLevelDelta: 1,
+          minimumAiLevel: 1,
+          maximumAiLevel: 5,
+          powerOffset: -3,
+          traitCapBasisPoints: 9_500,
+          balancedAi: false,
+        }),
+        Object.freeze({
+          code: "legend",
+          fixedAiLevel: 5,
+          powerOffset: 2,
+          traitCapBasisPoints: 12_000,
+          balancedAi: false,
+        }),
+        ]),
+      }),
+      duel: Object.freeze({
+        cooldownSeconds: 10,
+        invitationSeconds: 60,
+      }),
+      winXp: 150,
     lossXp: 50,
     lossBaseGold: 250,
     lossPointGold: 15,
@@ -160,7 +211,7 @@ export const gameConfig = Object.freeze({
         aiRatingOffset: -5,
         rewardMultiplierBasisPoints: 8_500,
       }),
-      Object.freeze({
+        Object.freeze({
         code: "pro",
         displayName: "Pro",
         minimumLineupStrength: 70,

@@ -1,60 +1,90 @@
+import { formatRarity } from "../../config/rarity-config.js";
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-} from "discord.js";
-import { formatCardLine } from "../ui/formatters.js";
+  createPaginationRow,
+  createUiEmbed,
+  pageFooter,
+} from "../ui/presentation.js";
+import { formatCompactPlayerName } from "../ui/player-name.js";
+import { compactCodeTable } from "../ui/text-table.js";
 import { UI_COLORS } from "../ui/theme.js";
+
+const COLUMNS = Object.freeze([
+  { label: "#", width: 2, align: "right" },
+  { label: "PLAYER", width: 15, align: "left" },
+  { label: "RARITY", width: 9, align: "left" },
+  { label: "POS", width: 5, align: "left" },
+  { label: "LV", width: 2, align: "right" },
+  { label: "CARD ID", width: 10, align: "right" },
+  { label: "L", width: 1, align: "left" },
+]);
+
+function positions(card) {
+  return [card.primaryPosition, card.secondaryPosition]
+    .filter(Boolean)
+    .join("/");
+}
+
+function collectionRows(cards) {
+  return cards.map((card) => [
+    card.collectionPosition,
+    formatCompactPlayerName(card.playerName),
+    formatRarity(card.rarityCode),
+    positions(card),
+    card.cardLevel,
+    `!${card.publicCardId}`,
+    card.userLock ? "Y" : "—",
+  ]);
+}
 
 export function createCollectionEmbed(
   result,
-  { title = "Your Collection", thumbnailUrl } = {},
+  {
+    title = "Your Collection",
+    requesterLine = null,
+    requesterIconUrl = null,
+  } = {},
 ) {
-  const embed = new EmbedBuilder()
-    .setColor(UI_COLORS.primary)
-    .setTitle(title);
-  if (thumbnailUrl) embed.setThumbnail(thumbnailUrl);
-  if (result.cards.length === 0) {
-    embed.setDescription(
-      title === "Your Collection"
-        ? "You do not own any active cards yet. Use `/drop` or `/pack` to get started."
-        : "This Player does not own any active cards yet.",
-    );
-  } else {
-    embed.setDescription(result.cards.map((card) =>
-      formatCardLine(card, { position: card.collectionPosition })
-    ).join("\n"));
-  }
-  return embed.setFooter({
-    text: `Page ${result.page}/${Math.max(result.totalPages, 1)} • ` +
-      `${result.total} Cards • Sort: ${result.sortLabel}`,
-  });
+  const embed = createUiEmbed({ title: title.toUpperCase(), color: UI_COLORS.primary })
+    .setDescription(
+      result.cards.length === 0
+        ? (title === "Your Collection"
+          ? "No active Cards yet. Use `/drop` or `/pack` to get started."
+          : "This Player does not own any active Cards yet.")
+        : `Sorted by **${result.sortLabel}**.\n\n${compactCodeTable(COLUMNS, collectionRows(result.cards))}`,
+    )
+    .setFooter({
+      text: pageFooter({
+        page: result.page,
+        totalPages: result.totalPages,
+        requesterLine,
+      }),
+      ...(requesterIconUrl ? { iconURL: requesterIconUrl } : {}),
+    });
+  return embed;
 }
 
 export function createCollectionPayload(
   result,
-  { discordUserId, playerId, title = "Your Collection", thumbnailUrl },
+  {
+    discordUserId,
+    playerId,
+    title = "Your Collection",
+    requesterLine = null,
+    requesterIconUrl = null,
+  },
 ) {
-  const components = [];
-  if (result.totalPages > 1) {
-    components.push(
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`collection-page:${discordUserId}:${playerId}:${result.page - 1}`)
-          .setEmoji("◀️")
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(result.page <= 1),
-        new ButtonBuilder()
-          .setCustomId(`collection-page:${discordUserId}:${playerId}:${result.page + 1}`)
-          .setEmoji("▶️")
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(result.page >= result.totalPages),
-      ),
-    );
-  }
+  const pagination = createPaginationRow({
+    previousCustomId: `collection-page:${discordUserId}:${playerId}:${result.page - 1}`,
+    nextCustomId: `collection-page:${discordUserId}:${playerId}:${result.page + 1}`,
+    page: result.page,
+    totalPages: result.totalPages,
+  });
   return {
-    embeds: [createCollectionEmbed(result, { title, thumbnailUrl })],
-    components,
+    embeds: [createCollectionEmbed(result, {
+      title,
+      requesterLine,
+      requesterIconUrl,
+    })],
+    components: pagination ? [pagination] : [],
   };
 }

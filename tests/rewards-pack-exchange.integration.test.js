@@ -44,7 +44,7 @@ test("Daily, Standard Pack, and Shard exchange update resources atomically", asy
     const playerId = row.rows[0].player_id;
     await economy.ensureWallet(playerId, { database });
     await economy.credit({ playerId, currency: "GOLD", amount: 5000, transactionType: "TEST", idempotencyKey: `resource:${run}:gold` }, { database });
-    await economy.credit({ playerId, currency: "SHARDS", amount: 4000, transactionType: "TEST", idempotencyKey: `resource:${run}:shards` }, { database });
+    await economy.credit({ playerId, currency: "SHARDS", amount: 7000, transactionType: "TEST", idempotencyKey: `resource:${run}:shards` }, { database });
 
     const daily = await reward.dailyReward({ playerId, interactionId: `931${run}` }, { database });
     assert.equal(daily.rewardGold, "1500");
@@ -70,9 +70,10 @@ test("Daily, Standard Pack, and Shard exchange update resources atomically", asy
     assert.equal(superOpened.pack.priceAmount, 2000);
     assert.equal(superOpened.cards.length, 1);
 
-    const exchanged = await exchange.exchange({ playerId, offerCode: "level_up", interactionId: `933${run}` }, { database });
-    assert.equal(exchanged.offer.inputAmount, 1500);
-    assert.equal(exchanged.itemQuantity, 1);
+    const exchanged = await exchange.exchange({ playerId, offerCode: "level_up", quantity: 2, interactionId: `933${run}` }, { database });
+    assert.equal(exchanged.offer.inputAmount, 3000);
+    assert.equal(exchanged.offer.outputQuantity, 2);
+    assert.equal(exchanged.itemQuantity, 2);
   } finally {
     await database.query("ROLLBACK");
     database.release();

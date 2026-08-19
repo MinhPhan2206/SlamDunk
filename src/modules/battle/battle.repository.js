@@ -54,6 +54,7 @@ export const battleRepository = Object.freeze({
       rulesetVersion,
       configVersion,
       inputSnapshot,
+      mode = "PVE_5V5",
     },
   ) {
     const result = await database.query(
@@ -69,13 +70,14 @@ export const battleRepository = Object.freeze({
           config_version,
           input_snapshot
         )
-        VALUES ($1, $2, $3, 'PVE_5V5', $4, $5, $6, $7, $8::jsonb)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
         RETURNING *
       `,
       [
         playerId,
         publicMatchId,
         interactionId,
+        mode,
         rngSeed,
         engineVersion,
         rulesetVersion,

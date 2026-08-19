@@ -1,7 +1,13 @@
-import { EmbedBuilder } from "discord.js";
 import { getPlayerLevelProgress } from "../../modules/player/index.js";
 import { formatNumber } from "../ui/formatters.js";
+import { createUiEmbed } from "../ui/presentation.js";
 import { UI_COLORS } from "../ui/theme.js";
+
+function progressBar(current, required, width = 10) {
+  if (required <= 0) return "█".repeat(width);
+  const filled = Math.max(0, Math.min(width, Math.round((current / required) * width)));
+  return `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
+}
 
 export function createProfileEmbed({
   player,
@@ -9,24 +15,24 @@ export function createProfileEmbed({
   thumbnailUrl,
 }) {
   const progress = getPlayerLevelProgress(player.xp);
-  const embed = new EmbedBuilder()
-    .setColor(UI_COLORS.primary)
-    .setTitle(`${displayName}'s Profile`)
+  const embed = createUiEmbed({ title: "PLAYER PROFILE", color: UI_COLORS.primary })
+    .setAuthor({ name: displayName })
     .setDescription(
-      `**Level ${progress.playerLevel}** · ` +
+      `**LEVEL ${progress.playerLevel}**\n` +
+      `\`${progressBar(progress.xpIntoLevel, progress.xpRequired)}\` ` +
       `${formatNumber(progress.xpIntoLevel)} / ${formatNumber(progress.xpRequired)} XP`,
     )
     .addFields(
       {
-        name: "Record",
-        value: `W-L: **${formatNumber(player.gamesWon)}-${formatNumber(player.gamesLost)}**\n` +
-          `Total Games: **${formatNumber(player.gamesPlayed)}**`,
+        name: "RECORD",
+        value: `W-L · **${formatNumber(player.gamesWon)}-${formatNumber(player.gamesLost)}**\n` +
+          `Total Games · **${formatNumber(player.gamesPlayed)}**`,
         inline: true,
       },
       {
-        name: "Win Streak",
-        value: `Current: **${formatNumber(player.currentWinStreak)}**\n` +
-          `Best: **${formatNumber(player.highestWinStreak)}**`,
+        name: "WIN STREAK",
+        value: `Current · **${formatNumber(player.currentWinStreak)}**\n` +
+          `Best · **${formatNumber(player.highestWinStreak)}**`,
         inline: true,
       },
     );

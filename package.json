@@ -11,6 +11,8 @@
     "db:seed:cards": "node scripts/seed-card-catalog.js",
     "db:replace:cards": "node scripts/replace-card-catalog.js",
     "admin:grant-level-up": "node scripts/grant-level-up-items.js",
+    "admin:grant-gold-all": "node scripts/grant-gold-to-all.js",
+    "admin:grant-resources-all": "node scripts/grant-resources-to-all.js",
     "admin:grant-cards": "node scripts/grant-cards.js",
     "test": "node --test"
   },

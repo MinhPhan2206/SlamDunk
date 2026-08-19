@@ -56,6 +56,17 @@ const JOINED_TEMPLATES = `
   JOIN rarities r ON r.rarity_id = ct.rarity_id
 `;
 
+const RARITY_SORT_EXPRESSIONS = Object.freeze({
+  alphabet: "player_name ASC, card_template_id ASC",
+  finishing: "finishing DESC, player_name ASC, card_template_id ASC",
+  mid_range: "mid_range DESC, player_name ASC, card_template_id ASC",
+  three_point: "three_point DESC, player_name ASC, card_template_id ASC",
+  playmaking: "playmaking DESC, player_name ASC, card_template_id ASC",
+  interior_defense: "interior_defense DESC, player_name ASC, card_template_id ASC",
+  perimeter_defense: "perimeter_defense DESC, player_name ASC, card_template_id ASC",
+  strength: "strength DESC, player_name ASC, card_template_id ASC",
+});
+
 export const cardTemplateRepository = Object.freeze({
   async findPackable(database) {
     const result = await database.query(
@@ -69,16 +80,26 @@ export const cardTemplateRepository = Object.freeze({
     return result.rows.map(mapCardTemplate);
   },
 
-  async findByRarityCode(database, rarityCode, limit) {
+  async findByRarityCode(
+    database,
+    { rarityCode, position, sortBy, limit, offset },
+  ) {
+    const orderBy = RARITY_SORT_EXPRESSIONS[sortBy];
+    if (!orderBy) throw new TypeError("Unsupported Card Template sort.");
     const result = await database.query(
       `
         SELECT ${CARD_TEMPLATE_COLUMNS}, COUNT(*) OVER() AS total_count
         FROM (${JOINED_TEMPLATES}) card_templates
         WHERE rarity_code = $1
-        ORDER BY overall DESC, player_name, card_template_id
-        LIMIT $2
+          AND (
+            $2::TEXT IS NULL
+            OR primary_position = $2
+            OR secondary_position = $2
+          )
+        ORDER BY ${orderBy}
+        LIMIT $3 OFFSET $4
       `,
-      [rarityCode, limit],
+      [rarityCode, position, limit, offset],
     );
     return Object.freeze({
       templates: result.rows.map(mapCardTemplate),

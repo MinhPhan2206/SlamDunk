@@ -17,7 +17,7 @@ const EXPECTED_RARITY_COUNTS = Object.freeze({
   ALPHA: 36,
   UNCOMMON: 44,
   COMMON: 76,
-  BASE: 88,
+  BASE: 86,
 });
 
 function catalogKey(entry) {
@@ -33,12 +33,17 @@ test("official Card and Trait catalogs stay aligned", async () => {
   const templateKeys = new Set(templates.map(catalogKey));
   const profileKeys = new Set(profiles.map(catalogKey));
 
-  assert.equal(templates.length, 277);
+  assert.equal(templates.length, 275);
   assert.equal(profiles.length, templates.length);
   assert.equal(templateKeys.size, templates.length);
   assert.deepEqual(profileKeys, templateKeys);
   assert.ok(!templates.some(({ playerName }) =>
-    ["Dalano Banton", "Dariq Whitehead"].includes(playerName)
+    [
+      "Dalano Banton",
+      "Dariq Whitehead",
+      "Trey Lyles",
+      "Malaki Branham",
+    ].includes(playerName)
   ));
 
   const rarityCounts = Object.fromEntries(

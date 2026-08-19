@@ -226,6 +226,7 @@ function createGameEmbeds(
   result,
   {
     ownerDisplayName,
+    opponentDisplayName,
     timeline,
     revealedLines,
     tickMilliseconds,
@@ -241,35 +242,50 @@ function createGameEmbeds(
     result,
     completedEvents(result, timeline, revealedLines),
   );
+  const practice = result.match.mode === "PRACTICE_5V5";
+  const duel = result.match.mode === "PVP_FRIENDLY_5V5";
+  const opponentName = opponentDisplayName ??
+    result.match.inputSnapshot?.opponentDisplayName ??
+    (practice ? "Practice Opponent" : "AI Challenge");
   const lineupEmbed = new EmbedBuilder()
     .setColor(leadingTeamColor(score))
-    .setTitle("Your Matchup");
+    .setTitle(duel ? "Player Matchup" : "Your Matchup");
   if (hasMatchupImage) {
     lineupEmbed.setImage(`attachment://${MATCHUP_IMAGE_NAME}`);
   }
   const gameEmbed = new EmbedBuilder()
     .setColor(leadingTeamColor(score))
-    .setTitle(`Game · ${ownerDisplayName} vs AI Challenge`)
+    .setTitle(`Game · ${ownerDisplayName} vs ${opponentName}`)
     .setDescription(
       playLines(visibleLines.slice(-9), "Tip-off is about to begin..."),
     )
     .addFields(
       {
         name: "TOTAL SCORE",
-        value: `🏀 **[ ${ownerDisplayName} ${score[1]}  -  ${score[2]} AI Challenge ]**`,
+        value: `🏀 **[ ${ownerDisplayName} ${score[1]}  -  ${score[2]} ${opponentName} ]**`,
       },
       {
         name: `🔸 TEAM 1 · ${ownerDisplayName}`,
         value: liveTeamLines(liveStats[1]),
       },
       {
-        name: "🔹 TEAM 2 · AI Challenge",
+        name: `🔹 TEAM 2 · ${opponentName}`,
         value: liveTeamLines(liveStats[2]),
       },
     );
   if (completed) {
     gameEmbed.setFooter({
-      text: `Game complete${simulated ? " (simulated)" : ""} - GAME STATS sent separately`,
+      text: practice
+        ? `Practice complete${simulated ? " (simulated)" : ""} - no rewards or record changes`
+        : duel
+          ? `Friendly Duel complete${simulated ? " (simulated)" : ""} - no rewards, XP, or Battle streak changes`
+        : `Game complete${simulated ? " (simulated)" : ""} - GAME STATS sent separately`,
+    });
+  } else if (practice || duel) {
+    gameEmbed.setFooter({
+      text: practice
+        ? "Practice - no rewards or record changes"
+        : "Friendly Duel - no rewards, XP, or Battle streak changes",
     });
   }
   return [lineupEmbed, gameEmbed];
@@ -280,23 +296,32 @@ export function createBattleLivePayload(
   {
     ownerDiscordUserId,
     ownerDisplayName = "Your Team",
+    opponentDisplayName,
     timeline = createBattleTimeline(result.match.playByPlay),
     revealedLines = 0,
     tickMilliseconds = 2_000,
     simulateDisabled = false,
     hasMatchupImage = false,
+    componentNamespace = "battle",
+    simulateVotes = 0,
+    simulateVotesRequired = 1,
   },
 ) {
   const matchId = publicMatchId(result);
   const button = new ButtonBuilder()
-    .setCustomId(`battle:simulate:${matchId}:${ownerDiscordUserId}`)
-    .setLabel("Simulate")
+    .setCustomId(componentNamespace === "duel"
+      ? `duel:simulate:${matchId}`
+      : `battle:simulate:${matchId}:${ownerDiscordUserId}`)
+    .setLabel(componentNamespace === "duel"
+      ? `Simulate (${simulateVotes}/${simulateVotesRequired})`
+      : "Simulate")
     .setStyle(ButtonStyle.Primary)
     .setDisabled(simulateDisabled);
   return {
     content: `\`${matchId}\``,
     embeds: createGameEmbeds(result, {
       ownerDisplayName,
+      opponentDisplayName,
       timeline,
       revealedLines,
       tickMilliseconds,
@@ -311,6 +336,7 @@ export function createBattleGameCompletePayload(
   {
     simulated = false,
     ownerDisplayName = "Your Team",
+    opponentDisplayName,
     timeline = createBattleTimeline(result.match.playByPlay),
     tickMilliseconds = 2_000,
     hasMatchupImage = false,
@@ -320,6 +346,7 @@ export function createBattleGameCompletePayload(
     content: `\`${publicMatchId(result)}\``,
     embeds: createGameEmbeds(result, {
       ownerDisplayName,
+      opponentDisplayName,
       timeline,
       revealedLines: timeline.length,
       tickMilliseconds,

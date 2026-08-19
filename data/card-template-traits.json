@@ -7356,16 +7356,6 @@
   },
   {
     "rarityCode": "BASE",
-    "playerName": "Trey Lyles",
-    "traits": [
-      {
-        "traitCode": "GLASS_CLEANER",
-        "traitTier": 1
-      }
-    ]
-  },
-  {
-    "rarityCode": "BASE",
     "playerName": "Dalton Knecht",
     "traits": [
       {
@@ -7407,16 +7397,6 @@
     "rarityCode": "BASE",
     "playerName": "Taylor Hendricks",
     "traits": []
-  },
-  {
-    "rarityCode": "BASE",
-    "playerName": "Malaki Branham",
-    "traits": [
-      {
-        "traitCode": "MIDRANGE_ASSASSIN",
-        "traitTier": 1
-      }
-    ]
   },
   {
     "rarityCode": "BASE",

@@ -1,10 +1,10 @@
-import { EmbedBuilder } from "discord.js";
 import {
   formatRarity,
   getRarityDefinition,
 } from "../../config/rarity-config.js";
 import { createCardStripImage } from "../ui/card-strip-image.js";
 import { formatCurrency, formatPositions } from "../ui/formatters.js";
+import { createUiEmbed } from "../ui/presentation.js";
 import { rarityColor } from "../ui/theme.js";
 
 const PACK_IMAGE_NAME = "pack-result.png";
@@ -25,9 +25,11 @@ export async function createPackOpeningPayload(result) {
     cards.map((card) => card.template),
   );
   return {
-    embeds: [new EmbedBuilder()
-      .setColor(rarityColor(highestRarityCard.template.rarityCode))
-      .setTitle(`${pack.displayName} Result`)
+    embeds: [createUiEmbed({
+      title: "PACK OPENED",
+      color: rarityColor(highestRarityCard.template.rarityCode),
+    })
+      .setAuthor({ name: pack.displayName })
       .setDescription(
         cards.map(({ template, instance }, index) =>
           `**${index + 1}. ${template.playerName}** • ${formatRarity(template.rarityCode)} • ` +

@@ -5,6 +5,8 @@ import { createBattlePlayback } from "./bot/battle/battle-playback.js";
 import { commands } from "./bot/commands/index.js";
 import { components } from "./bot/components/index.js";
 import { createInteractionCreateHandler } from "./bot/events/interaction-create.event.js";
+import { createMessageCreateHandler } from "./bot/events/message-create.event.js";
+import { createPrefixCommandRegistry } from "./bot/prefix/prefix-command-registry.js";
 import { createStrategyDraftStore } from "./bot/strategy/strategy-draft-store.js";
 import { gameConfig } from "./config/game-config.js";
 import {
@@ -33,7 +35,12 @@ import { createExchangeService } from "./modules/exchange/index.js";
 import { createInventoryService } from "./modules/inventory/index.js";
 import { createOnboardingService } from "./modules/onboarding/index.js";
 
-export function createApplication({ discordToken, databaseUrl, communityInviteUrl }) {
+export function createApplication({
+  discordToken,
+  databaseUrl,
+  communityInviteUrl,
+  commandPrefix = "dunk",
+}) {
   const client = createDiscordClient();
   const databasePool = createPostgresPool({ connectionString: databaseUrl });
   const economyService = createEconomyService({ databasePool });
@@ -160,6 +167,13 @@ export function createApplication({ discordToken, databaseUrl, communityInviteUr
   const componentRegistry = new Map(
     components.map((component) => [component.namespace, component]),
   );
+  const prefixCommandRegistry = createPrefixCommandRegistry(commands);
+  const commandContext = Object.freeze({
+    services,
+    battlePlayback,
+    strategyDrafts,
+    communityInviteUrl,
+  });
   let isStopped = false;
   let marketExpirationTimer = null;
 
@@ -179,9 +193,17 @@ export function createApplication({ discordToken, databaseUrl, communityInviteUr
     Events.InteractionCreate,
     createInteractionCreateHandler(
       commandRegistry,
-      { services, battlePlayback, strategyDrafts, communityInviteUrl },
+      commandContext,
       componentRegistry,
     ),
+  );
+  client.on(
+    Events.MessageCreate,
+    createMessageCreateHandler({
+      prefix: commandPrefix,
+      registry: prefixCommandRegistry,
+      context: commandContext,
+    }),
   );
 
   return Object.freeze({

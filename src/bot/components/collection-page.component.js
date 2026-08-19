@@ -1,6 +1,7 @@
 import { MessageFlags } from "discord.js";
 
 import { createCollectionPayload } from "../presenters/collection.presenter.js";
+import { requesterContextFromEmbed } from "../ui/presentation.js";
 
 export const collectionPageComponent = Object.freeze({
   namespace: "collection-page",
@@ -20,14 +21,14 @@ export const collectionPageComponent = Object.freeze({
       playerId,
       page: Number(pageValue),
     });
-    const title = interaction.message?.embeds?.[0]?.title ?? "Your Collection";
-    const thumbnailUrl = interaction.message?.embeds?.[0]?.thumbnail?.url;
+    const currentEmbed = interaction.message?.embeds?.[0];
+    const title = currentEmbed?.title ?? "YOUR COLLECTION";
     await interaction.editReply(
       createCollectionPayload(result, {
         discordUserId: viewerDiscordUserId,
         playerId,
         title,
-        thumbnailUrl,
+        ...requesterContextFromEmbed(currentEmbed),
       }),
     );
   },

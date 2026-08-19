@@ -1,7 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { packCommand } from "../src/bot/commands/pack.command.js";
 import { createPackOpeningPayload } from "../src/bot/presenters/pack.presenter.js";
+
+test("Pack command displays the current configured prices", () => {
+  const choices = packCommand.data.toJSON().options[0].choices.map(
+    ({ name, value }) => ({ name, value }),
+  );
+  assert.deepEqual(choices, [
+    { name: "Standard Pack (5,000 Gold)", value: "standard" },
+    { name: "Super Pack (2,000 Shards)", value: "super" },
+  ]);
+});
 
 test("Pack result uses Card artwork and omits OVR and Serial", async () => {
   const payload = await createPackOpeningPayload({

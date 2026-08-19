@@ -38,6 +38,6 @@ test("trade command creates an interactive Direct Trade", async () => {
 
   assert.equal(replies[0], "defer");
   assert.equal(replies[1].components[0].components.length, 2);
-  assert.equal(replies[1].embeds[0].toJSON().title, "Trade Invitation");
+  assert.equal(replies[1].embeds[0].toJSON().title, "TRADE INVITATION");
   assert.equal(tradeCommand.componentInactivityTimeoutMs, 180_000);
 });

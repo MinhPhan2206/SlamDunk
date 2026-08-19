@@ -162,4 +162,28 @@ export const traitRepository = Object.freeze({
 
     return result.rows.map(mapTemplateTrait);
   },
+
+  async findByCardTemplateIds(database, cardTemplateIds) {
+    if (cardTemplateIds.length === 0) return [];
+    const result = await database.query(
+      `
+        SELECT
+          ctt.card_template_id,
+          td.trait_id,
+          td.trait_code,
+          td.trait_name,
+          td.trait_type,
+          td.description,
+          ctt.trait_tier,
+          td.active,
+          ctt.created_at
+        FROM card_template_traits ctt
+        JOIN trait_definitions td ON td.trait_id = ctt.trait_id
+        WHERE ctt.card_template_id = ANY($1::BIGINT[])
+        ORDER BY ctt.card_template_id, td.trait_code
+      `,
+      [cardTemplateIds],
+    );
+    return result.rows.map(mapTemplateTrait);
+  },
 });

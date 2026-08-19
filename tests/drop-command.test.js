@@ -74,7 +74,7 @@ test("drop command displays three persisted choices", async () => {
   assert.equal(replies[1].payload.files[0].attachment.readUInt32BE(16), 800);
   assert.equal(
     replies[1].payload.embeds[0].toJSON().footer.text,
-    "20 Seconds • Timeout Selects Card 1",
+    "Choose within 20 seconds · Card 1 is selected on timeout",
   );
 });
 

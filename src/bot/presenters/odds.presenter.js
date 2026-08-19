@@ -1,4 +1,5 @@
-import { EmbedBuilder } from "discord.js";
+import { createUiEmbed } from "../ui/presentation.js";
+import { codeTable } from "../ui/text-table.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 function formatProbability(probabilityPercent) {
@@ -7,14 +8,14 @@ function formatProbability(probabilityPercent) {
 }
 
 export function createOddsEmbed(result) {
-  return new EmbedBuilder()
-    .setColor(UI_COLORS.secondary)
-    .setTitle(`${result.displayName} Odds`)
-    .setDescription(
-      `\`\`\`text\n${"RARITY".padEnd(14)}${"ODDS".padStart(10)}\n` +
-      `${"-".repeat(24)}\n` +
-      result.odds.map((entry) =>
-        `${entry.name.padEnd(14)}${formatProbability(entry.probabilityPercent).padStart(10)}`
-      ).join("\n") + "\n```",
-    );
+  return createUiEmbed({
+    title: `${result.displayName.toUpperCase()} ODDS`,
+    color: UI_COLORS.secondary,
+  }).setDescription(codeTable([
+    { label: "RARITY", width: 14 },
+    { label: "ODDS", width: 11, align: "right" },
+  ], result.odds.map((entry) => [
+    entry.name,
+    formatProbability(entry.probabilityPercent),
+  ])));
 }

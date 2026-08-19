@@ -12,7 +12,7 @@ export const RARITY_COLORS = Object.freeze({
   BASE: 0x94a3b8,
   COMMON: 0x22c55e,
   UNCOMMON: 0x38bdf8,
-  ALPHA: 0xa855f7,
+  ALPHA: 0xf97316,
   ALL_STAR: 0x4f46e5,
   SUPERSTAR: 0x8b5cf6,
   GOAT: 0xdc2626,

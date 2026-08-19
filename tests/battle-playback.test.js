@@ -212,6 +212,21 @@ test("Battle live border follows the team currently leading", () => {
   assert.equal(payload.embeds[1].toJSON().color, 0x3b82f6);
 });
 
+test("Practice playback clearly identifies its opponent and reward-free mode", () => {
+  const result = resultFixture();
+  result.match.mode = "PRACTICE_5V5";
+  result.reward = null;
+  const payload = createBattleLivePayload(result, {
+    ownerDiscordUserId: "99",
+    ownerDisplayName: "Tester",
+  });
+  const game = payload.embeds[1].toJSON();
+
+  assert.equal(game.title, "Game · Tester vs Practice Opponent");
+  assert.match(game.fields[0].value, /Practice Opponent/);
+  assert.equal(game.footer.text, "Practice - no rewards or record changes");
+});
+
 test("Battle Simulate button skips playback and is owner-only", async () => {
   const edits = [];
   const replies = [];
@@ -254,4 +269,54 @@ test("Battle Simulate button skips playback and is owner-only", async () => {
   };
   await battleComponent.execute(unauthorized, { battlePlayback: playback });
   assert.match(replies.at(-1).content, /Only the Battle owner/);
+});
+
+test("Friendly Duel requires both participants to vote before simulation", async () => {
+  const edits = [];
+  const reports = [];
+  const result = resultFixture();
+  result.match.mode = "PVP_FRIENDLY_5V5";
+  result.match.inputSnapshot.opponentDisplayName = "Opponent";
+  result.reward = null;
+  const playback = createBattlePlayback({
+    playbackConfig: {
+      tickMilliseconds: 2_000,
+      linesPerTick: 1,
+      simulateButtonLifetimeMilliseconds: 60_000,
+    },
+    schedule() { return { unref() {} }; },
+    cancel() {},
+    async renderDuelMatchupImage() { return Buffer.from("duel-matchup"); },
+    async renderReportImage() { return Buffer.from("duel-report"); },
+  });
+  const interaction = {
+    async editReply(payload) { edits.push(payload); },
+    async followUp(payload) { reports.push(payload); },
+  };
+  await playback.start({
+    interaction,
+    result,
+    ownerDiscordUserId: "99",
+    ownerDisplayName: "Challenger",
+    opponentDisplayName: "Opponent",
+    simulateVoterDiscordUserIds: ["99", "100"],
+    componentNamespace: "duel",
+  });
+
+  assert.equal(edits[0].embeds[0].toJSON().title, "Player Matchup");
+  assert.equal(edits[0].components[0].components[0].data.label, "Simulate (0/2)");
+  const firstVote = await playback.voteToSimulate(interaction, {
+    matchId: PUBLIC_MATCH_ID,
+    voterDiscordUserId: "99",
+  });
+  assert.equal(firstVote.completed, false);
+  assert.equal(edits.at(-1).components[0].components[0].data.label, "Simulate (1/2)");
+  const secondVote = await playback.voteToSimulate(interaction, {
+    matchId: PUBLIC_MATCH_ID,
+    voterDiscordUserId: "100",
+  });
+  assert.equal(secondVote.completed, true);
+  assert.match(edits.at(-1).embeds[1].toJSON().footer.text, /Friendly Duel complete \(simulated\)/);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].files[0].attachment.toString(), "duel-report");
 });

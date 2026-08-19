@@ -46,3 +46,13 @@ test("Collection sort omits Overall and uses level-adjusted Card stats", () => {
   );
   assert.match(threePoint.orderBy, /ct\.three_point - \(5 - ci\.card_level\)/);
 });
+
+test("every Collection sort uses player name as its secondary ordering", () => {
+  for (const definition of collectionSortDefinitions) {
+    assert.match(
+      definition.orderBy,
+      /(?:LOWER\(ct\.player_name\)|ct\.player_name) ASC/,
+      `${definition.key} must use alphabetical secondary ordering.`,
+    );
+  }
+});

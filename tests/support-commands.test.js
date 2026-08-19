@@ -4,16 +4,24 @@ import test from "node:test";
 import { cooldownsCommand } from "../src/bot/commands/cooldowns.command.js";
 import { rarityCommand } from "../src/bot/commands/rarity.command.js";
 
-function createInteraction({ rarityCode = "ALL_STAR" } = {}) {
+function createInteraction({
+  rarityCode = "ALL_STAR",
+  position = null,
+  sortBy = null,
+} = {}) {
   const replies = [];
 
   return {
     user: { id: "234567890123456789", username: "SupportTester" },
     options: {
       getString(name, required) {
-        assert.equal(name, "rarity");
-        assert.equal(required, true);
-        return rarityCode;
+        if (name === "rarity") {
+          assert.equal(required, true);
+          return rarityCode;
+        }
+        if (name === "position") return position;
+        if (name === "sort_by") return sortBy;
+        throw new Error(`Unexpected option: ${name}`);
       },
     },
     replies,
@@ -97,11 +105,11 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
 
   assert.equal(interaction.replies[0].type, "defer");
   const embed = interaction.replies[1].payload.embeds[0].toJSON();
-  assert.equal(embed.title, "Cooldowns");
-  assert.equal(embed.fields[0].name, "Claim");
-  assert.equal(embed.fields[2].name, "Weekly");
-  assert.equal(embed.fields[3].name, "Free Drop");
-  assert.equal(embed.fields[4].name, "Battle");
+  assert.equal(embed.title, "COOLDOWNS");
+  assert.equal(embed.fields[0].name, "CLAIM");
+  assert.equal(embed.fields[2].name, "WEEKLY");
+  assert.equal(embed.fields[3].name, "FREE DROP");
+  assert.equal(embed.fields[4].name, "BATTLE");
   assert.match(
     embed.fields[0].value,
     new RegExp(`<t:${Math.floor(availableAt.getTime() / 1_000)}:R>`),
@@ -110,12 +118,21 @@ test("cooldowns command reports Claim and Free Drop cooldowns", async () => {
   assert.equal(embed.fields[3].value, "2/2 charges · Ready");
 });
 
-test("rarity command lists Card Templates for the requested rarity", async () => {
-  const interaction = createInteraction({ rarityCode: "GOAT" });
+test("rarity command filters and sorts paginated Card Templates", async () => {
+  const interaction = createInteraction({
+    rarityCode: "GOAT",
+    position: "SG",
+    sortBy: "three_point",
+  });
   const services = {
     cardTemplate: {
-      async listTemplatesByRarity(rarityCode) {
+      async listTemplatesByRarity(rarityCode, options) {
         assert.equal(rarityCode, "GOAT");
+        assert.deepEqual(options, {
+          position: "SG",
+          sortBy: "three_point",
+          page: 1,
+        });
         return {
           rarityCode,
           templates: [
@@ -124,9 +141,15 @@ test("rarity command lists Card Templates for the requested rarity", async () =>
               overall: 99,
               primaryPosition: "SG",
               secondaryPosition: null,
+              threePoint: 99,
             },
           ],
-          total: "1",
+          total: 11,
+          page: 1,
+          totalPages: 2,
+          position: "SG",
+          sortBy: "three_point",
+          sortLabel: "3 Point",
         };
       },
     },
@@ -136,10 +159,14 @@ test("rarity command lists Card Templates for the requested rarity", async () =>
 
   assert.equal(interaction.replies[0].type, "defer");
   const embed = interaction.replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.title, /Goat/);
+  assert.equal(embed.title, "CARD RESULTS");
   assert.match(embed.description, /Test Legend/);
   assert.doesNotMatch(embed.description, /OVR/);
   assert.match(embed.description, /SG/);
+  assert.match(embed.description, /3PT/);
+  assert.match(embed.description, /99/);
+  assert.equal(embed.footer.text, "Page 1 of 2\nRequested by SupportTester");
+  assert.equal(interaction.replies[1].payload.components.length, 1);
 });
 
 test("rarity command explains when a rarity has no Card Templates", async () => {
@@ -147,7 +174,16 @@ test("rarity command explains when a rarity has no Card Templates", async () => 
   const services = {
     cardTemplate: {
       async listTemplatesByRarity() {
-        return { rarityCode: "COMMON", templates: [], total: "0" };
+        return {
+          rarityCode: "COMMON",
+          templates: [],
+          total: 0,
+          page: 1,
+          totalPages: 0,
+          position: null,
+          sortBy: "alphabet",
+          sortLabel: "Alphabetical",
+        };
       },
     },
   };

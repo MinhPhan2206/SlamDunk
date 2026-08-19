@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from "discord.js";
 
 import { createCollectionPayload } from "../presenters/collection.presenter.js";
+import { requesterLine } from "../ui/presentation.js";
 
 export const collectionCommand = Object.freeze({
   data: new SlashCommandBuilder()
@@ -47,7 +48,8 @@ export const collectionCommand = Object.freeze({
         title: viewingSelf
           ? "Your Collection"
           : `${targetUser.globalName ?? targetUser.username}'s Collection`,
-        thumbnailUrl: targetUser.displayAvatarURL?.({ extension: "png", size: 128 }),
+        requesterLine: requesterLine(interaction.user, interaction.member),
+        requesterIconUrl: interaction.user.displayAvatarURL?.({ extension: "png", size: 64 }),
       }),
     );
   },

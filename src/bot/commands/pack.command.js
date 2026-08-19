@@ -3,6 +3,7 @@ import { SlashCommandBuilder } from "discord.js";
 import { gameConfig } from "../../config/game-config.js";
 import { PackError } from "../../modules/pack/index.js";
 import { createPackOpeningPayload } from "../presenters/pack.presenter.js";
+import { formatNumber } from "../ui/formatters.js";
 
 const packTypeOption = (option) => {
   option
@@ -12,7 +13,7 @@ const packTypeOption = (option) => {
   for (const pack of gameConfig.packs) {
     const currency = pack.priceCurrency === "GOLD" ? "Gold" : "Shards";
     option.addChoices({
-      name: `${pack.displayName} (${pack.priceAmount} ${currency})`,
+      name: `${pack.displayName} (${formatNumber(pack.priceAmount)} ${currency})`,
       value: pack.packCode,
     });
   }

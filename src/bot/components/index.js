@@ -10,6 +10,8 @@ import { cardComponent } from "./card.component.js";
 import { strategyComponent } from "./strategy.component.js";
 import { helpComponent } from "./help.component.js";
 import { welcomeComponent } from "./welcome.component.js";
+import { rarityPageComponent } from "./rarity-page.component.js";
+import { duelComponent } from "./duel.component.js";
 
 export const components = Object.freeze([
   dropSelectionComponent,
@@ -20,8 +22,10 @@ export const components = Object.freeze([
   marketPageComponent,
   marketSellComponent,
   battleComponent,
+  duelComponent,
   cardComponent,
   strategyComponent,
   helpComponent,
   welcomeComponent,
+  rarityPageComponent,
 ]);

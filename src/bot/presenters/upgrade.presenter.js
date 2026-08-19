@@ -1,11 +1,9 @@
-import { EmbedBuilder } from "discord.js";
+import { createUiEmbed } from "../ui/presentation.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 export function createFusionEmbed({ sourceCards, resultCard }) {
   const template = sourceCards[0];
-  return new EmbedBuilder()
-    .setColor(UI_COLORS.success)
-    .setTitle("Fusion Complete")
+  return createUiEmbed({ title: "FUSION COMPLETE", color: UI_COLORS.success })
     .setDescription(`**${template.playerName}**`)
     .addFields(
       {
@@ -28,9 +26,7 @@ export function createLevelUpEmbed({
   itemName,
   remainingItems,
 }) {
-  return new EmbedBuilder()
-    .setColor(UI_COLORS.success)
-    .setTitle("Card Upgraded")
+  return createUiEmbed({ title: "UPGRADE COMPLETE", color: UI_COLORS.success })
     .setDescription(`**${card.playerName}**`)
     .addFields(
       { name: "Level", value: `${previousLevel} → ${newLevel}`, inline: true },

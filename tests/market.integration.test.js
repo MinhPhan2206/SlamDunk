@@ -184,6 +184,9 @@ test("Market listing purchase atomically transfers Gold and card ownership", asy
       { database },
     );
     assert.equal(cancellation.listing.status, "CANCELLED");
+    assert.equal(cancellation.listing.playerName, template.playerName);
+    assert.equal(cancellation.listing.publicCardId, secondCard.instance.publicCardId);
+    assert.equal(cancellation.listing.cardLevel, 1);
     const cancelledCard = await cardInstanceService.getInstance(
       secondCard.instance.cardInstanceId,
       { database },

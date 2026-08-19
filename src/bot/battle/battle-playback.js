@@ -7,6 +7,7 @@ import {
 import { createBattleReportImage } from "./battle-report-image.js";
 import { createBattleTimeline } from "./battle-timeline.js";
 import { createMatchupImage } from "./matchup-image.js";
+import { createDuelMatchupImage } from "./duel-matchup-image.js";
 
 function validateConfig(config) {
   for (const field of [
@@ -27,6 +28,7 @@ export function createBattlePlayback({
   cancel = clearTimeout,
   now = Date.now,
   renderMatchupImage = createMatchupImage,
+  renderDuelMatchupImage = createDuelMatchupImage,
   renderReportImage = createBattleReportImage,
 }) {
   const config = validateConfig(playbackConfig);
@@ -37,6 +39,7 @@ export function createBattlePlayback({
       createBattleGameCompletePayload(session.result, {
         simulated,
         ownerDisplayName: session.ownerDisplayName,
+        opponentDisplayName: session.opponentDisplayName,
         timeline: session.timeline,
         tickMilliseconds: config.tickMilliseconds,
         hasMatchupImage: session.hasMatchupImage,
@@ -44,6 +47,7 @@ export function createBattlePlayback({
     );
     const rewardEmbed = createBattleRewardBreakdownEmbed(session.result, {
       ownerDisplayName: session.ownerDisplayName,
+      opponentDisplayName: session.opponentDisplayName,
     });
     try {
       const reportImage = await renderReportImage(session.result, {
@@ -100,11 +104,15 @@ export function createBattlePlayback({
     await session.interaction.editReply(createBattleLivePayload(session.result, {
       ownerDiscordUserId: session.ownerDiscordUserId,
       ownerDisplayName: session.ownerDisplayName,
+      opponentDisplayName: session.opponentDisplayName,
       timeline: session.timeline,
       revealedLines: session.revealedLines,
       tickMilliseconds: config.tickMilliseconds,
       hasMatchupImage: session.hasMatchupImage,
       simulateDisabled: now() >= session.simulateExpiresAt,
+      componentNamespace: session.componentNamespace,
+      simulateVotes: session.simulateVotes.size,
+      simulateVotesRequired: session.simulateVoters.size,
     }));
     if (sessions.get(session.matchId) === session) scheduleNext(session);
   }
@@ -115,6 +123,9 @@ export function createBattlePlayback({
       result,
       ownerDiscordUserId,
       ownerDisplayName = "Your Team",
+      opponentDisplayName,
+      simulateVoterDiscordUserIds = [ownerDiscordUserId],
+      componentNamespace = "battle",
     }) {
       const matchId = result.match.publicMatchId;
       if (typeof matchId !== "string" || !/^[0-9a-f]{32}$/.test(matchId)) {
@@ -129,6 +140,12 @@ export function createBattlePlayback({
         result,
         ownerDiscordUserId: String(ownerDiscordUserId),
         ownerDisplayName: String(ownerDisplayName),
+        opponentDisplayName: opponentDisplayName == null
+          ? undefined
+          : String(opponentDisplayName),
+        componentNamespace,
+        simulateVoters: new Set(simulateVoterDiscordUserIds.map(String)),
+        simulateVotes: new Set(),
         timeline: createBattleTimeline(result.match.playByPlay),
         revealedLines: 0,
         simulateExpiresAt:
@@ -139,9 +156,16 @@ export function createBattlePlayback({
       };
       let matchupImage;
       try {
-        matchupImage = await renderMatchupImage(
-          result.match.inputSnapshot?.aiTeam ?? [],
-        );
+        matchupImage = result.match.mode === "PVP_FRIENDLY_5V5"
+          ? await renderDuelMatchupImage(
+            result.match.inputSnapshot?.playerTeam ?? [],
+            result.match.inputSnapshot?.aiTeam ?? [],
+            {
+              challengerName: session.ownerDisplayName,
+              challengedName: session.opponentDisplayName,
+            },
+          )
+          : await renderMatchupImage(result.match.inputSnapshot?.aiTeam ?? []);
         session.hasMatchupImage = true;
       } catch (error) {
         console.warn(`Battle matchup image failed: ${error.message}`);
@@ -150,10 +174,14 @@ export function createBattlePlayback({
       const initialPayload = createBattleLivePayload(result, {
         ownerDiscordUserId: session.ownerDiscordUserId,
         ownerDisplayName: session.ownerDisplayName,
+        opponentDisplayName: session.opponentDisplayName,
         timeline: session.timeline,
         revealedLines: 0,
         tickMilliseconds: config.tickMilliseconds,
         hasMatchupImage: session.hasMatchupImage,
+        componentNamespace: session.componentNamespace,
+        simulateVotes: session.simulateVotes.size,
+        simulateVotesRequired: session.simulateVoters.size,
       });
       if (matchupImage) {
         initialPayload.files = [{
@@ -177,6 +205,71 @@ export function createBattlePlayback({
       await session.operation;
       await finish(session, interaction, { simulated: true });
       return true;
+    },
+
+    async voteToSimulate(interaction, { matchId, voterDiscordUserId }) {
+      const normalizedMatchId = String(matchId);
+      const voterId = String(voterDiscordUserId);
+      const session = sessions.get(normalizedMatchId);
+      if (!session) {
+        return Object.freeze({
+          accepted: false,
+          completed: false,
+          reason: "This Duel playback has already ended or is no longer active.",
+        });
+      }
+      if (!session.simulateVoters.has(voterId)) {
+        return Object.freeze({
+          accepted: false,
+          completed: false,
+          reason: "Only Duel participants can vote to simulate this match.",
+        });
+      }
+      if (now() >= session.simulateExpiresAt) {
+        return Object.freeze({
+          accepted: false,
+          completed: false,
+          reason: "The Simulate vote has expired.",
+        });
+      }
+      if (session.simulateVotes.has(voterId)) {
+        return Object.freeze({
+          accepted: false,
+          completed: false,
+          reason: "You have already voted to simulate this Duel.",
+        });
+      }
+      const operation = session.operation.then(async () => {
+        if (sessions.get(normalizedMatchId) !== session) {
+          return Object.freeze({
+            accepted: false,
+            completed: false,
+            reason: "This Duel playback has already ended or is no longer active.",
+          });
+        }
+        session.simulateVotes.add(voterId);
+        if (session.simulateVotes.size < session.simulateVoters.size) {
+          await interaction.editReply(createBattleLivePayload(session.result, {
+            ownerDiscordUserId: session.ownerDiscordUserId,
+            ownerDisplayName: session.ownerDisplayName,
+            opponentDisplayName: session.opponentDisplayName,
+            timeline: session.timeline,
+            revealedLines: session.revealedLines,
+            tickMilliseconds: config.tickMilliseconds,
+            hasMatchupImage: session.hasMatchupImage,
+            componentNamespace: session.componentNamespace,
+            simulateVotes: session.simulateVotes.size,
+            simulateVotesRequired: session.simulateVoters.size,
+          }));
+          return Object.freeze({ accepted: true, completed: false });
+        }
+        sessions.delete(normalizedMatchId);
+        if (session.timer) cancel(session.timer);
+        await finish(session, interaction, { simulated: true });
+        return Object.freeze({ accepted: true, completed: true });
+      });
+      session.operation = operation.then(() => undefined, () => undefined);
+      return operation;
     },
 
     stop() {

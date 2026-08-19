@@ -86,7 +86,7 @@ test("lineup set command assigns a Card Instance to a slot", async () => {
   assert.equal(replies[1].payload.embeds.length, 1);
   assert.equal(embed.description, undefined);
   assert.equal(embed.thumbnail, undefined);
-  assert.match(embed.title, /LineupTester's Lineup/);
+  assert.equal(embed.title, "LINEUPTESTER'S LINEUP");
   assert.match(embed.footer.text, /1\/5/);
   assert.match(embed.fields[0].value, /80\.0/);
   assert.match(embed.fields[1].value, /HEIGHT.*6'3\"/s);

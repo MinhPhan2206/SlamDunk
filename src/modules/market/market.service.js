@@ -205,8 +205,12 @@ export function createMarketService({
         if (!cancelledListing) {
           throw listingNotActive();
         }
+        const hydratedCancelledListing = await marketRepository.findByIdForUpdate(
+          transactionDatabase,
+          listing.listingId,
+        );
         return Object.freeze({
-          listing: Object.freeze({ ...listing, ...cancelledListing }),
+          listing: hydratedCancelledListing,
         });
       });
     },
@@ -339,9 +343,13 @@ export function createMarketService({
         if (!soldListing) {
           throw listingNotActive();
         }
+        const hydratedSoldListing = await marketRepository.findByIdForUpdate(
+          transactionDatabase,
+          listing.listingId,
+        );
 
         return Object.freeze({
-          listing: Object.freeze({ ...listing, ...soldListing }),
+          listing: hydratedSoldListing,
           card: ownership.instance,
           economy,
         });

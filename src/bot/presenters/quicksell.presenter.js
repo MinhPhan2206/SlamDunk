@@ -2,38 +2,49 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
 } from "discord.js";
+import { formatRarity } from "../../config/rarity-config.js";
 import {
   formatCardLine,
   formatGold,
+  formatNumber,
   formatShards,
 } from "../ui/formatters.js";
+import { createUiEmbed } from "../ui/presentation.js";
+import { formatCompactPlayerName } from "../ui/player-name.js";
+import { compactCodeTable } from "../ui/text-table.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 const MAX_VISIBLE_CARDS = 20;
 
-function cardLine(card) {
-  return `${formatCardLine(card)} • ${formatGold(card.goldReward)} • ` +
-    formatShards(card.shardReward);
+function cardTable(cards) {
+  return compactCodeTable([
+    { label: "PLAYER", width: 13 },
+    { label: "RARITY", width: 9 },
+    { label: "LV", width: 2, align: "right" },
+    { label: "CARD ID", width: 10, align: "right" },
+    { label: "GOLD", width: 6, align: "right" },
+    { label: "SHARD", width: 5, align: "right" },
+  ], cards.slice(0, MAX_VISIBLE_CARDS).map((card) => [
+    formatCompactPlayerName(card.playerName, 13),
+    formatRarity(card.rarityCode),
+    card.cardLevel,
+    `!${card.publicCardId}`,
+    formatNumber(card.goldReward),
+    formatNumber(card.shardReward),
+  ]));
 }
 
 export function createQuicksellPreviewPayload({ session, cards }) {
-  const visible = cards.slice(0, MAX_VISIBLE_CARDS).map(cardLine);
-  if (cards.length > visible.length) {
-    visible.push(`...and ${cards.length - visible.length} more cards.`);
-  }
-  const embed = new EmbedBuilder()
-    .setColor(UI_COLORS.danger)
-    .setTitle("Quicksell Preview")
+  const hidden = Math.max(0, cards.length - MAX_VISIBLE_CARDS);
+  const embed = createUiEmbed({ title: "QUICKSELL REVIEW", color: UI_COLORS.danger })
     .setDescription([
-      `Destroy **${cards.length} Cards** for **${formatGold(session.totalGold)}** ` +
-        `and **${formatShards(session.totalShards)}**?`,
-      "Listed, traded, locked, and lineup cards are excluded.",
+      `**${cards.length} cards** · ${formatGold(session.totalGold)} · ${formatShards(session.totalShards)}`,
+      cardTable(cards),
+      hidden ? `*+${hidden} additional cards*` : null,
+      "Locked, listed, traded, and lineup cards are excluded.",
       "**This action cannot be undone.**",
-      "",
-      ...visible,
-    ].join("\n"));
+    ].filter(Boolean).join("\n"));
   const buttons = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`quicksell:confirm:${session.quicksellSessionId}`)
@@ -49,14 +60,12 @@ export function createQuicksellPreviewPayload({ session, cards }) {
 
 export function createQuicksellCompletedPayload({ session, cards }) {
   return {
-    embeds: [new EmbedBuilder()
-      .setColor(UI_COLORS.success)
-      .setTitle("Quicksell Complete")
+    embeds: [createUiEmbed({ title: "QUICKSELL COMPLETE", color: UI_COLORS.success })
       .setDescription(
-        `Destroyed **${cards.length} Cards** for **${formatGold(session.totalGold)}** ` +
-        `and **${formatShards(session.totalShards)}**.\n` +
-        `Balances: **${formatGold(session.goldBalanceAfter)}** • ` +
-        `**${formatShards(session.shardBalanceAfter)}**`,
+        `**${cards.length} cards sold** · ${formatGold(session.totalGold)} · ` +
+        `${formatShards(session.totalShards)}\n` +
+        `Balance · ${formatGold(session.goldBalanceAfter)} · ` +
+        formatShards(session.shardBalanceAfter),
       )],
     components: [],
   };
@@ -64,9 +73,7 @@ export function createQuicksellCompletedPayload({ session, cards }) {
 
 export function createQuicksellCancelledPayload() {
   return {
-    embeds: [new EmbedBuilder()
-      .setColor(UI_COLORS.neutral)
-      .setTitle("Quicksell Cancelled")
+    embeds: [createUiEmbed({ title: "QUICKSELL CANCELLED", color: UI_COLORS.neutral })
       .setDescription("No cards were destroyed.")],
     components: [],
   };
@@ -79,19 +86,17 @@ export function createQuicksellEmbed({
   goldBalance,
   shardBalance,
 }) {
-  return new EmbedBuilder()
-    .setColor(UI_COLORS.success)
-    .setTitle("Quicksell Complete")
+  return createUiEmbed({ title: "QUICKSELL COMPLETE", color: UI_COLORS.success })
     .setDescription(formatCardLine(card))
     .addFields(
       {
-        name: "Received",
-        value: `${formatGold(goldReward)} • ${formatShards(shardReward)}`,
+        name: "RECEIVED",
+        value: `${formatGold(goldReward)} · ${formatShards(shardReward)}`,
         inline: true,
       },
       {
-        name: "Balances",
-        value: `${formatGold(goldBalance)} • ${formatShards(shardBalance)}`,
+        name: "BALANCE",
+        value: `${formatGold(goldBalance)} · ${formatShards(shardBalance)}`,
         inline: true,
       },
     );

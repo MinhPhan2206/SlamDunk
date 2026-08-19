@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { collectionPageComponent } from "../src/bot/components/collection-page.component.js";
 import { marketPageComponent } from "../src/bot/components/market-page.component.js";
+import { rarityPageComponent } from "../src/bot/components/rarity-page.component.js";
 
 function interaction(customId) {
   const calls = [];
@@ -37,8 +38,8 @@ test("Collection page button loads the requested owner page", async () => {
     },
   });
   assert.equal(calls[0], "defer");
-  assert.equal(calls[1].embeds[0].toJSON().footer.text, "Page 2/2 • 11 Cards • Sort: Rarity");
-  assert.equal(calls[1].embeds[0].toJSON().title, "Viewed User's Collection");
+  assert.equal(calls[1].embeds[0].toJSON().footer.text, "Page 2 of 2");
+  assert.equal(calls[1].embeds[0].toJSON().title, "VIEWED USER'S COLLECTION");
 });
 
 test("Market page button loads the requested page", async () => {
@@ -56,5 +57,37 @@ test("Market page button loads the requested page", async () => {
     },
   });
   assert.equal(calls[0], "defer");
-  assert.match(calls[1].embeds[0].toJSON().description, /no active Market/i);
+  assert.match(calls[1].embeds[0].toJSON().description, /no active listings/i);
+});
+
+test("Rarity page button preserves rarity filters and sorting", async () => {
+  const { value, calls } = interaction(
+    "rarity-page:234567890123456789:ALPHA:PG:playmaking:2",
+  );
+  await rarityPageComponent.execute(value, {
+    services: {
+      cardTemplate: {
+        async listTemplatesByRarity(rarityCode, options) {
+          assert.equal(rarityCode, "ALPHA");
+          assert.deepEqual(options, {
+            position: "PG",
+            sortBy: "playmaking",
+            page: 2,
+          });
+          return {
+            rarityCode,
+            templates: [],
+            total: 12,
+            page: 2,
+            totalPages: 2,
+            position: "PG",
+            sortBy: "playmaking",
+            sortLabel: "Playmaking",
+          };
+        },
+      },
+    },
+  });
+  assert.equal(calls[0], "defer");
+  assert.match(calls[1].embeds[0].toJSON().footer.text, /Page 2 of 2/);
 });

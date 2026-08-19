@@ -228,7 +228,7 @@ function manualHelp() {
           "`/collection [user]` · View a Player's collection.",
           "`/card card:<reference>` · View Stats, Traits, Battle Stats, and artwork.",
           "`/sort [sort_by]` · Sort your collection.",
-          "`/rarity rarity:<rarity>` · View Card Templates in a rarity.",
+          "`/rarity rarity:<rarity> [position] [sort_by]` · Browse Card Templates.",
           "`/lock card_id:<reference>` · Protect a Card from Quicksell.",
           "`/unlock card_id:<reference>` · Remove Quicksell protection.",
         ].join("\n"),
@@ -292,8 +292,20 @@ function manualHelp() {
         name: "Battle",
         value: [
           "`/battle opponent_bracket:<difficulty>` · Battle an AI lineup.",
+          "`/practice opponent_bracket:<difficulty>` · Test your lineup without rewards or record changes.",
+          "`/duel user:<player>` · Challenge another Player to a friendly, reward-free Battle.",
           "Wins earn more Gold and continue your Win Streak. A loss still grants Gold and XP but resets the streak.",
           "Use `/help topic:strategy` and `/help topic:traits` for detailed guides.",
+        ].join("\n"),
+      },
+      {
+        name: "Message Shortcuts",
+        value: [
+          "Start a message with `dunk`; full command names and shortcuts both work.",
+          "Cards · `dunk d` · `dunk pk` · `dunk col` · `dunk card <name>`",
+          "Compete · `dunk b [bracket]` · `dunk pr [bracket]` · `dunk vs @player` · `dunk st`",
+          "Resources · `dunk cl` · `dunk cd` · `dunk w` · `dunk inv`",
+          "Use `dunk help` or `dunk commands` to open this guide.",
         ].join("\n"),
       },
       {

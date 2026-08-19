@@ -1,5 +1,5 @@
 import { claimCommand } from "./claim.command.js";
-import { battleCommand } from "./battle.command.js";
+import { battleCommand, practiceCommand } from "./battle.command.js";
 import { cooldownsCommand } from "./cooldowns.command.js";
 import { collectionCommand } from "./collection.command.js";
 import { pingCommand } from "./ping.command.js";
@@ -30,6 +30,7 @@ import { bagCommand } from "./bag.command.js";
 import { strategyCommand } from "./strategy.command.js";
 import { helpCommand } from "./help.command.js";
 import { welcomeCommand } from "./welcome.command.js";
+import { duelCommand } from "./duel.command.js";
 
 export const commands = Object.freeze([
   pingCommand,
@@ -39,6 +40,8 @@ export const commands = Object.freeze([
   collectionCommand,
   lineupCommand,
   battleCommand,
+  practiceCommand,
+  duelCommand,
   cooldownsCommand,
   rarityCommand,
   quicksellCommand,

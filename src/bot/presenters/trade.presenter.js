@@ -24,7 +24,7 @@ function invitationEmbed(result) {
   const [initiator, invited] = result.participants;
   const embed = new EmbedBuilder()
     .setColor(UI_COLORS.warning)
-    .setTitle("Trade Invitation")
+    .setTitle("TRADE INVITATION")
     .setDescription(
       `**${initiator.username}** invited **${invited.username}** to a Direct Trade.\n` +
       `Both Players must accept before offers can be edited.\n\n` +
@@ -83,7 +83,7 @@ function tradeEmbed(result) {
     : open ? UI_COLORS.secondary : UI_COLORS.neutral;
   const embed = new EmbedBuilder()
     .setColor(color)
-    .setTitle(reviewing ? "Final Trade Review" : open ? "Direct Trade" : `Trade ${result.trade.status}`)
+    .setTitle(reviewing ? "TRADE REVIEW" : open ? "DIRECT TRADE" : `TRADE ${result.trade.status}`)
     .setDescription(open
       ? reviewing
         ? `Offers are frozen. Check exactly what each Player gives, then select **Final Accept**.\n` +

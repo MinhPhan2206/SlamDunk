@@ -98,7 +98,7 @@ test("odds pack_type resolves a Pack by its scalable pack code", async () => {
   await oddsCommand.execute(interaction, { services });
 
   const embed = replies[1].payload.embeds[0].toJSON();
-  assert.equal(embed.title, "Standard Pack Odds");
+  assert.equal(embed.title, "STANDARD PACK ODDS");
   assert.match(embed.description, /Base.*13\.8773%/);
   assert.match(embed.description, /Goat.*0\.0017%/);
   assert.equal(embed.footer, undefined);
@@ -113,8 +113,8 @@ test("odds pack_type exposes Super Pack odds", async () => {
   await oddsCommand.execute(interaction, { services });
 
   const embed = replies[1].payload.embeds[0].toJSON();
-  assert.equal(embed.title, "Super Pack Odds");
-  assert.match(embed.description, /Base\s+0\.00000%/);
-  assert.match(embed.description, /Alpha\s+75\.0000%/);
-  assert.match(embed.description, /Goat\s+0\.0769%/);
+  assert.equal(embed.title, "SUPER PACK ODDS");
+  assert.match(embed.description, /Base\s+\|\s+0\.00000%/);
+  assert.match(embed.description, /Alpha\s+\|\s+75\.0000%/);
+  assert.match(embed.description, /Goat\s+\|\s+0\.0769%/);
 });

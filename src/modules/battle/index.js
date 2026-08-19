@@ -17,3 +17,7 @@ export {
   resolveBattleTendency,
 } from "./battle-tendency.js";
 export { createBattleService } from "./battle.service.js";
+export {
+  calculatePracticeTeamPower,
+  selectPracticeAiMatchup,
+} from "./practice-matchup.js";

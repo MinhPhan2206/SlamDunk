@@ -61,6 +61,11 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
   });
   const testRunId = Date.now().toString();
   const interactionId = `987${testRunId}`;
+  const practiceInteractionId = `988${testRunId}`;
+  const generatedMatchIds = [
+    "0a038642a1404d938a3dc5b401f17c23",
+    "1a038642a1404d938a3dc5b401f17c23",
+  ];
 
   try {
     await database.query("BEGIN");
@@ -113,7 +118,7 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
       economyService,
       battleConfig: gameConfig.battle,
       generateSeed: () => 123456,
-      generateMatchId: () => "0a038642a1404d938a3dc5b401f17c23",
+      generateMatchId: () => generatedMatchIds.shift(),
     });
     const result = await battleService.battle(
       { playerId, interactionId, opponentBracket: "street" },
@@ -232,6 +237,54 @@ test("Battle persists snapshots and applies one idempotent result", async () => 
     assert.equal(firstCardStats.reboundsPerGame, firstBoxScore.rebounds);
     assert.equal(firstCardView.ownerUsername, "M12BattlePlayer");
     assert.equal(firstCardView.totalMinted, "1");
+
+    const practice = await battleService.practice(
+      {
+        playerId,
+        interactionId: practiceInteractionId,
+        opponentBracket: "street",
+      },
+      { database },
+    );
+    assert.equal(practice.match.mode, "PRACTICE_5V5");
+    assert.equal(practice.match.inputSnapshot.practice, true);
+    assert.equal(practice.reward, null);
+    assert.equal(practice.match.rewardSnapshot != null, true);
+    assert.ok(practice.teams.some((team) => team.finalScore >= 21));
+    assert.deepEqual(
+      practice.match.inputSnapshot.aiTeam.map((player) => player.cardLevel),
+      [2, 2, 2, 2, 2],
+    );
+    const practiceCooldown = await battleService.getPracticeCooldown(playerId, {
+      database,
+    });
+    assert.equal(practiceCooldown.available, false);
+
+    const playerAfterPractice = await playerService.getPlayerById(playerId, {
+      database,
+    });
+    const walletAfterPractice = await economyService.getWallet(playerId, {
+      database,
+    });
+    const cardsAfterPractice = await database.query(
+      `SELECT games_played FROM card_instances WHERE owner_player_id = $1`,
+      [playerId],
+    );
+    assert.equal(playerAfterPractice.gamesPlayed, playerAfterBattle.gamesPlayed);
+    assert.equal(playerAfterPractice.xp, playerAfterBattle.xp);
+    assert.equal(walletAfterPractice.goldBalance, walletAfterBattle.goldBalance);
+    assert.ok(cardsAfterPractice.rows.every((row) => row.games_played === 1));
+    await assert.rejects(
+      battleService.practice(
+        {
+          playerId,
+          interactionId: `989${testRunId}`,
+          opponentBracket: "street",
+        },
+        { database },
+      ),
+      (error) => error.code === "PRACTICE_COOLDOWN_ACTIVE",
+    );
   } finally {
     await database.query("ROLLBACK");
     const residual = await database.query(

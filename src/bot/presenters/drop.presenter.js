@@ -2,11 +2,11 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
 } from "discord.js";
 import { formatRarity } from "../../config/rarity-config.js";
 import { createCardStripImage } from "../ui/card-strip-image.js";
 import { formatPositions } from "../ui/formatters.js";
+import { createUiEmbed } from "../ui/presentation.js";
 import { rarityColor, UI_COLORS } from "../ui/theme.js";
 
 const DROP_IMAGE_NAME = "drop-candidates.png";
@@ -21,13 +21,11 @@ export async function createDropOfferPayload({ session, candidates }) {
     candidates.map((candidate) => candidate.template),
     { labels: candidates.map((candidate) => candidate.candidatePosition) },
   );
-  const embed = new EmbedBuilder()
-    .setColor(UI_COLORS.primary)
-    .setTitle("Free Drop")
-    .setDescription("Choose one card.")
+  const embed = createUiEmbed({ title: "FREE DROP", color: UI_COLORS.primary })
+    .setDescription("Choose your card.")
     .setImage(`attachment://${DROP_IMAGE_NAME}`)
     .setFooter({
-      text: "20 Seconds • Timeout Selects Card 1",
+      text: "Choose within 20 seconds · Card 1 is selected on timeout",
     });
   const row = new ActionRowBuilder().addComponents(
     candidates.map((candidate) =>
@@ -54,9 +52,10 @@ export async function createDropSelectionPayload(result) {
   const template = selectedCandidate.template;
   const instance = result.resultInstance;
   const image = await createCardStripImage([template]);
-  const embed = new EmbedBuilder()
-    .setColor(rarityColor(template.rarityCode))
-    .setTitle("Free Drop Result")
+  const embed = createUiEmbed({
+    title: "CARD ACQUIRED",
+    color: rarityColor(template.rarityCode),
+  })
     .setDescription(
       `**${template.playerName}** • ${formatRarity(template.rarityCode)} • ` +
       `${formatPositions(template)} • Lv.${instance.cardLevel} • ` +

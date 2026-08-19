@@ -2,6 +2,15 @@ export const COMPONENT_INACTIVITY_TIMEOUT_MS = 20_000;
 
 const activeTimeouts = new Map();
 
+export function cancelComponentTimeout(messageId) {
+  const normalizedId = String(messageId ?? "");
+  const timer = activeTimeouts.get(normalizedId);
+  if (!timer) return false;
+  clearTimeout(timer);
+  activeTimeouts.delete(normalizedId);
+  return true;
+}
+
 function componentData(component) {
   return typeof component.toJSON === "function"
     ? component.toJSON()
@@ -33,8 +42,17 @@ function expiredEmbeds(embeds) {
     const data = typeof embed.toJSON === "function"
       ? embed.toJSON()
       : { ...(embed.data ?? embed) };
+    const currentFooter = data.footer?.text?.trim();
     return index === embeds.length - 1
-      ? { ...data, footer: { text: "Interaction Expired" } }
+      ? {
+        ...data,
+        footer: {
+          ...(data.footer ?? {}),
+          text: currentFooter
+            ? `${currentFooter}\nInteraction Expired`
+            : "Interaction Expired",
+        },
+      }
       : data;
   });
 }
@@ -69,17 +87,17 @@ export async function scheduleComponentTimeout(
       : null;
   if (!message?.id || !editMessage) return;
 
-  const previous = activeTimeouts.get(message.id);
+  const previous = activeTimeouts.get(String(message.id));
   if (previous) clearTimeout(previous);
 
   if (!Array.isArray(message.components) || message.components.length === 0) {
-    activeTimeouts.delete(message.id);
+    activeTimeouts.delete(String(message.id));
     return;
   }
 
   const timer = setTimeout(async () => {
-    if (activeTimeouts.get(message.id) !== timer) return;
-    activeTimeouts.delete(message.id);
+    if (activeTimeouts.get(String(message.id)) !== timer) return;
+    activeTimeouts.delete(String(message.id));
     try {
       if (!message.components?.length) return;
       const update = { components: disabledRows(message.components) };
@@ -95,5 +113,5 @@ export async function scheduleComponentTimeout(
     }
   }, timeoutMs);
   timer.unref?.();
-  activeTimeouts.set(message.id, timer);
+  activeTimeouts.set(String(message.id), timer);
 }

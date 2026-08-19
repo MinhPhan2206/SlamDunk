@@ -12,7 +12,7 @@ import {
 
 const RESET_CODE = "official-card-catalog-2026-08-15";
 const COMPENSATION_GOLD = 50_000n;
-const EXPECTED_TEMPLATE_COUNT = 277;
+const EXPECTED_TEMPLATE_COUNT = 275;
 const REQUIRED_ARGUMENT = `--confirm=${RESET_CODE}`;
 const catalogUrl = new URL("../data/card-templates.json", import.meta.url);
 const traitCatalogUrl = new URL(

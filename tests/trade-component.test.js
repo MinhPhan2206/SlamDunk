@@ -57,7 +57,7 @@ test("Accepting the invitation opens Trade controls after both Players accept", 
   await tradeComponent.execute(interaction, { services });
 
   assert.deepEqual(acceptedInput, { tradeId: "9", playerId: "7" });
-  assert.equal(edited.embeds[0].toJSON().title, "Direct Trade");
+  assert.equal(edited.embeds[0].toJSON().title, "DIRECT TRADE");
   assert.equal(edited.components[0].components.length, 5);
   assert.equal(edited.components[0].components[2].data.custom_id, "trade:ready:9:0");
 });
@@ -111,7 +111,7 @@ test("Final Review freezes offer editing and exposes safe exit controls", () => 
     cards: [],
   });
 
-  assert.equal(payload.embeds[0].toJSON().title, "Final Trade Review");
+  assert.equal(payload.embeds[0].toJSON().title, "TRADE REVIEW");
   assert.deepEqual(
     payload.components[0].components.map((button) => button.data.custom_id),
     ["trade:final:9:4", "trade:undo:9:4", "trade:cancel:9:4"],

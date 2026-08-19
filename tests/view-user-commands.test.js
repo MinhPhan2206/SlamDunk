@@ -58,9 +58,10 @@ test("profile user option displays another existing Player", async () => {
   });
 
   const embed = commandInteraction.replies[0].embeds[0].toJSON();
-  assert.equal(embed.title, "Target User's Profile");
-  assert.match(embed.description, /Level 0.*0 \/ 1,000 XP/s);
-  assert.match(embed.fields[0].value, /W-L:.*0-0.*Total Games:.*0/s);
+  assert.equal(embed.title, "PLAYER PROFILE");
+  assert.equal(embed.author.name, "Target User");
+  assert.match(embed.description, /LEVEL 0.*0 \/ 1,000 XP/s);
+  assert.match(embed.fields[0].value, /W-L.*0-0.*Total Games.*0/s);
   assert.doesNotMatch(JSON.stringify(embed), /Wallet|Gold|Shards|Win Rate/);
 });
 
@@ -86,7 +87,7 @@ test("collection user option displays and paginates another Player's cards", asy
 
   assert.equal(
     commandInteraction.replies[0].embeds[0].toJSON().title,
-    "Target User's Collection",
+    "TARGET USER'S COLLECTION",
   );
 });
 
@@ -115,6 +116,6 @@ test("lineup view user option displays another Player without allowing edits", a
 
   assert.equal(
     commandInteraction.replies[0].embeds[0].toJSON().title,
-    "🏀 Target User's Lineup",
+    "TARGET USER'S LINEUP",
   );
 });

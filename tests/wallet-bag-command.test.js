@@ -43,9 +43,10 @@ test("/wallet shows only Gold and the Discord avatar", async () => {
     },
   });
   const embed = commandInteraction.reply.embeds[0].toJSON();
-  assert.equal(embed.title, "Wallet User's Wallet");
-  assert.match(embed.description, /Gold.*20,000/s);
-  assert.doesNotMatch(embed.description, /Shard/i);
+  assert.equal(embed.title, "WALLET");
+  assert.equal(embed.author.name, "Wallet User");
+  assert.match(embed.fields[0].value, /Gold.*20,000/s);
+  assert.doesNotMatch(embed.fields[0].value, /Shard/i);
   assert.equal(embed.thumbnail.url, "https://cdn.example/avatar.png");
 });
 
@@ -108,7 +109,8 @@ test("/bag user option displays another existing Player's inventory", async () =
   });
 
   const embed = commandInteraction.reply.embeds[0].toJSON();
-  assert.equal(embed.title, "Other User's Bag");
+  assert.equal(embed.title, "BAG");
+  assert.equal(embed.author.name, "Other User");
   assert.match(embed.description, /1,250/);
   assert.equal(embed.thumbnail.url, "https://cdn.example/other.png");
 });

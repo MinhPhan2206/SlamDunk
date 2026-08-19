@@ -60,6 +60,11 @@ test("quicksell command previews the selected cards before destruction", async (
   assert.match(embed.description, /Test Guard/);
   assert.match(embed.description, /40 Gold/);
   assert.match(embed.description, /8 Shards/);
+  assert.match(
+    embed.description,
+    /Test Guard\s+Uncommon\s+\d*\s+!123456789\s+40\s+8/,
+  );
+  assert.doesNotMatch(embed.description, /\+[-+]+\+/);
   assert.equal(replies[1].payload.components.length, 1);
 });
 
@@ -92,5 +97,5 @@ test("quicksell confirm button completes the persisted preview", async () => {
   await quicksellComponent.execute(interaction, { services });
 
   assert.equal(edits[0].components.length, 0);
-  assert.equal(edits[0].embeds[0].toJSON().title, "Quicksell Complete");
+  assert.equal(edits[0].embeds[0].toJSON().title, "QUICKSELL COMPLETE");
 });

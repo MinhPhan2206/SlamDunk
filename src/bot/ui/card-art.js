@@ -1,36 +1,63 @@
+import { readdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const IMAGE_ROOT = new URL("../../../assets/images/", import.meta.url);
 const UNKNOWN_PATH = fileURLToPath(new URL("unknown-player.png", IMAGE_ROOT));
-const ART_PATHS = new Map([
-  ["GOAT:lebron james", "Goat/Lebron_James.png"],
-  ["GOAT:stephen curry", "Goat/Stephen_Curry.png"],
-  ["GOAT:michael jordan", "Goat/Michael_Jordan.png"],
-  ["GOAT:kobe bryant", "Goat/Kobe_Bryant.png"],
-  ["GOAT:kareem abdul-jabbar", "Goat/Kareem_Abdul_Jabbar.png"],
-  ["SUPERSTAR:anthony edwards", "Superstar/Anthont_Edwards.png"],
-  ["SUPERSTAR:kevin durant", "Superstar/Kevin_Durant.png"],
-  ["SUPERSTAR:luka doncic", "Superstar/Luka.png"],
-  ["SUPERSTAR:shai gilgeous-alexander", "Superstar/SGA.png"],
-  ["SUPERSTAR:jayson tatum", "Superstar/Jayson_Tatum.png"],
-  ["SUPERSTAR:victor wembanyama", "Superstar/Victor_Wembanyama.png"],
-  ["SUPERSTAR:giannis antetokounmpo", "Superstar/Giannis_Antetokounmpo.png"],
-  ["SUPERSTAR:nikola jokic", "Superstar/Nikola_Jokic.png"],
+const RARITY_FOLDERS = Object.freeze({
+  GOAT: "Goat",
+  SUPERSTAR: "Superstar",
+  ALL_STAR: "Allstar",
+  ALPHA: "Alpha",
+  UNCOMMON: "Uncommon",
+  COMMON: "Common",
+  BASE: "Base",
+});
+const ART_ALIASES = new Map([
+  ["SUPERSTAR:shaigilgeousalexander", "sga"],
+  ["SUPERSTAR:lukadoncic", "luka"],
+  ["SUPERSTAR:anthonyedwards", "anthontedwards"],
+  ["ALL_STAR:karlanthonytowns", "katanthonytowns"],
+  ["COMMON:jonasvalanciunas", "jonasvalanciuna"],
+  ["BASE:trendonwatford", "trendonwalford"],
 ]);
+
+function normalizeArtName(value) {
+  return String(value)
+    .normalize("NFKD")
+    .replace(/\p{Mark}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function buildArtPaths() {
+  const artPaths = new Map();
+  for (const [rarityCode, folderName] of Object.entries(RARITY_FOLDERS)) {
+    const folderUrl = new URL(`${folderName}/`, IMAGE_ROOT);
+    for (const entry of readdirSync(folderUrl, { withFileTypes: true })) {
+      if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== ".png") {
+        continue;
+      }
+      const artName = normalizeArtName(path.parse(entry.name).name);
+      artPaths.set(`${rarityCode}:${artName}`, fileURLToPath(new URL(entry.name, folderUrl)));
+    }
+  }
+  return artPaths;
+}
+
+const ART_PATHS = buildArtPaths();
 const imageCache = new Map();
 
 export function getCardArtPath({ playerName, rarityCode }) {
-  const relativePath = ART_PATHS.get(
-    `${String(rarityCode).toUpperCase()}:${String(playerName).trim().toLowerCase()}`,
-  );
-  return relativePath
-    ? fileURLToPath(new URL(relativePath, IMAGE_ROOT))
-    : UNKNOWN_PATH;
+  const normalizedRarity = String(rarityCode).toUpperCase();
+  const cardKey = `${normalizedRarity}:${normalizeArtName(playerName)}`;
+  const artName = ART_ALIASES.get(cardKey) ?? normalizeArtName(playerName);
+  return ART_PATHS.get(`${normalizedRarity}:${artName}`) ?? UNKNOWN_PATH;
 }
 
 export function readCardArt(card) {
-  const path = getCardArtPath(card);
-  if (!imageCache.has(path)) imageCache.set(path, readFile(path));
-  return imageCache.get(path);
+  const artPath = getCardArtPath(card);
+  if (!imageCache.has(artPath)) imageCache.set(artPath, readFile(artPath));
+  return imageCache.get(artPath);
 }

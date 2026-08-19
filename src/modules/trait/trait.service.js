@@ -202,6 +202,19 @@ export function createTraitService({ databasePool, cardTemplateService }) {
 
     getTraitsForTemplate,
 
+    async getTraitsForTemplates(
+      cardTemplateIds,
+      { database = databasePool } = {},
+    ) {
+      if (!Array.isArray(cardTemplateIds)) {
+        throw new TypeError("cardTemplateIds must be an array.");
+      }
+      const normalizedIds = [...new Set(cardTemplateIds.map((cardTemplateId) =>
+        normalizeId(cardTemplateId, "cardTemplateId")
+      ))];
+      return traitRepository.findByCardTemplateIds(database, normalizedIds);
+    },
+
     async getTotalTraitLevel(
       cardTemplateId,
       { database = databasePool } = {},

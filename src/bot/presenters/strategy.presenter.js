@@ -223,7 +223,7 @@ export function createStrategyEditorPayload(session) {
         : "Team Strategy";
   const embed = new EmbedBuilder()
     .setColor(session.dirty ? UI_COLORS.warning : UI_COLORS.primary)
-    .setTitle(title)
+    .setTitle(title.toUpperCase())
     .setDescription(strategyDescription(session))
     .setFooter({ text: session.dirty
       ? "Unsaved Changes · Save to apply"

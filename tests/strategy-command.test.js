@@ -56,7 +56,7 @@ test("/strategy opens an ephemeral editor from the saved Lineup strategy", async
       { flags: MessageFlags.Ephemeral },
     ]);
     const payload = calls[1][1];
-    assert.equal(payload.embeds[0].toJSON().title, "Team Strategy");
+    assert.equal(payload.embeds[0].toJSON().title, "TEAM STRATEGY");
     assert.equal(payload.components.length, 2);
     const customId = payload.components[0].components[0].data.custom_id;
     assert.match(customId, /^strategy:handler:[0-9a-f]{32}$/);

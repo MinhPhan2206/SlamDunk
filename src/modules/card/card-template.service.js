@@ -3,6 +3,16 @@ import { cardTemplateRepository } from "./card-template.repository.js";
 import { getRarityDefinition } from "../../config/rarity-config.js";
 
 const POSITIONS = new Set(["PG", "SG", "SF", "PF", "C"]);
+const TEMPLATE_SORTS = Object.freeze({
+  alphabet: "Alphabetical",
+  finishing: "Finishing",
+  mid_range: "Mid Range",
+  three_point: "3 Point",
+  playmaking: "Playmaking",
+  interior_defense: "Interior Defense",
+  perimeter_defense: "Perimeter Defense",
+  strength: "Strength",
+});
 const SMALLINT_MAX = 32_767;
 const STAT_FIELDS = [
   "finishing",
@@ -151,22 +161,47 @@ export function createCardTemplateService({ databasePool }) {
 
     async listTemplatesByRarity(
       rarityCode,
-      { database = databasePool, limit = 20 } = {},
+      {
+        database = databasePool,
+        position = null,
+        sortBy = "alphabet",
+        page = 1,
+        pageSize = 10,
+      } = {},
     ) {
       const normalizedRarityCode = getRarityDefinition(
         normalizeRequiredText(rarityCode, "rarityCode").toUpperCase(),
       ).rarityCode;
-      const normalizedLimit = normalizeInteger(limit, "limit", 1, 20);
+      const normalizedPosition = normalizePosition(position, "position", {
+        optional: true,
+      });
+      const normalizedSortBy = String(sortBy).trim().toLowerCase();
+      if (!TEMPLATE_SORTS[normalizedSortBy]) {
+        throw new TypeError("sortBy is not supported.");
+      }
+      const normalizedPage = normalizeInteger(page, "page", 1, 1_000_000);
+      const normalizedPageSize = normalizeInteger(pageSize, "pageSize", 1, 20);
       const result = await cardTemplateRepository.findByRarityCode(
         database,
-        normalizedRarityCode,
-        normalizedLimit,
+        {
+          rarityCode: normalizedRarityCode,
+          position: normalizedPosition,
+          sortBy: normalizedSortBy,
+          limit: normalizedPageSize,
+          offset: (normalizedPage - 1) * normalizedPageSize,
+        },
       );
+      const total = Number(result.total);
 
       return Object.freeze({
         rarityCode: normalizedRarityCode,
         templates: result.templates,
-        total: result.total,
+        total,
+        page: normalizedPage,
+        totalPages: Math.ceil(total / normalizedPageSize),
+        position: normalizedPosition,
+        sortBy: normalizedSortBy,
+        sortLabel: TEMPLATE_SORTS[normalizedSortBy],
       });
     },
   });

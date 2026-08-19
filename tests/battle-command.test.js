@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { battleCommand } from "../src/bot/commands/battle.command.js";
+import {
+  battleCommand,
+  practiceCommand,
+} from "../src/bot/commands/battle.command.js";
+import { gameConfig } from "../src/config/game-config.js";
+
+test("Battle and Practice use their approved independent cooldowns", () => {
+  assert.equal(gameConfig.battle.cooldownSeconds, 60 * 60);
+  assert.equal(gameConfig.battle.practice.cooldownSeconds, 10);
+});
 
 test("battle command starts the runtime Battle playback", async () => {
   const replies = [];
@@ -84,4 +93,49 @@ test("battle command starts the runtime Battle playback", async () => {
   assert.equal(playbackCalls[0].ownerDisplayName, interaction.user.username);
   assert.equal(playbackCalls[0].result.match.matchId, "12");
   assert.equal(battleCommand.componentInactivityTimeoutMs, 60_000);
+});
+
+test("practice command starts reward-free Battle playback", async () => {
+  const interaction = {
+    id: "323456789012345678",
+    user: { id: "434567890123456789", username: "PracticeTester" },
+    options: {
+      getString(name, required) {
+        assert.equal(name, "opponent_bracket");
+        assert.equal(required, true);
+        return "street";
+      },
+    },
+    async deferReply() {},
+  };
+  const result = {
+    match: { publicMatchId: "0a038642a1404d938a3dc5b401f17c23" },
+    reward: null,
+  };
+  const calls = [];
+  await practiceCommand.execute(interaction, {
+    services: {
+      player: {
+        async getOrCreatePlayer() { return { playerId: "19" }; },
+      },
+      battle: {
+        async practice(input) {
+          assert.deepEqual(input, {
+            playerId: "19",
+            interactionId: interaction.id,
+            opponentBracket: "street",
+          });
+          return result;
+        },
+      },
+    },
+    battlePlayback: {
+      async start(input) { calls.push(input); },
+    },
+  });
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].result.reward, null);
+  assert.equal(calls[0].ownerDiscordUserId, interaction.user.id);
+  assert.equal(practiceCommand.componentInactivityTimeoutMs, 60_000);
 });

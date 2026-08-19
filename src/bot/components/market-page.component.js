@@ -1,6 +1,7 @@
 import { MessageFlags } from "discord.js";
 
 import { createMarketBrowsePayload } from "../presenters/market.presenter.js";
+import { requesterContextFromEmbed } from "../ui/presentation.js";
 
 export const marketPageComponent = Object.freeze({
   namespace: "market-page",
@@ -22,6 +23,7 @@ export const marketPageComponent = Object.freeze({
     await interaction.editReply(
       createMarketBrowsePayload(result, {
         discordUserId: ownerDiscordUserId,
+        ...requesterContextFromEmbed(interaction.message.embeds[0]),
       }),
     );
   },

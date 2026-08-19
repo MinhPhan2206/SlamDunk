@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { collectionCommand } from "../src/bot/commands/collection.command.js";
+import { formatCompactPlayerName } from "../src/bot/ui/player-name.js";
+
+test("Collection shortens long player names without changing recognizable surnames", () => {
+  assert.equal(formatCompactPlayerName("Tyrese Haliburton"), "T. Haliburton");
+  assert.equal(formatCompactPlayerName("Nickeil Alexander-Walker"), "N. Alexander-W.");
+  assert.equal(formatCompactPlayerName("Giannis Antetokounmpo"), "Antetokounmpo");
+  assert.equal(formatCompactPlayerName("Jaren Jackson Jr."), "J. Jackson Jr.");
+});
 
 test("collection command displays active cards for the current Player", async () => {
   const replies = [];
@@ -64,8 +72,9 @@ test("collection command displays active cards for the current Player", async ()
 
   assert.equal(replies[0].type, "defer");
   const embed = replies[1].payload.embeds[0].toJSON();
+  assert.equal(embed.thumbnail, undefined);
   assert.match(embed.description, /Test Player/);
-  assert.match(embed.description, /Lv\.3/);
+  assert.match(embed.description, /SF\/PF\s+3 !123456789/);
   assert.doesNotMatch(embed.description, /OVR|#12/);
-  assert.match(embed.description, /^▫️/);
+  assert.match(embed.description, /#\s+PLAYER\s+RARITY/);
 });

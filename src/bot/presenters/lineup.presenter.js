@@ -1,5 +1,5 @@
-import { EmbedBuilder } from "discord.js";
 import { createCardStripImage } from "../ui/card-strip-image.js";
+import { createUiEmbed } from "../ui/presentation.js";
 import { UI_COLORS } from "../ui/theme.js";
 
 const LINEUP_IMAGE_NAME = "lineup.png";
@@ -66,9 +66,10 @@ export function createLineupEmbed(
   const missingSlots = result.slots
     .filter((slot) => !slot.cardInstanceId)
     .map((slot) => slot.slot);
-  const embed = new EmbedBuilder()
-    .setColor(result.complete ? UI_COLORS.primary : UI_COLORS.warning)
-    .setTitle(`🏀 ${title}`);
+  const embed = createUiEmbed({
+    title: title.toUpperCase(),
+    color: result.complete ? UI_COLORS.primary : UI_COLORS.warning,
+  });
   if (hasImage) embed.setImage(`attachment://${LINEUP_IMAGE_NAME}`);
   for (const group of STAT_GROUPS) {
     embed.addFields({

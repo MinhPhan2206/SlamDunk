@@ -12,6 +12,7 @@ import {
   createMarketPurchaseEmbed,
   createMarketSellDraftPayload,
 } from "../presenters/market.presenter.js";
+import { requesterLine } from "../ui/presentation.js";
 
 function cardIdOption(option, description) {
   return option
@@ -60,6 +61,8 @@ export const marketCommand = Object.freeze({
       });
       await interaction.editReply(createMarketBrowsePayload(result, {
         discordUserId: interaction.user.id,
+        requesterLine: requesterLine(interaction.user, interaction.member),
+        requesterIconUrl: interaction.user.displayAvatarURL?.() ?? null,
       }));
     });
   },

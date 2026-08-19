@@ -89,7 +89,7 @@ test("upgrade fusion command combines two Card Instances", async () => {
 
   assert.equal(replies[0].type, "defer");
   const embed = replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.title, /Fusion Complete/);
+  assert.equal(embed.title, "FUSION COMPLETE");
   assert.match(embed.fields[1].value, /Lv\.5/);
 });
 
@@ -127,7 +127,7 @@ test("upgrade item command consumes one Level Up item", async () => {
   await levelUpCommand.execute(interaction, { services });
 
   const embed = replies[1].payload.embeds[0].toJSON();
-  assert.match(embed.title, /Card Upgraded/);
+  assert.equal(embed.title, "UPGRADE COMPLETE");
   assert.equal(embed.fields[0].value, "2 → 3");
   assert.match(embed.fields[1].name, /Level Up/);
 });
