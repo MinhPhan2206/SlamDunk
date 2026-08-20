@@ -47,8 +47,8 @@ test("Daily, Standard Pack, and Shard exchange update resources atomically", asy
     await economy.credit({ playerId, currency: "SHARDS", amount: 7000, transactionType: "TEST", idempotencyKey: `resource:${run}:shards` }, { database });
 
     const daily = await reward.dailyReward({ playerId, interactionId: `931${run}` }, { database });
-    assert.equal(daily.rewardGold, "1500");
-    assert.equal(daily.rewardShards, "20");
+    assert.equal(daily.rewardGold, "500000");
+    assert.equal(daily.rewardShards, "100000");
     assert.equal(daily.rewardXp, "300");
 
     const weekly = await reward.weeklyReward({ playerId, interactionId: `934${run}` }, { database });

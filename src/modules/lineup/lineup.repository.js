@@ -101,6 +101,7 @@ export const lineupRepository = Object.freeze({
           ci.status,
           ci.market_lock,
           ci.trade_lock,
+          ct.player_name,
           ct.primary_position,
           ct.secondary_position
         FROM card_instances ci
@@ -123,6 +124,26 @@ export const lineupRepository = Object.freeze({
         WHERE lineup_id = $1 AND card_instance_id = $2
       `,
       [lineupId, cardInstanceId],
+    );
+
+    return result.rows[0]?.slot ?? null;
+  },
+
+  async findSlotByPlayerName(database, { lineupId, playerName, excludedSlot }) {
+    const result = await database.query(
+      `
+        SELECT ls.slot
+        FROM lineup_slots ls
+        JOIN card_instances ci
+          ON ci.card_instance_id = ls.card_instance_id
+        JOIN card_templates ct
+          ON ct.card_template_id = ci.card_template_id
+        WHERE ls.lineup_id = $1
+          AND LOWER(ct.player_name) = LOWER($2)
+          AND ls.slot <> $3
+        LIMIT 1
+      `,
+      [lineupId, playerName, excludedSlot],
     );
 
     return result.rows[0]?.slot ?? null;

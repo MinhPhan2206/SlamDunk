@@ -55,6 +55,25 @@ const LABELS = Object.freeze({
   usage: Object.freeze({ NORMAL: "Normal", LOW: "Low Usage" }),
 });
 
+const TENDENCY_EDITOR = Object.freeze({
+  decision: Object.freeze({
+    action: "decision", buttonAction: "editDecision", buttonLabel: "Decision",
+    emoji: "🧠", placeholder: "Decision Tendency", codes: DECISION_TENDENCIES,
+  }),
+  shotProfile: Object.freeze({
+    action: "shotProfile", buttonAction: "editShot", buttonLabel: "Shot",
+    emoji: "🎯", placeholder: "Shot Profile", codes: SHOT_PROFILE_TENDENCIES,
+  }),
+  creationRole: Object.freeze({
+    action: "creationRole", buttonAction: "editCreation", buttonLabel: "Creation",
+    emoji: "🏀", placeholder: "Creation Role", codes: CREATION_ROLE_TENDENCIES,
+  }),
+  usage: Object.freeze({
+    action: "usage", buttonAction: "editUsage", buttonLabel: "Usage",
+    emoji: "📊", placeholder: "Usage", codes: USAGE_TENDENCIES,
+  }),
+});
+
 function customId(action, sessionId) {
   return `strategy:${action}:${sessionId}`;
 }
@@ -70,14 +89,29 @@ function selectedPlayer(session) {
 
 function strategyDescription(session) {
   const strategy = session.draftStrategy;
+  const player = selectedPlayer(session);
+
+  if (session.view === "tendencyPlayer" && player) {
+    const profile = getPlayerTendency(strategy, player.cardInstanceId);
+    return [
+      `**${player.slot} · ${player.playerName}**`,
+      "",
+      `Decision · **${label("decision", profile.decision)}**`,
+      `Shot Profile · **${label("shotProfile", profile.shotProfile)}**`,
+      `Creation Role · **${label("creationRole", profile.creationRole)}**`,
+      `Usage · **${label("usage", profile.usage)}**`,
+    ].join("\n");
+  }
+
   const lines = [
+    "**TEAM PLAN**",
     `Main Handler · **${label("handler", strategy.mainHandler)}**`,
     `Offense · **${label("offense", strategy.offense)}**`,
     `Tempo · **${label("tempo", strategy.tempo)}**`,
     `Defense · **${label("defense", strategy.defense)}**`,
     `Rebounding · **${label("rebounding", strategy.rebounding)}**`,
   ];
-  if (["tendencyPlayers", "tendencyPlayer"].includes(session.view)) {
+  if (session.view !== "customize") {
     lines.push("", "**Player Tendencies**");
     if (!session.players.length) lines.push("Complete your lineup to configure players.");
     for (const player of session.players) {
@@ -92,9 +126,6 @@ function strategyDescription(session) {
       );
     }
   }
-  lines.push("", session.dirty
-    ? "Changes are not saved yet."
-    : "This strategy is saved for future Battles.");
   return lines.join("\n");
 }
 
@@ -154,10 +185,39 @@ function actionRow(session, backAction = null) {
     JSON.stringify(DEFAULT_LINEUP_STRATEGY);
   buttons.push(
     button("save", session.sessionId, "Save", ButtonStyle.Success, "💾", !session.dirty),
-    button("reset", session.sessionId, "Reset", ButtonStyle.Secondary, "🔄", isDefault),
-    button("cancel", session.sessionId, "Cancel", ButtonStyle.Danger, "✖️"),
+    button("reset", session.sessionId, "Reset All", ButtonStyle.Secondary, "🔄", isDefault),
+    button("cancel", session.sessionId, "Close", ButtonStyle.Danger, "✖️"),
   );
   return new ActionRowBuilder().addComponents(...buttons);
+}
+
+function tendencyCategoryRow(session) {
+  return new ActionRowBuilder().addComponents(
+    ...Object.entries(TENDENCY_EDITOR).map(([field, config]) =>
+      button(
+        config.buttonAction,
+        session.sessionId,
+        config.buttonLabel,
+        session.selectedTendencyField === field
+          ? ButtonStyle.Primary
+          : ButtonStyle.Secondary,
+        config.emoji,
+      )),
+  );
+}
+
+function playerActionRow(session, player, profile) {
+  const defaultProfile = getPlayerTendency(
+    DEFAULT_LINEUP_STRATEGY,
+    player?.cardInstanceId,
+  );
+  const isDefault = JSON.stringify(profile) === JSON.stringify(defaultProfile);
+  return new ActionRowBuilder().addComponents(
+    button("summary", session.sessionId, "Back", ButtonStyle.Secondary, "↩️"),
+    button("save", session.sessionId, "Save", ButtonStyle.Success, "💾", !session.dirty),
+    button("resetPlayer", session.sessionId, "Reset Player", ButtonStyle.Secondary, "🔄", isDefault),
+    button("cancel", session.sessionId, "Close", ButtonStyle.Danger, "✖️"),
+  );
 }
 
 function tendencyRows(session) {
@@ -165,27 +225,26 @@ function tendencyRows(session) {
   const profile = player
     ? getPlayerTendency(session.draftStrategy, player.cardInstanceId)
     : getPlayerTendency(session.draftStrategy, null);
+  const active = TENDENCY_EDITOR[session.selectedTendencyField] ??
+    TENDENCY_EDITOR.decision;
   return [
-    selectRow({ sessionId: session.sessionId, action: "decision",
-      placeholder: "Decision Tendency", codes: DECISION_TENDENCIES,
-      selectedCode: profile.decision }),
-    selectRow({ sessionId: session.sessionId, action: "shotProfile",
-      placeholder: "Shot Profile", codes: SHOT_PROFILE_TENDENCIES,
-      selectedCode: profile.shotProfile }),
-    selectRow({ sessionId: session.sessionId, action: "creationRole",
-      placeholder: "Creation Role", codes: CREATION_ROLE_TENDENCIES,
-      selectedCode: profile.creationRole }),
-    selectRow({ sessionId: session.sessionId, action: "usage",
-      placeholder: "Usage", codes: USAGE_TENDENCIES,
-      selectedCode: profile.usage }),
-    actionRow(session, "tendencies"),
+    playerRow(session),
+    tendencyCategoryRow(session),
+    selectRow({
+      sessionId: session.sessionId,
+      action: active.action,
+      placeholder: active.placeholder,
+      codes: active.codes,
+      selectedCode: profile[active.action],
+    }),
+    playerActionRow(session, player, profile),
   ];
 }
 
 function components(session) {
   if (session.view === "tendencyPlayer") return tendencyRows(session);
   if (session.view === "tendencyPlayers") {
-    return [playerRow(session), actionRow(session, "summary")];
+    return tendencyRows(session);
   }
   if (session.view === "customize") {
     return [
@@ -216,9 +275,7 @@ export function createStrategyEditorPayload(session) {
   const player = selectedPlayer(session);
   const title = session.view === "customize"
     ? "Team Strategy · Tactics"
-    : session.view === "tendencyPlayers"
-      ? "Team Strategy · Player Tendencies"
-      : session.view === "tendencyPlayer"
+    : ["tendencyPlayers", "tendencyPlayer"].includes(session.view)
         ? `Player Tendencies · ${player?.playerName ?? "Player"}`
         : "Team Strategy";
   const embed = new EmbedBuilder()

@@ -3,8 +3,8 @@ import { SlashCommandBuilder } from "discord.js";
 import { CardError } from "../../modules/card/index.js";
 import { UpgradeError } from "../../modules/upgrade/index.js";
 import {
-  createFusionEmbed,
-  createLevelUpEmbed,
+  createFusionPlayerSelectionPayload,
+  createLevelUpReviewPayload,
 } from "../presenters/upgrade.presenter.js";
 
 function cardOption(option, name, description) {
@@ -36,19 +36,21 @@ async function executeUpgrade(interaction, services, operation) {
 export const upgradeCommand = Object.freeze({
   data: new SlashCommandBuilder()
     .setName("upgrade")
-    .setDescription("Fuse two Cards from the same Card Template.")
-    .addStringOption((option) =>
-      cardOption(option, "card_a", "First public Card ID or collection number."))
-    .addStringOption((option) =>
-      cardOption(option, "card_b", "Second public Card ID or collection number.")),
+    .setDescription("Fuse matching Cards into a higher-level Card."),
   async execute(interaction, { services }) {
-    await executeUpgrade(interaction, services, async ({ player, resolve }) => {
-      const result = await services.upgrade.fuseCards({
+    await executeUpgrade(interaction, services, async ({ player }) => {
+      const groups = await services.upgrade.listFusionOptions({
         playerId: player.playerId,
-        sourceCardAId: await resolve("card_a"),
-        sourceCardBId: await resolve("card_b"),
       });
-      await interaction.editReply({ embeds: [createFusionEmbed(result)] });
+      if (!groups.length) {
+        throw new UpgradeError(
+          "FUSION_MATERIAL_MISSING",
+          "You do not have any Cards currently eligible for Fusion.",
+        );
+      }
+      await interaction.editReply(
+        createFusionPlayerSelectionPayload(groups, interaction.user.id),
+      );
     });
   },
 });
@@ -64,11 +66,13 @@ export const levelUpCommand = Object.freeze({
     )),
   async execute(interaction, { services }) {
     await executeUpgrade(interaction, services, async ({ player, resolve }) => {
-      const result = await services.upgrade.useLevelUpItem({
+      const preview = await services.upgrade.previewLevelUp({
         playerId: player.playerId,
         cardInstanceId: await resolve("card_id"),
       });
-      await interaction.editReply({ embeds: [createLevelUpEmbed(result)] });
+      await interaction.editReply(
+        createLevelUpReviewPayload(preview, interaction.user.id),
+      );
     });
   },
 });

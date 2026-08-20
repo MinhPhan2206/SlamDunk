@@ -55,6 +55,20 @@ function mapInstance(row) {
 }
 
 export const cardViewRepository = Object.freeze({
+  async listSearchableTemplates(database) {
+    const result = await database.query(
+      `
+        SELECT ${CARD_VIEW_COLUMNS}
+        FROM card_templates ct
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
+        LEFT JOIN card_mint_counters cmc ON cmc.card_template_id = ct.card_template_id
+        WHERE ct.retired_at IS NULL
+        ORDER BY ct.player_name, r.rarity_rank DESC
+      `,
+    );
+    return result.rows.map(mapTemplate);
+  },
+
   async findInstanceById(database, cardInstanceId) {
     const result = await database.query(
       `

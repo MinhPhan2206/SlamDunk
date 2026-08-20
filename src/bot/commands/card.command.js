@@ -1,12 +1,15 @@
 import { SlashCommandBuilder } from "discord.js";
 
 import { CardError } from "../../modules/card/index.js";
-import { createCardPayload } from "../presenters/card.presenter.js";
+import {
+  createCardPayload,
+  createCardSearchPayload,
+} from "../presenters/card.presenter.js";
 import { truncateText } from "../ui/formatters.js";
 
-const TEMPLATE_PREFIX = "template:";
+export const TEMPLATE_PREFIX = "template:";
 
-async function resolveCard(input, interaction, services) {
+export async function resolveCard(input, interaction, services) {
   if (input.startsWith(TEMPLATE_PREFIX)) {
     const cardTemplateId = input.slice(TEMPLATE_PREFIX.length);
     return Object.freeze({
@@ -40,13 +43,20 @@ async function resolveCard(input, interaction, services) {
 
   const templates = await services.cardView.findTemplatesByName(input);
   if (templates.length === 0) {
-    throw new CardError("CARD_TEMPLATE_NOT_FOUND", "No Card Template matches that player name.");
+    const candidates = await services.cardView.searchTemplates(input, { limit: 10 });
+    if (candidates.length === 0) {
+      throw new CardError(
+        "CARD_TEMPLATE_NOT_FOUND",
+        `No Cards found for “${truncateText(input, 80)}”.`,
+      );
+    }
+    if (candidates.length === 1) {
+      return Object.freeze({ mode: "template", card: candidates[0] });
+    }
+    return Object.freeze({ mode: "search", query: input, candidates });
   }
   if (templates.length > 1) {
-    throw new CardError(
-      "CARD_TEMPLATE_AMBIGUOUS",
-      "Multiple versions match that player. Select one from autocomplete.",
-    );
+    return Object.freeze({ mode: "search", query: input, candidates: templates });
   }
   return Object.freeze({ mode: "template", card: templates[0] });
 }
@@ -86,6 +96,14 @@ export const cardCommand = Object.freeze({
         interaction,
         services,
       );
+      if (result.mode === "search") {
+        await interaction.editReply(createCardSearchPayload({
+          query: result.query,
+          candidates: result.candidates,
+          viewerDiscordUserId: interaction.user.id,
+        }));
+        return;
+      }
       await interaction.editReply(await createCardPayload(result.card, {
         viewerDiscordUserId: interaction.user.id,
         mode: result.mode,

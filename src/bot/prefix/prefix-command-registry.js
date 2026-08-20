@@ -27,6 +27,7 @@ const DEFINITIONS = Object.freeze([
   ["lock", ["lock", "lk"]],
   ["unlock", ["unlock", "ulk"]],
   ["card", ["card", "inspect", "info"]],
+  ["compare", ["compare", "cmp"]],
   ["wallet", ["wallet", "w"]],
   ["bag", ["bag", "inv", "inventory"]],
   ["strategy", ["strategy", "st", "tactics"]],

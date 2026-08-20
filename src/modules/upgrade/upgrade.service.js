@@ -56,20 +56,96 @@ export function createUpgradeService({
   validateConfig(upgradeConfig);
 
   return Object.freeze({
-    async fuseCards(
-      { playerId, sourceCardAId, sourceCardBId },
+    async listFusionOptions({ playerId }, { database = databasePool } = {}) {
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      return Object.freeze(
+        await upgradeRepository.listFusionGroups(database, normalizedPlayerId),
+      );
+    },
+
+    async previewFusionMaterials(
+      { playerId, cardTemplateId },
+      { database = databasePool } = {},
+    ) {
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      const normalizedCardTemplateId = normalizeId(cardTemplateId, "cardTemplateId");
+      const cards = await upgradeRepository.listFusionCards(database, {
+        playerId: normalizedPlayerId,
+        cardTemplateId: normalizedCardTemplateId,
+      });
+      if (cards.length < 2) {
+        throw new UpgradeError(
+          "FUSION_MATERIAL_MISSING",
+          "You need at least two eligible copies of this card.",
+        );
+      }
+      return Object.freeze({
+        group: Object.freeze({
+          cardTemplateId: cards[0].cardTemplateId,
+          playerName: cards[0].playerName,
+          primaryPosition: cards[0].primaryPosition,
+          secondaryPosition: cards[0].secondaryPosition,
+          rarityCode: cards[0].rarityCode,
+          rarityName: cards[0].rarityName,
+          cardCount: cards.length,
+        }),
+        cards: Object.freeze(cards),
+      });
+    },
+
+    async previewLevelUp(
+      { playerId, cardInstanceId },
       { database } = {},
     ) {
       const normalizedPlayerId = normalizeId(playerId, "playerId");
-      const sourceIds = [
-        normalizeId(sourceCardAId, "sourceCardAId"),
-        normalizeId(sourceCardBId, "sourceCardBId"),
-      ];
+      const normalizedCardInstanceId = normalizeId(cardInstanceId, "cardInstanceId");
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        const [card] = await upgradeRepository.findCardsForUpdate(
+          transactionDatabase,
+          [normalizedCardInstanceId],
+        );
+        if (!card) {
+          throw new UpgradeError("CARD_NOT_FOUND", "Card was not found.");
+        }
+        assertOwnedActiveUnlocked(card, normalizedPlayerId);
+        if (card.cardLevel >= upgradeConfig.maximumCardLevel) {
+          throw new UpgradeError("CARD_MAX_LEVEL", "This card is already Level 5.");
+        }
+        const itemQuantity = await upgradeRepository.findItemQuantity(
+          transactionDatabase,
+          { playerId: normalizedPlayerId, itemType: upgradeConfig.levelUpItemType },
+        );
+        if (itemQuantity < 1) {
+          throw new UpgradeError(
+            "LEVEL_UP_ITEM_MISSING",
+            `You do not have a ${upgradeConfig.levelUpItemName} item.`,
+          );
+        }
+        return Object.freeze({
+          card,
+          previousLevel: card.cardLevel,
+          newLevel: card.cardLevel + 1,
+        });
+      });
+    },
 
-      if (sourceIds[0] === sourceIds[1]) {
+    async fuseCards(
+      { playerId, sourceCardIds },
+      { database } = {},
+    ) {
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      if (!Array.isArray(sourceCardIds) || sourceCardIds.length < 2 || sourceCardIds.length > 5) {
         throw new UpgradeError(
-          "FUSION_SAME_INSTANCE",
-          "Fusion requires two different Card Instances.",
+          "FUSION_SOURCE_COUNT",
+          "Fusion requires between two and five Card Instances.",
+        );
+      }
+      const sourceIds = sourceCardIds.map((sourceCardId) =>
+        normalizeId(sourceCardId, "sourceCardId"));
+      if (new Set(sourceIds).size !== sourceIds.length) {
+        throw new UpgradeError(
+          "FUSION_DUPLICATE_INSTANCE",
+          "Each Fusion material must be a different Card Instance.",
         );
       }
 
@@ -79,10 +155,10 @@ export function createUpgradeService({
           sourceIds,
         );
 
-        if (sourceCards.length !== 2) {
+        if (sourceCards.length !== sourceIds.length) {
           throw new UpgradeError(
             "FUSION_CARD_NOT_FOUND",
-            "One or both Fusion cards were not found.",
+            "One or more Fusion cards were not found.",
           );
         }
         for (const card of sourceCards) {
@@ -90,11 +166,13 @@ export function createUpgradeService({
           if (card.inLineup) {
             throw new UpgradeError(
               "CARD_IN_LINEUP",
-              "Remove both cards from your lineup before fusing them.",
+              "Remove every selected card from your lineup before fusing them.",
             );
           }
         }
-        if (sourceCards[0].cardTemplateId !== sourceCards[1].cardTemplateId) {
+        if (sourceCards.some(
+          (card) => card.cardTemplateId !== sourceCards[0].cardTemplateId,
+        )) {
           throw new UpgradeError(
             "FUSION_TEMPLATE_MISMATCH",
             "Fusion cards must use the same Card Template.",
@@ -102,7 +180,7 @@ export function createUpgradeService({
         }
 
         const resultLevel = Math.min(
-          sourceCards[0].cardLevel + sourceCards[1].cardLevel,
+          sourceCards.reduce((total, card) => total + card.cardLevel, 0),
           upgradeConfig.maximumCardLevel,
         );
         const destroyedCount = await upgradeRepository.destroyFusionSources(
@@ -113,9 +191,10 @@ export function createUpgradeService({
           await upgradeRepository.decrementCirculation(
             transactionDatabase,
             sourceCards[0].cardTemplateId,
+            sourceCards.length,
           );
 
-        if (destroyedCount !== 2 || circulationAfterDestruction == null) {
+        if (destroyedCount !== sourceCards.length || circulationAfterDestruction == null) {
           throw new UpgradeError(
             "FUSION_INVARIANT",
             "Fusion source state could not be updated.",

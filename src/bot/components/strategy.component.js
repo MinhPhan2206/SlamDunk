@@ -21,7 +21,7 @@ import {
 import { createStrategyEditorPayload } from "../presenters/strategy.presenter.js";
 import { STRATEGY_EDITOR_TIMEOUT_MS } from "../strategy/strategy-draft-store.js";
 
-const CUSTOM_ID_PATTERN = /^strategy:(player|handler|offense|tempo|defense|rebounding|decision|shotProfile|creationRole|usage|customize|tendencies|summary|save|reset|cancel):([0-9a-f]{32})$/;
+const CUSTOM_ID_PATTERN = /^strategy:(player|handler|offense|tempo|defense|rebounding|decision|shotProfile|creationRole|usage|editDecision|editShot|editCreation|editUsage|customize|tendencies|summary|save|reset|resetPlayer|cancel):([0-9a-f]{32})$/;
 const SELECT_ACTIONS = new Set([
   "player",
   "handler",
@@ -35,6 +35,12 @@ const SELECT_ACTIONS = new Set([
   "usage",
 ]);
 const TENDENCY_ACTIONS = new Set(["decision", "shotProfile", "creationRole", "usage"]);
+const TENDENCY_FIELD_ACTIONS = Object.freeze({
+  editDecision: "decision",
+  editShot: "shotProfile",
+  editCreation: "creationRole",
+  editUsage: "usage",
+});
 const FIELD_CODES = Object.freeze({
   handler: MAIN_HANDLER_CODES,
   offense: OFFENSE_STYLE_CODES,
@@ -141,11 +147,30 @@ export const strategyComponent = Object.freeze({
           action,
         );
       } else if (action === "tendencies") {
-        session = strategyDrafts.setView(sessionId, "tendencyPlayers");
+        session = strategyDrafts.setView(sessionId, "tendencyPlayer");
       } else if (action === "player") {
         session = strategyDrafts.selectTendencyPlayer(sessionId, value);
+      } else if (TENDENCY_FIELD_ACTIONS[action]) {
+        session = strategyDrafts.selectTendencyField(
+          sessionId,
+          TENDENCY_FIELD_ACTIONS[action],
+        );
       } else if (action === "reset") {
         session = strategyDrafts.setDraft(sessionId, DEFAULT_LINEUP_STRATEGY);
+      } else if (action === "resetPlayer") {
+        session = current.selectedTendencyCardId
+          ? strategyDrafts.setDraft(
+              sessionId,
+              normalizeLineupStrategy(setPlayerTendency(
+                current.draftStrategy,
+                current.selectedTendencyCardId,
+                getPlayerTendency(
+                  DEFAULT_LINEUP_STRATEGY,
+                  current.selectedTendencyCardId,
+                ),
+              )),
+            )
+          : current;
       } else if (FIELD_CODES[action]) {
         session = strategyDrafts.setDraft(
           sessionId,

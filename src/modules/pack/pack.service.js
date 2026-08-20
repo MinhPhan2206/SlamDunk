@@ -51,13 +51,17 @@ function normalizeCatalog(packCatalog) {
   return Object.freeze({ packs, defaultPackCode: defaultPackCode ?? packs.keys().next().value });
 }
 
-function pickTemplate(templates, pack, rollInteger) {
+function groupTemplatesByRarity(templates) {
   const byRarity = new Map();
   for (const template of templates) {
     const entries = byRarity.get(template.rarityCode) ?? [];
     entries.push(template);
     byRarity.set(template.rarityCode, entries);
   }
+  return byRarity;
+}
+
+function pickTemplate(byRarity, pack, rollInteger) {
   const available = pack.rarityWeights.filter(({ rarityCode }) => byRarity.has(rarityCode));
   if (!available.length) throw new PackError("PACK_CATALOG_EMPTY", "No eligible cards are available for this Pack.");
   const total = available.reduce((sum, entry) => sum + entry.weight, 0);
@@ -85,6 +89,19 @@ export function createPackService({
   rollInteger = randomInt,
 }) {
   const catalog = normalizeCatalog(packCatalog);
+  let templatePoolsPromise;
+  const getTemplatePools = (database) => {
+    if (!templatePoolsPromise) {
+      templatePoolsPromise = cardTemplateService
+        .listPackableTemplates({ database })
+        .then(groupTemplatesByRarity)
+        .catch((error) => {
+          templatePoolsPromise = undefined;
+          throw error;
+        });
+    }
+    return templatePoolsPromise;
+  };
   const findPack = (packCode = catalog.defaultPackCode) => {
     const normalizedCode = String(packCode).trim().toLowerCase();
     const pack = catalog.packs.get(normalizedCode);
@@ -182,25 +199,39 @@ export function createPackService({
           }
           throw error;
         }
-        const templates = await cardTemplateService.listPackableTemplates({ database });
-        const cards = [];
+        const templatePools = await getTemplatePools(database);
+        const selections = [];
         for (let index = 0; index < pack.cardCount; index += 1) {
-          const template = pickTemplate(templates, pack, rollInteger);
+          const template = pickTemplate(templatePools, pack, rollInteger);
           const cardPosition = index + 1;
-          const mint = await cardInstanceService.mintCard({
+          selections.push(Object.freeze({
+            template,
+            cardPosition,
+            mintInput: {
             cardTemplateId: template.cardTemplateId, ownerPlayerId: playerId,
             cardLevel: rollCardLevel(pack.levelWeights, rollInteger), obtainedMethod: "PACK",
             referenceType: "PACK_OPENING",
             referenceId: `${opening.packOpeningId}:${cardPosition}`,
-          }, { database });
-          const openingCard = await packOpeningRepository.addCard(database, {
-            packOpeningId: opening.packOpeningId,
-            cardPosition,
-            cardTemplateId: template.cardTemplateId,
-            cardInstanceId: mint.instance.cardInstanceId,
-          });
-          cards.push(Object.freeze({ openingCard, template, instance: mint.instance }));
+            },
+          }));
         }
+        const mints = await cardInstanceService.mintCards(
+          selections.map((selection) => selection.mintInput),
+          { database },
+        );
+        const openingCards = await packOpeningRepository.addCards(database, {
+          packOpeningId: opening.packOpeningId,
+          cards: selections.map((selection, index) => ({
+            cardPosition: selection.cardPosition,
+            cardTemplateId: selection.template.cardTemplateId,
+            cardInstanceId: mints[index].instance.cardInstanceId,
+          })),
+        });
+        const cards = selections.map((selection, index) => Object.freeze({
+          openingCard: openingCards[index],
+          template: selection.template,
+          instance: mints[index].instance,
+        }));
         const firstCard = cards[0];
         const completed = await packOpeningRepository.complete(database, {
           packOpeningId: opening.packOpeningId,

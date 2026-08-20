@@ -68,7 +68,7 @@ test("Fusion and Level Up item usage preserve Card lifecycle invariants", async 
       {
         cardTemplateId: template.cardTemplateId,
         ownerPlayerId: playerId,
-        cardLevel: 4,
+        cardLevel: 1,
         obtainedMethod: "ADMIN_GRANT",
       },
       { database },
@@ -82,18 +82,48 @@ test("Fusion and Level Up item usage preserve Card lifecycle invariants", async 
       },
       { database },
     );
+    const sourceC = await cardInstanceService.mintCard(
+      {
+        cardTemplateId: template.cardTemplateId,
+        ownerPlayerId: playerId,
+        cardLevel: 2,
+        obtainedMethod: "ADMIN_GRANT",
+      },
+      { database },
+    );
+
+    const fusionOptions = await upgradeService.listFusionOptions(
+      { playerId },
+      { database },
+    );
+    assert.equal(fusionOptions[0].cardCount, 3);
+    const fusionPreview = await upgradeService.previewFusionMaterials(
+      { playerId, cardTemplateId: template.cardTemplateId },
+      { database },
+    );
+    assert.deepEqual(
+      fusionPreview.cards.map((card) => card.cardInstanceId),
+      [
+        sourceA.instance.cardInstanceId,
+        sourceB.instance.cardInstanceId,
+        sourceC.instance.cardInstanceId,
+      ],
+    );
 
     const fusion = await upgradeService.fuseCards(
       {
         playerId,
-        sourceCardAId: sourceA.instance.cardInstanceId,
-        sourceCardBId: sourceB.instance.cardInstanceId,
+        sourceCardIds: [
+          sourceA.instance.cardInstanceId,
+          sourceB.instance.cardInstanceId,
+          sourceC.instance.cardInstanceId,
+        ],
       },
       { database },
     );
 
     assert.equal(fusion.resultCard.cardLevel, 5);
-    assert.equal(fusion.resultCard.serialNumber, "3");
+    assert.equal(fusion.resultCard.serialNumber, "4");
     assert.equal(fusion.resultCard.obtainedMethod, "FUSION");
     const fusionState = await database.query(
       `
@@ -110,15 +140,19 @@ test("Fusion and Level Up item usage preserve Card lifecycle invariants", async 
            WHERE fusion_id = $3) AS fusion_sources
       `,
       [
-        [sourceA.instance.cardInstanceId, sourceB.instance.cardInstanceId],
+        [
+          sourceA.instance.cardInstanceId,
+          sourceB.instance.cardInstanceId,
+          sourceC.instance.cardInstanceId,
+        ],
         template.cardTemplateId,
         fusion.fusion.fusionId,
       ],
     );
-    assert.equal(fusionState.rows[0].destroyed_sources, "2");
+    assert.equal(fusionState.rows[0].destroyed_sources, "3");
     assert.equal(fusionState.rows[0].current_circulation, "1");
-    assert.equal(fusionState.rows[0].total_minted, "3");
-    assert.equal(fusionState.rows[0].fusion_sources, "2");
+    assert.equal(fusionState.rows[0].total_minted, "4");
+    assert.equal(fusionState.rows[0].fusion_sources, "3");
 
     const upgradeCard = await cardInstanceService.mintCard(
       {
@@ -134,6 +168,12 @@ test("Fusion and Level Up item usage preserve Card lifecycle invariants", async 
        VALUES ($1, 'LEVEL_UP', 1)`,
       [playerId],
     );
+    const levelPreview = await upgradeService.previewLevelUp(
+      { playerId, cardInstanceId: upgradeCard.instance.cardInstanceId },
+      { database },
+    );
+    assert.equal(levelPreview.previousLevel, 2);
+    assert.equal(levelPreview.newLevel, 3);
     const upgrade = await upgradeService.useLevelUpItem(
       { playerId, cardInstanceId: upgradeCard.instance.cardInstanceId },
       { database },

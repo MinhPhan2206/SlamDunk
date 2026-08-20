@@ -78,6 +78,15 @@ test("Lineup enforces ownership, position eligibility, and unique cards", async 
       },
       { database },
     );
+    const duplicatePlayerCard = await cardInstanceService.mintCard(
+      {
+        cardTemplateId: sfTemplate.cardTemplateId,
+        ownerPlayerId: playerId,
+        cardLevel: 4,
+        obtainedMethod: "ADMIN_GRANT",
+      },
+      { database },
+    );
 
     await assert.rejects(
       lineupService.setCard(
@@ -102,6 +111,21 @@ test("Lineup enforces ownership, position eligibility, and unique cards", async 
       ),
       (error) =>
         error instanceof LineupError && error.code === "CARD_ALREADY_IN_LINEUP",
+    );
+
+    await assert.rejects(
+      lineupService.setCard(
+        {
+          playerId,
+          slot: "PF",
+          cardInstanceId: duplicatePlayerCard.instance.cardInstanceId,
+        },
+        { database },
+      ),
+      (error) =>
+        error instanceof LineupError &&
+        error.code === "PLAYER_ALREADY_IN_LINEUP" &&
+        /already assigned to SF/.test(error.message),
     );
 
     const twoCardLineup = await lineupService.setCard(

@@ -3,13 +3,38 @@ import {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
+  StringSelectMenuBuilder,
 } from "discord.js";
 
-import { formatNumber, formatPositions } from "../ui/formatters.js";
+import { formatNumber, formatPositions, truncateText } from "../ui/formatters.js";
 import { readCardArt } from "../ui/card-art.js";
-import { rarityColor } from "../ui/theme.js";
+import { createUiEmbed } from "../ui/presentation.js";
+import { rarityColor, UI_COLORS } from "../ui/theme.js";
 
 const CARD_IMAGE_NAME = "card.png";
+
+export function createCardSearchPayload({ query, candidates, viewerDiscordUserId }) {
+  const select = new StringSelectMenuBuilder()
+    .setCustomId(`card:search:${viewerDiscordUserId}`)
+    .setPlaceholder("Suggested Cards")
+    .setMinValues(1)
+    .setMaxValues(1)
+    .addOptions(candidates.map((candidate) => ({
+      label: truncateText(candidate.playerName, 100),
+      description: truncateText(
+        `${candidate.rarityName} · ${formatPositions(candidate)}`,
+        100,
+      ),
+      value: String(candidate.cardTemplateId),
+    })));
+  return {
+    embeds: [createUiEmbed({ title: "CARD SEARCH", color: UI_COLORS.primary })
+      .setDescription(
+        `Cards matching **${truncateText(query, 80)}**.\nSelect a player below.`,
+      )],
+    components: [new ActionRowBuilder().addComponents(select)],
+  };
+}
 
 function formatHeight(heightCm) {
   if (!Number.isFinite(Number(heightCm)) || Number(heightCm) <= 0) {

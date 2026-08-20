@@ -90,6 +90,40 @@ export const packOpeningRepository = Object.freeze({
     return mapOpeningCard(result.rows[0]);
   },
 
+  async addCards(database, { packOpeningId, cards }) {
+    if (!Array.isArray(cards) || cards.length === 0) return Object.freeze([]);
+    const result = await database.query(
+      `
+        INSERT INTO pack_opening_cards (
+          pack_opening_id,
+          card_position,
+          card_template_id,
+          card_instance_id
+        )
+        SELECT $1, card_position, card_template_id, card_instance_id
+        FROM UNNEST($2::SMALLINT[], $3::BIGINT[], $4::BIGINT[])
+          AS card(card_position, card_template_id, card_instance_id)
+        RETURNING
+          pack_opening_id,
+          card_position,
+          card_template_id,
+          card_instance_id,
+          created_at
+      `,
+      [
+        packOpeningId,
+        cards.map((card) => card.cardPosition),
+        cards.map((card) => card.cardTemplateId),
+        cards.map((card) => card.cardInstanceId),
+      ],
+    );
+    return Object.freeze(
+      result.rows.map(mapOpeningCard).sort(
+        (left, right) => left.cardPosition - right.cardPosition,
+      ),
+    );
+  },
+
   async listCards(database, packOpeningId) {
     const result = await database.query(
       `

@@ -14,24 +14,20 @@ function mapMintCounter(row) {
 
 export const cardMintCounterRepository = Object.freeze({
   async allocateNextSerial(database, cardTemplateId) {
-    await database.query(
-      `
-        INSERT INTO card_mint_counters (card_template_id)
-        VALUES ($1)
-        ON CONFLICT (card_template_id) DO NOTHING
-      `,
-      [cardTemplateId],
-    );
-
     const result = await database.query(
       `
-        UPDATE card_mint_counters
-        SET
-          last_serial_number = last_serial_number + 1,
-          total_minted = total_minted + 1,
-          current_circulation = current_circulation + 1,
+        INSERT INTO card_mint_counters (
+          card_template_id,
+          last_serial_number,
+          total_minted,
+          current_circulation
+        )
+        VALUES ($1, 1, 1, 1)
+        ON CONFLICT (card_template_id) DO UPDATE SET
+          last_serial_number = card_mint_counters.last_serial_number + 1,
+          total_minted = card_mint_counters.total_minted + 1,
+          current_circulation = card_mint_counters.current_circulation + 1,
           updated_at = CURRENT_TIMESTAMP
-        WHERE card_template_id = $1
         RETURNING
           card_template_id,
           last_serial_number,

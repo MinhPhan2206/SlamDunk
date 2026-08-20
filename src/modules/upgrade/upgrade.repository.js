@@ -9,12 +9,104 @@ function mapCard(row) {
     status: row.status,
     marketLock: row.market_lock,
     tradeLock: row.trade_lock,
+    userLock: row.user_lock,
     inLineup: row.in_lineup,
     playerName: row.player_name,
+    primaryPosition: row.primary_position,
+    secondaryPosition: row.secondary_position,
+    rarityCode: row.rarity_code,
+    rarityName: row.rarity_name,
   });
 }
 
 export const upgradeRepository = Object.freeze({
+  async listFusionGroups(database, playerId) {
+    const result = await database.query(
+      `
+        SELECT
+          ci.card_template_id,
+          ct.player_name,
+          ct.primary_position,
+          ct.secondary_position,
+          r.rarity_code,
+          r.display_name AS rarity_name,
+          r.rarity_rank,
+          COUNT(*)::INTEGER AS card_count
+        FROM card_instances ci
+        JOIN card_templates ct ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
+        WHERE ci.owner_player_id = $1
+          AND ci.status = 'ACTIVE'
+          AND ci.market_lock = FALSE
+          AND ci.trade_lock = FALSE
+          AND NOT EXISTS (
+            SELECT 1 FROM lineup_slots ls
+            WHERE ls.card_instance_id = ci.card_instance_id
+          )
+        GROUP BY
+          ci.card_template_id,
+          ct.player_name,
+          ct.primary_position,
+          ct.secondary_position,
+          r.rarity_code,
+          r.display_name,
+          r.rarity_rank
+        HAVING COUNT(*) >= 2
+        ORDER BY r.rarity_rank DESC, ct.player_name
+      `,
+      [playerId],
+    );
+    return result.rows.map((row) => Object.freeze({
+      cardTemplateId: row.card_template_id,
+      playerName: row.player_name,
+      primaryPosition: row.primary_position,
+      secondaryPosition: row.secondary_position,
+      rarityCode: row.rarity_code,
+      rarityName: row.rarity_name,
+      rarityRank: row.rarity_rank,
+      cardCount: row.card_count,
+    }));
+  },
+
+  async listFusionCards(database, { playerId, cardTemplateId }) {
+    const result = await database.query(
+      `
+        SELECT
+          ci.card_instance_id,
+          ci.public_card_id,
+          ci.card_template_id,
+          ci.owner_player_id,
+          ci.serial_number,
+          ci.card_level,
+          ci.status,
+          ci.market_lock,
+          ci.trade_lock,
+          ci.user_lock,
+          ct.player_name,
+          ct.primary_position,
+          ct.secondary_position,
+          r.rarity_code,
+          r.display_name AS rarity_name,
+          FALSE AS in_lineup
+        FROM card_instances ci
+        JOIN card_templates ct ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
+        WHERE ci.owner_player_id = $1
+          AND ci.card_template_id = $2
+          AND ci.status = 'ACTIVE'
+          AND ci.market_lock = FALSE
+          AND ci.trade_lock = FALSE
+          AND NOT EXISTS (
+            SELECT 1 FROM lineup_slots ls
+            WHERE ls.card_instance_id = ci.card_instance_id
+          )
+        ORDER BY ci.card_level, ci.obtained_at, ci.card_instance_id
+      `,
+      [playerId, cardTemplateId],
+    );
+    return result.rows.map(mapCard);
+  },
+
   async findCardsForUpdate(database, cardInstanceIds) {
     const result = await database.query(
       `
@@ -28,7 +120,12 @@ export const upgradeRepository = Object.freeze({
           ci.status,
           ci.market_lock,
           ci.trade_lock,
+          ci.user_lock,
           ct.player_name,
+          ct.primary_position,
+          ct.secondary_position,
+          r.rarity_code,
+          r.display_name AS rarity_name,
           EXISTS (
             SELECT 1 FROM lineup_slots ls
             WHERE ls.card_instance_id = ci.card_instance_id
@@ -36,6 +133,7 @@ export const upgradeRepository = Object.freeze({
         FROM card_instances ci
         JOIN card_templates ct
           ON ct.card_template_id = ci.card_template_id
+        JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ci.card_instance_id = ANY($1::BIGINT[])
         ORDER BY ci.card_instance_id
         FOR UPDATE OF ci
@@ -44,6 +142,18 @@ export const upgradeRepository = Object.freeze({
     );
 
     return result.rows.map(mapCard);
+  },
+
+  async findItemQuantity(database, { playerId, itemType }) {
+    const result = await database.query(
+      `
+        SELECT quantity
+        FROM player_items
+        WHERE player_id = $1 AND item_type = $2
+      `,
+      [playerId, itemType],
+    );
+    return Number(result.rows[0]?.quantity ?? 0);
   },
 
   async destroyFusionSources(database, cardInstanceIds) {
@@ -63,18 +173,18 @@ export const upgradeRepository = Object.freeze({
     return result.rowCount;
   },
 
-  async decrementCirculation(database, cardTemplateId) {
+  async decrementCirculation(database, cardTemplateId, amount) {
     const result = await database.query(
       `
         UPDATE card_mint_counters
         SET
-          current_circulation = current_circulation - 2,
+          current_circulation = current_circulation - $2,
           updated_at = CURRENT_TIMESTAMP
         WHERE card_template_id = $1
-          AND current_circulation >= 2
+          AND current_circulation >= $2
         RETURNING current_circulation
       `,
-      [cardTemplateId],
+      [cardTemplateId, amount],
     );
 
     return result.rows[0]?.current_circulation ?? null;
@@ -111,14 +221,14 @@ export const upgradeRepository = Object.freeze({
           source_card_instance_id,
           source_level
         )
-        VALUES ($1, $2, $3), ($1, $4, $5)
+        SELECT $1, source_card_instance_id, source_level
+        FROM UNNEST($2::BIGINT[], $3::SMALLINT[])
+          AS source(source_card_instance_id, source_level)
       `,
       [
         fusionId,
-        sourceCards[0].cardInstanceId,
-        sourceCards[0].cardLevel,
-        sourceCards[1].cardInstanceId,
-        sourceCards[1].cardLevel,
+        sourceCards.map((card) => card.cardInstanceId),
+        sourceCards.map((card) => card.cardLevel),
       ],
     );
   },
@@ -137,13 +247,17 @@ export const upgradeRepository = Object.freeze({
           reference_type,
           reference_id
         )
-        VALUES
-          ($1, $3, NULL, 'FUSION', 'FUSION', $4),
-          ($2, $3, NULL, 'FUSION', 'FUSION', $4)
+        SELECT
+          source_card_instance_id,
+          $2,
+          NULL,
+          'FUSION',
+          'FUSION',
+          $3
+        FROM UNNEST($1::BIGINT[]) AS source(source_card_instance_id)
       `,
       [
-        sourceCards[0].cardInstanceId,
-        sourceCards[1].cardInstanceId,
+        sourceCards.map((card) => card.cardInstanceId),
         playerId,
         fusionId,
       ],

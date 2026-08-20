@@ -211,7 +211,7 @@ function leaderCard(title, player, stat, x, color) {
     <text x="${x}" y="672" text-anchor="middle" class="leader-stat">${escapeXml(stat)}</text>`;
 }
 
-async function createReportSvg(result, ownerDisplayName) {
+async function createReportSvg(result, ownerDisplayName, opponentDisplayName) {
   const { playerTeam, aiTeam } = getTeams(result);
   const mvp = selectGameMvp(result);
   const leaders = selectGameLeaders(result);
@@ -220,6 +220,7 @@ async function createReportSvg(result, ownerDisplayName) {
     rarityCode: mvp.rarityCode,
   })).toString("base64");
   const ownerName = truncate(ownerDisplayName, 24);
+  const opponentName = truncate(opponentDisplayName, 24);
   const bracket = String(result.reward?.bracketName ?? "Battle").toUpperCase();
   const won = playerTeam.finalScore > aiTeam.finalScore;
   const outcome = won ? "VICTORY" : "DEFEAT";
@@ -280,7 +281,7 @@ async function createReportSvg(result, ownerDisplayName) {
       <text x="472" y="194" text-anchor="middle" class="score" fill="#f59e0b">${playerTeam.finalScore}</text>
       <text x="600" y="184" text-anchor="middle" class="final">FINAL</text>
       <text x="728" y="194" text-anchor="middle" class="score" fill="#60a5fa">${aiTeam.finalScore}</text>
-      <text x="955" y="147" text-anchor="middle" class="team-name" fill="${TEAM_TWO_COLOR}">AI OPPONENT</text>
+      <text x="955" y="147" text-anchor="middle" class="team-name" fill="${TEAM_TWO_COLOR}">${escapeXml(opponentName.toUpperCase())}</text>
       <text x="600" y="224" text-anchor="middle" class="outcome" fill="${outcomeColor}">${outcome}</text>
 
       <rect x="42" y="266" width="1116" height="270" rx="12" fill="#0d141b"
@@ -314,7 +315,7 @@ async function createReportSvg(result, ownerDisplayName) {
       ${leaderCard("DEFENSE", leaders.defense, `${leaders.defense.steals} STL · ${leaders.defense.blocks} BLK`, 1018, leaders.defense.teamNumber === 1 ? TEAM_ONE_COLOR : TEAM_TWO_COLOR)}
 
       ${teamTable(result, playerTeam, mvp, { y: 711, color: TEAM_ONE_COLOR, title: `TEAM 1 · ${ownerName.toUpperCase()}` })}
-      ${teamTable(result, aiTeam, mvp, { y: 1025, color: TEAM_TWO_COLOR, title: "TEAM 2 · AI OPPONENT" })}
+      ${teamTable(result, aiTeam, mvp, { y: 1025, color: TEAM_TWO_COLOR, title: `TEAM 2 · ${opponentName.toUpperCase()}` })}
 
       <text x="600" y="1362" text-anchor="middle" class="brand">SLAMDUNK BOT</text>
     </svg>`;
@@ -322,10 +323,17 @@ async function createReportSvg(result, ownerDisplayName) {
 
 export async function createBattleReportImage(
   result,
-  { ownerDisplayName = "Your Team" } = {},
+  {
+    ownerDisplayName = "Your Team",
+    opponentDisplayName = "AI Opponent",
+  } = {},
 ) {
   const sharp = await getSharp();
-  return sharp(Buffer.from(await createReportSvg(result, ownerDisplayName)))
+  return sharp(Buffer.from(await createReportSvg(
+    result,
+    ownerDisplayName,
+    opponentDisplayName,
+  )))
     .png({ compressionLevel: 9 })
     .toBuffer();
 }

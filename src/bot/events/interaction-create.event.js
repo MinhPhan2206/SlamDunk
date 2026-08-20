@@ -5,6 +5,25 @@ function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
 
+function isUnknownInteraction(error) {
+  return error?.code === 10_062 || error?.rawError?.code === 10_062;
+}
+
+async function respondEmptyAutocomplete(interaction, interactionLabel) {
+  if (interaction.responded) return;
+  try {
+    await interaction.respond([]);
+  } catch (error) {
+    if (isUnknownInteraction(error)) {
+      console.warn(`Discord ${interactionLabel} expired before it could respond.`);
+      return;
+    }
+    console.error(
+      `Failed to send autocomplete fallback: ${getErrorMessage(error)}`,
+    );
+  }
+}
+
 async function sendErrorResponse(interaction) {
   const message = {
     content: "Something went wrong while executing this command.",
@@ -42,16 +61,20 @@ export function createInteractionCreateHandler(
       interactionLabel = `autocomplete /${interaction.commandName}`;
       if (!handler?.autocomplete) {
         console.warn(`Unknown Discord interaction received: ${interactionLabel}`);
-        await interaction.respond([]);
+        await respondEmptyAutocomplete(interaction, interactionLabel);
         return;
       }
       try {
         await handler.autocomplete(interaction, context);
       } catch (error) {
+        if (isUnknownInteraction(error)) {
+          console.warn(`Discord ${interactionLabel} expired before it could respond.`);
+          return;
+        }
         console.error(
           `Discord ${interactionLabel} failed: ${getErrorMessage(error)}`,
         );
-        if (!interaction.responded) await interaction.respond([]);
+        await respondEmptyAutocomplete(interaction, interactionLabel);
       }
       return;
     }

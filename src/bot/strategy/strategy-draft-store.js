@@ -13,6 +13,14 @@ const STRATEGY_FIELDS = Object.freeze([
   "rebounding",
 ]);
 
+const LINEUP_SLOT_ORDER = Object.freeze({ PG: 0, SG: 1, SF: 2, PF: 3, C: 4 });
+const TENDENCY_FIELDS = Object.freeze([
+  "decision",
+  "shotProfile",
+  "creationRole",
+  "usage",
+]);
+
 function strategiesEqual(left, right) {
   return STRATEGY_FIELDS.every((field) => field === "playerTendencies"
     ? JSON.stringify(left[field]) === JSON.stringify(right[field])
@@ -140,11 +148,16 @@ export function createStrategyDraftStore({
       } while (sessions.has(sessionId));
 
       const normalizedStrategy = normalizeLineupStrategy(strategy);
-      const lineupPlayers = Object.freeze(players.map((player) => Object.freeze({
-        slot: String(player.slot),
-        cardInstanceId: String(player.cardInstanceId),
-        playerName: String(player.playerName),
-      })));
+      const lineupPlayers = Object.freeze(players
+        .map((player) => Object.freeze({
+          slot: String(player.slot),
+          cardInstanceId: String(player.cardInstanceId),
+          playerName: String(player.playerName),
+        }))
+        .sort((left, right) =>
+          (LINEUP_SLOT_ORDER[left.slot] ?? Number.MAX_SAFE_INTEGER) -
+            (LINEUP_SLOT_ORDER[right.slot] ?? Number.MAX_SAFE_INTEGER) ||
+          left.playerName.localeCompare(right.playerName)));
       const session = {
         sessionId,
         ownerDiscordUserId: String(ownerDiscordUserId),
@@ -157,6 +170,7 @@ export function createStrategyDraftStore({
         view: "summary",
         players: lineupPlayers,
         selectedTendencyCardId: lineupPlayers[0]?.cardInstanceId ?? null,
+        selectedTendencyField: "decision",
         message: null,
         messageId: null,
         editMessage: null,
@@ -204,6 +218,10 @@ export function createStrategyDraftStore({
         "summary", "customize", "tendencyPlayers", "tendencyPlayer",
       ].includes(view)) return null;
       session.view = view;
+      if (view === "tendencyPlayer" && !session.players.some((player) =>
+        player.cardInstanceId === session.selectedTendencyCardId)) {
+        session.selectedTendencyCardId = session.players[0]?.cardInstanceId ?? null;
+      }
       return session;
     },
 
@@ -214,6 +232,13 @@ export function createStrategyDraftStore({
         player.cardInstanceId === normalized)) return null;
       session.selectedTendencyCardId = normalized;
       session.view = "tendencyPlayer";
+      return session;
+    },
+
+    selectTendencyField(sessionId, field) {
+      const session = get(sessionId);
+      if (!session || !TENDENCY_FIELDS.includes(field)) return null;
+      session.selectedTendencyField = field;
       return session;
     },
 

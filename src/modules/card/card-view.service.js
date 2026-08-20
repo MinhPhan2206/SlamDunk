@@ -1,5 +1,6 @@
 import { getActualCardStats } from "./card-stats.js";
 import { CardError } from "./card.errors.js";
+import { normalizeCardSearchQuery, searchCardTemplates } from "./card-search.js";
 import { cardViewRepository } from "./card-view.repository.js";
 
 function normalizeId(value, fieldName) {
@@ -26,6 +27,21 @@ function withActualStats(card) {
 }
 
 export function createCardViewService({ databasePool, traitService }) {
+  let searchCatalogPromise = null;
+
+  function searchCatalog(database) {
+    if (database !== databasePool) {
+      return cardViewRepository.listSearchableTemplates(database);
+    }
+    searchCatalogPromise ??=
+      cardViewRepository.listSearchableTemplates(databasePool)
+        .catch((error) => {
+          searchCatalogPromise = null;
+          throw error;
+        });
+    return searchCatalogPromise;
+  }
+
   return Object.freeze({
     async getInstance(cardInstanceId, { database = databasePool } = {}) {
       const card = await cardViewRepository.findInstanceById(
@@ -61,20 +77,20 @@ export function createCardViewService({ databasePool, traitService }) {
     },
 
     async findTemplatesByName(playerName, { database = databasePool } = {}) {
-      const normalized = String(playerName).trim();
+      const normalized = normalizeCardSearchQuery(playerName);
       if (!normalized) return Object.freeze([]);
-      return Object.freeze(
-        await cardViewRepository.findTemplatesByExactName(database, normalized),
-      );
+      const templates = await searchCatalog(database);
+      return Object.freeze(templates.filter((template) =>
+        normalizeCardSearchQuery(template.playerName) === normalized));
     },
 
     async searchTemplates(query, { database = databasePool, limit = 25 } = {}) {
       const safeLimit = Math.min(Math.max(Number(limit) || 25, 1), 25);
-      return Object.freeze(await cardViewRepository.searchTemplates(
-        database,
-        String(query ?? "").trim().slice(0, 100),
-        safeLimit,
-      ));
+      return searchCardTemplates(
+        await searchCatalog(database),
+        query,
+        { limit: safeLimit },
+      );
     },
 
     async getTraits(cardTemplateId, options = {}) {

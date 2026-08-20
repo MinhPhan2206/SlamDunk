@@ -81,10 +81,10 @@ export const gameConfig = Object.freeze({
   daily: Object.freeze({
     cooldownHours: 24,
     xpReward: 300,
-    minimumGold: 1_500,
-    maximumGold: 2_000,
-    minimumShards: 20,
-    maximumShards: 30,
+    minimumGold: 500_000,
+    maximumGold: 500_000,
+    minimumShards: 100_000,
+    maximumShards: 100_000,
   }),
   weekly: Object.freeze({
     cooldownHours: 168,

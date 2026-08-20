@@ -57,3 +57,27 @@ test("Strategy draft expiry discards the session and disables its controls", asy
   assert.equal(edits[0].embeds[0].footer.text, "Interaction Expired");
   store.stop();
 });
+
+test("Strategy players use basketball position order", () => {
+  const store = createStrategyDraftStore();
+  const session = store.create({
+    ownerDiscordUserId: "234567890123456789",
+    playerId: "7",
+    lineupId: "9",
+    strategy: DEFAULT_LINEUP_STRATEGY,
+    strategyRevision: 1,
+    players: [
+      { slot: "SF", cardInstanceId: "103", playerName: "Forward" },
+      { slot: "C", cardInstanceId: "105", playerName: "Center" },
+      { slot: "PG", cardInstanceId: "101", playerName: "Guard" },
+      { slot: "PF", cardInstanceId: "104", playerName: "Power" },
+      { slot: "SG", cardInstanceId: "102", playerName: "Shooting" },
+    ],
+  });
+
+  assert.deepEqual(session.players.map((player) => player.slot), [
+    "PG", "SG", "SF", "PF", "C",
+  ]);
+  assert.equal(session.selectedTendencyCardId, "101");
+  store.stop();
+});

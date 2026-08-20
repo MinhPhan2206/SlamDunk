@@ -52,6 +52,7 @@ export function createBattlePlayback({
     try {
       const reportImage = await renderReportImage(session.result, {
         ownerDisplayName: session.ownerDisplayName,
+        opponentDisplayName: session.opponentDisplayName,
       });
       await interaction.followUp({
         content: rewardEmbed

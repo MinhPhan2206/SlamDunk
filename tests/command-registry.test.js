@@ -10,10 +10,10 @@ test("Slash command registry has valid unique command definitions", () => {
   assert.equal(new Set(names).size, names.length);
   for (const expected of [
     "market", "sell", "unlist", "buy", "upgrade", "level-up", "card",
-    "wallet", "bag", "strategy", "welcome", "practice",
+    "wallet", "bag", "strategy", "welcome", "practice", "compare",
   ]) {
     assert.ok(names.includes(expected));
   }
   assert.equal(payload.find((command) => command.name === "market").options[0].name, "page");
-  assert.equal(payload.find((command) => command.name === "upgrade").options[0].name, "card_a");
+  assert.equal(payload.find((command) => command.name === "upgrade").options.length, 0);
 });

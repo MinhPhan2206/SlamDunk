@@ -174,6 +174,21 @@ export function createLineupService({ databasePool }) {
           );
         }
 
+        const existingPlayerSlot = await lineupRepository.findSlotByPlayerName(
+          transactionDatabase,
+          {
+            lineupId: lineup.lineupId,
+            playerName: card.player_name,
+            excludedSlot: normalizedSlot,
+          },
+        );
+        if (existingPlayerSlot) {
+          throw new LineupError(
+            "PLAYER_ALREADY_IN_LINEUP",
+            `${card.player_name} is already assigned to ${existingPlayerSlot}.`,
+          );
+        }
+
         await lineupRepository.setSlot(transactionDatabase, {
           lineupId: lineup.lineupId,
           slot: normalizedSlot,

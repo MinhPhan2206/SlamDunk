@@ -274,6 +274,7 @@ test("Battle Simulate button skips playback and is owner-only", async () => {
 test("Friendly Duel requires both participants to vote before simulation", async () => {
   const edits = [];
   const reports = [];
+  let reportOptions;
   const result = resultFixture();
   result.match.mode = "PVP_FRIENDLY_5V5";
   result.match.inputSnapshot.opponentDisplayName = "Opponent";
@@ -287,7 +288,10 @@ test("Friendly Duel requires both participants to vote before simulation", async
     schedule() { return { unref() {} }; },
     cancel() {},
     async renderDuelMatchupImage() { return Buffer.from("duel-matchup"); },
-    async renderReportImage() { return Buffer.from("duel-report"); },
+    async renderReportImage(_result, options) {
+      reportOptions = options;
+      return Buffer.from("duel-report");
+    },
   });
   const interaction = {
     async editReply(payload) { edits.push(payload); },
@@ -319,4 +323,8 @@ test("Friendly Duel requires both participants to vote before simulation", async
   assert.match(edits.at(-1).embeds[1].toJSON().footer.text, /Friendly Duel complete \(simulated\)/);
   assert.equal(reports.length, 1);
   assert.equal(reports[0].files[0].attachment.toString(), "duel-report");
+  assert.deepEqual(reportOptions, {
+    ownerDisplayName: "Challenger",
+    opponentDisplayName: "Opponent",
+  });
 });

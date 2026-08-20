@@ -146,6 +146,85 @@ test("/card autocomplete is routed and returns player plus rarity choices", asyn
   assert.deepEqual(choices, [{ name: "Test Player — Alpha", value: "template:20" }]);
 });
 
+test("expired Card autocomplete does not retry or reject the Discord event", async () => {
+  let responses = 0;
+  const interaction = {
+    commandName: "card",
+    responded: false,
+    options: { getFocused: () => "test" },
+    isAutocomplete: () => true,
+    async respond() {
+      responses += 1;
+      throw Object.assign(new Error("Unknown interaction"), { code: 10_062 });
+    },
+  };
+  const handler = createInteractionCreateHandler(
+    new Map([["card", cardCommand]]),
+    { services: { cardView: { async searchTemplates() { return [card()]; } } } },
+  );
+  const originalWarn = console.warn;
+  console.warn = () => {};
+  try {
+    await handler(interaction);
+  } finally {
+    console.warn = originalWarn;
+  }
+  assert.equal(responses, 1);
+});
+
+test("card name search offers owner-bound suggestions and opens the selected Card", async () => {
+  let reply;
+  const candidates = [
+    card({ cardTemplateId: "21", playerName: "Jalen Brunson" }),
+    card({ cardTemplateId: "22", playerName: "Jaylen Brown" }),
+    card({ cardTemplateId: "23", playerName: "Jimmy Butler" }),
+  ];
+  await cardCommand.execute({
+    user: { id: "805986648973770783", username: "CardTester" },
+    options: { getString: () => "jb" },
+    async deferReply() {},
+    async editReply(payload) { reply = payload; },
+  }, {
+    services: {
+      cardView: {
+        async findTemplatesByName() { return []; },
+        async searchTemplates(query, options) {
+          assert.equal(query, "jb");
+          assert.deepEqual(options, { limit: 10 });
+          return candidates;
+        },
+      },
+    },
+  });
+
+  assert.equal(reply.embeds[0].toJSON().title, "CARD SEARCH");
+  assert.match(reply.embeds[0].toJSON().description, /jb/);
+  const menu = reply.components[0].components[0].toJSON();
+  assert.equal(menu.custom_id, "card:search:805986648973770783");
+  assert.deepEqual(menu.options.map((option) => option.label), [
+    "Jalen Brunson", "Jaylen Brown", "Jimmy Butler",
+  ]);
+
+  let selectedReply;
+  await cardComponent.execute({
+    customId: "card:search:805986648973770783",
+    values: ["22"],
+    user: { id: "805986648973770783" },
+    async deferUpdate() {},
+    async editReply(payload) { selectedReply = payload; },
+  }, {
+    services: {
+      cardView: {
+        async getTemplate(cardTemplateId) {
+          assert.equal(cardTemplateId, "22");
+          return candidates[1];
+        },
+      },
+    },
+  });
+  assert.match(selectedReply.embeds[0].toJSON().description, /JAYLEN BROWN/);
+});
+
 test("Card Battle Stats tab is vertical and restricted to the original viewer", async () => {
   let reply;
   const services = {

@@ -116,6 +116,69 @@ export function createCardInstanceService({
     return instance;
   }
 
+  async function validateMints(transactionDatabase, mints) {
+    const templateIds = [...new Set(mints.map((mint) => mint.cardTemplateId))];
+    for (const cardTemplateId of templateIds) {
+      await cardTemplateService.getTemplate(cardTemplateId, {
+        database: transactionDatabase,
+      });
+    }
+
+    const ownerIds = [...new Set(mints.map((mint) => mint.ownerPlayerId))];
+    for (const ownerPlayerId of ownerIds) {
+      const owner = await playerService.getPlayerById(ownerPlayerId, {
+        database: transactionDatabase,
+      });
+      if (!owner) {
+        throw new CardError(
+          "PLAYER_NOT_FOUND",
+          "Card owner Player was not found.",
+        );
+      }
+    }
+  }
+
+  async function mintValidatedCard(transactionDatabase, mint) {
+    const counter = await cardMintCounterRepository.allocateNextSerial(
+      transactionDatabase,
+      mint.cardTemplateId,
+    );
+    let instance = null;
+    for (let attempt = 0; attempt < PUBLIC_CARD_ID_ATTEMPTS; attempt += 1) {
+      instance = await cardInstanceRepository.create(
+        transactionDatabase,
+        {
+          cardTemplateId: mint.cardTemplateId,
+          ownerPlayerId: mint.ownerPlayerId,
+          serialNumber: counter.lastSerialNumber,
+          cardLevel: mint.cardLevel,
+          obtainedMethod: mint.obtainedMethod,
+          publicCardId: generatePublicCardId(),
+        },
+      );
+      if (instance) break;
+    }
+    if (!instance) {
+      throw new CardError(
+        "PUBLIC_CARD_ID_EXHAUSTED",
+        "A unique public Card ID could not be allocated.",
+      );
+    }
+    const ownershipHistory = await cardOwnershipRepository.create(
+      transactionDatabase,
+      {
+        cardInstanceId: instance.cardInstanceId,
+        fromPlayerId: null,
+        toPlayerId: mint.ownerPlayerId,
+        reason: CREATION_REASONS[mint.obtainedMethod],
+        referenceType: mint.referenceType,
+        referenceId: mint.referenceId,
+      },
+    );
+
+    return Object.freeze({ instance, counter, ownershipHistory });
+  }
+
   return Object.freeze({
     async lockOwnedCard(
       { ownerPlayerId, cardInstanceId },
@@ -499,58 +562,27 @@ export function createCardInstanceService({
         databasePool,
         database,
         async (transactionDatabase) => {
-          await cardTemplateService.getTemplate(mint.cardTemplateId, {
-            database: transactionDatabase,
-          });
-          const owner = await playerService.getPlayerById(mint.ownerPlayerId, {
-            database: transactionDatabase,
-          });
+          await validateMints(transactionDatabase, [mint]);
+          return mintValidatedCard(transactionDatabase, mint);
+        },
+      );
+    },
 
-          if (!owner) {
-            throw new CardError(
-              "PLAYER_NOT_FOUND",
-              "Card owner Player was not found.",
-            );
+    async mintCards(inputs, { database } = {}) {
+      if (!Array.isArray(inputs) || inputs.length < 1 || inputs.length > 5) {
+        throw new TypeError("Card mint batch requires between one and five cards.");
+      }
+      const mints = inputs.map(normalizeMintInput);
+      return useTransaction(
+        databasePool,
+        database,
+        async (transactionDatabase) => {
+          await validateMints(transactionDatabase, mints);
+          const results = [];
+          for (const mint of mints) {
+            results.push(await mintValidatedCard(transactionDatabase, mint));
           }
-
-          const counter = await cardMintCounterRepository.allocateNextSerial(
-            transactionDatabase,
-            mint.cardTemplateId,
-          );
-          let instance = null;
-          for (let attempt = 0; attempt < PUBLIC_CARD_ID_ATTEMPTS; attempt += 1) {
-            instance = await cardInstanceRepository.create(
-              transactionDatabase,
-              {
-                cardTemplateId: mint.cardTemplateId,
-                ownerPlayerId: mint.ownerPlayerId,
-                serialNumber: counter.lastSerialNumber,
-                cardLevel: mint.cardLevel,
-                obtainedMethod: mint.obtainedMethod,
-                publicCardId: generatePublicCardId(),
-              },
-            );
-            if (instance) break;
-          }
-          if (!instance) {
-            throw new CardError(
-              "PUBLIC_CARD_ID_EXHAUSTED",
-              "A unique public Card ID could not be allocated.",
-            );
-          }
-          const ownershipHistory = await cardOwnershipRepository.create(
-            transactionDatabase,
-            {
-              cardInstanceId: instance.cardInstanceId,
-              fromPlayerId: null,
-              toPlayerId: mint.ownerPlayerId,
-              reason: CREATION_REASONS[mint.obtainedMethod],
-              referenceType: mint.referenceType,
-              referenceId: mint.referenceId,
-            },
-          );
-
-          return Object.freeze({ instance, counter, ownershipHistory });
+          return Object.freeze(results);
         },
       );
     },

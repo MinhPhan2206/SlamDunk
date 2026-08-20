@@ -12,6 +12,8 @@ import { helpComponent } from "./help.component.js";
 import { welcomeComponent } from "./welcome.component.js";
 import { rarityPageComponent } from "./rarity-page.component.js";
 import { duelComponent } from "./duel.component.js";
+import { upgradeComponent } from "./upgrade.component.js";
+import { compareComponent } from "./compare.component.js";
 
 export const components = Object.freeze([
   dropSelectionComponent,
@@ -28,4 +30,6 @@ export const components = Object.freeze([
   helpComponent,
   welcomeComponent,
   rarityPageComponent,
+  upgradeComponent,
+  compareComponent,
 ]);

@@ -75,16 +75,19 @@ test("Strategy owner customizes a draft and saves with optimistic revision", asy
       services,
       strategyDrafts: store,
     });
-    assert.equal(tendencies.calls[1][1].components.length, 2);
+    assert.equal(store.get(session.sessionId).view, "tendencyPlayer");
+    assert.equal(store.get(session.sessionId).selectedTendencyCardId, "101");
+    assert.equal(tendencies.calls[1][1].components.length, 4);
 
-    const player = interaction(`strategy:player:${session.sessionId}`, {
-      values: ["101"],
-    });
-    await strategyComponent.execute(player.value, {
+    const shotCategory = interaction(`strategy:editShot:${session.sessionId}`);
+    await strategyComponent.execute(shotCategory.value, {
       services,
       strategyDrafts: store,
     });
-    assert.equal(player.calls[1][1].components.length, 5);
+    assert.equal(
+      store.get(session.sessionId).selectedTendencyField,
+      "shotProfile",
+    );
 
     const decision = interaction(`strategy:decision:${session.sessionId}`, {
       values: ["PASS_FIRST"],
