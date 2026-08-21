@@ -1,5 +1,4 @@
 import { getCardArtPath, readCardArt } from "./card-art.js";
-import { colorHex, rarityColor } from "./theme.js";
 
 let sharpModule;
 const RESIZED_ART_CACHE_LIMIT = 256;
@@ -12,8 +11,8 @@ async function getSharp() {
 
 function dimensions(cardCount) {
   if (cardCount === 1) return { cardWidth: 400, cardHeight: 625, gap: 0 };
-  if (cardCount <= 3) return { cardWidth: 240, cardHeight: 375, gap: 16 };
-  return { cardWidth: 170, cardHeight: 266, gap: 14 };
+  if (cardCount <= 3) return { cardWidth: 240, cardHeight: 375, gap: 6 };
+  return { cardWidth: 170, cardHeight: 266, gap: 6 };
 }
 
 function escapeXml(value) {
@@ -54,29 +53,25 @@ export async function createCardStripImage(cards, { labels = [] } = {}) {
   if (!Array.isArray(cards) || cards.length < 1 || cards.length > 5) {
     throw new TypeError("Card strip requires between one and five cards.");
   }
+  if (cards.length === 1 && labels[0] === undefined) {
+    return readCardArt(cards[0]);
+  }
   const { cardWidth, cardHeight, gap } = dimensions(cards.length);
-  const padding = 24;
+  const padding = 8;
   const width = padding * 2 + cardWidth * cards.length + gap * (cards.length - 1);
   const height = cardHeight + padding * 2;
-  const imageWidth = cardWidth - 8;
-  const imageHeight = cardHeight - 8;
+  const imageWidth = cardWidth;
+  const imageHeight = cardHeight;
   const sources = await Promise.all(
     cards.map((card) => getResizedCardArt(card, imageWidth, imageHeight)),
   );
-  const overlayElements = cards.map((card, index) => {
+  const overlayElements = cards.map((_, index) => {
     const x = padding + index * (cardWidth + gap);
-    const border = colorHex(rarityColor(card.rarityCode));
-    const label = labels[index] === undefined
+    return labels[index] === undefined
       ? ""
-      : `<circle cx="${x + 24}" cy="${padding + 24}" r="18" fill="#0f172a" stroke="${border}" stroke-width="3"/>
+      : `<circle cx="${x + 24}" cy="${padding + 24}" r="18" fill="#0f172a"/>
          <text x="${x + 24}" y="${padding + 31}" text-anchor="middle" fill="#f8fafc"
            font-family="Arial, sans-serif" font-size="20" font-weight="700">${escapeXml(labels[index])}</text>`;
-    return `
-      <g>
-        <rect x="${x}" y="${padding}" width="${cardWidth}" height="${cardHeight}" rx="12"
-          fill="none" stroke="${border}" stroke-width="4"/>
-        ${label}
-      </g>`;
   }).join("");
   const background = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
@@ -89,8 +84,8 @@ export async function createCardStripImage(cards, { labels = [] } = {}) {
   const sharp = await getSharp();
   const images = sources.map((input, index) => ({
     input,
-    left: padding + index * (cardWidth + gap) + 4,
-    top: padding + 4,
+    left: padding + index * (cardWidth + gap),
+    top: padding,
   }));
   return sharp(Buffer.from(background))
     .composite([...images, { input: Buffer.from(overlay) }])

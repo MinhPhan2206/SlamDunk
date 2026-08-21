@@ -11,7 +11,8 @@ import { DEFAULT_TENDENCY_PROFILE } from "../src/modules/tendency/index.js";
 
 function lineupRow(overrides = {}) {
   return {
-    lineup_id: "10", player_id: "7", name: "Active Lineup", is_active: true,
+    lineup_id: "10", player_id: "7", lineup_number: 1,
+    name: "Lineup 1", is_active: true,
     strategy_config: DEFAULT_LINEUP_STRATEGY, strategy_revision: 1,
     created_at: new Date("2026-01-01T00:00:00Z"),
     updated_at: new Date("2026-01-01T00:00:00Z"), ...overrides,
@@ -32,6 +33,7 @@ test("Lineup service reads players and atomically saves per-player Tendencies", 
   const database = {
     async query(sql, values) {
       queries.push({ sql, values });
+      if (sql.includes("FROM lineups")) return { rows: [lineupRow()] };
       if (sql.includes("INSERT INTO lineups")) return { rows: [lineupRow()] };
       if (sql.includes("FROM lineup_slots ls")) return { rows: [slotRow()] };
       if (sql.includes("UPDATE lineups")) {
@@ -52,7 +54,7 @@ test("Lineup service reads players and atomically saves per-player Tendencies", 
     { ...DEFAULT_TENDENCY_PROFILE, decision: "PASS_FIRST" },
   );
   const saved = await service.saveStrategy({
-    playerId: "7", strategy, expectedRevision: 1,
+    playerId: "7", lineupId: "10", strategy, expectedRevision: 1,
   });
   assert.equal(saved.strategyRevision, 2);
   assert.equal(saved.strategy.playerTendencies["101"].decision, "PASS_FIRST");
@@ -64,6 +66,7 @@ test("Lineup service reads players and atomically saves per-player Tendencies", 
 test("Lineup service rejects a stale strategy revision", async () => {
   const database = {
     async query(sql) {
+      if (sql.includes("FROM lineups")) return { rows: [lineupRow()] };
       if (sql.includes("INSERT INTO lineups")) return { rows: [lineupRow()] };
       if (sql.includes("FROM lineup_slots ls")) return { rows: [] };
       if (sql.includes("UPDATE lineups")) return { rows: [] };
@@ -73,7 +76,8 @@ test("Lineup service rejects a stale strategy revision", async () => {
   const service = createLineupService({ databasePool: database });
   await assert.rejects(
     service.saveStrategy({
-      playerId: "7", strategy: DEFAULT_LINEUP_STRATEGY, expectedRevision: 1,
+      playerId: "7", lineupId: "10",
+      strategy: DEFAULT_LINEUP_STRATEGY, expectedRevision: 1,
     }),
     (error) => error instanceof LineupError &&
       error.code === "STRATEGY_REVISION_CONFLICT",

@@ -2,6 +2,7 @@ function mapLineup(row) {
   return Object.freeze({
     lineupId: row.lineup_id,
     playerId: row.player_id,
+    lineupNumber: Number(row.lineup_number),
     name: row.name,
     isActive: row.is_active,
     strategyConfig: row.strategy_config,
@@ -35,26 +36,76 @@ function mapSlot(row) {
 
 export const lineupRepository = Object.freeze({
   async getOrCreate(database, playerId) {
-    const result = await database.query(
+    const active = await database.query(
       `
-        INSERT INTO lineups (player_id)
-        VALUES ($1)
-        ON CONFLICT (player_id) DO UPDATE
-          SET player_id = EXCLUDED.player_id
-        RETURNING
-          lineup_id,
-          player_id,
-          name,
-          is_active,
-          strategy_config,
-          strategy_revision,
-          created_at,
-          updated_at
+        SELECT
+          lineup_id, player_id, lineup_number, name, is_active,
+          strategy_config, strategy_revision, created_at, updated_at
+        FROM lineups
+        WHERE player_id = $1 AND is_active = TRUE
+        LIMIT 1
       `,
       [playerId],
     );
+    if (active.rows[0]) return mapLineup(active.rows[0]);
+    await database.query(
+      `
+        INSERT INTO lineups (player_id, lineup_number, name, is_active)
+        VALUES ($1, 1, 'Lineup 1', TRUE)
+        ON CONFLICT (player_id, lineup_number) DO NOTHING
+      `,
+      [playerId],
+    );
+    const created = await database.query(
+      `
+        SELECT
+          lineup_id, player_id, lineup_number, name, is_active,
+          strategy_config, strategy_revision, created_at, updated_at
+        FROM lineups
+        WHERE player_id = $1 AND is_active = TRUE
+        LIMIT 1
+      `,
+      [playerId],
+    );
+    return mapLineup(created.rows[0]);
+  },
 
+  async createSavedLineup(database, { playerId, lineupNumber }) {
+    const result = await database.query(
+      `
+        INSERT INTO lineups (
+          player_id, lineup_number, name, is_active
+        )
+        VALUES ($1, $2, $3, FALSE)
+        ON CONFLICT (player_id, lineup_number) DO UPDATE
+          SET player_id = EXCLUDED.player_id
+        RETURNING
+          lineup_id, player_id, lineup_number, name, is_active,
+          strategy_config, strategy_revision, created_at, updated_at
+      `,
+      [playerId, lineupNumber, `Lineup ${lineupNumber}`],
+    );
     return mapLineup(result.rows[0]);
+  },
+
+  async activate(database, { playerId, lineupNumber }) {
+    await database.query(
+      `UPDATE lineups SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP
+       WHERE player_id = $1 AND is_active = TRUE`,
+      [playerId],
+    );
+    const result = await database.query(
+      `
+        UPDATE lineups
+        SET is_active = TRUE, updated_at = CURRENT_TIMESTAMP
+        WHERE player_id = $1 AND lineup_number = $2
+        RETURNING
+          lineup_id, player_id, lineup_number, name, is_active,
+          strategy_config, strategy_revision, created_at, updated_at
+      `,
+      [playerId, lineupNumber],
+    );
+    return result.rows[0] ? mapLineup(result.rows[0]) : null;
   },
 
   async findSlots(database, lineupId) {
@@ -180,7 +231,7 @@ export const lineupRepository = Object.freeze({
 
   async updateStrategy(
     database,
-    { playerId, strategyConfig, expectedRevision },
+    { lineupId, strategyConfig, expectedRevision },
   ) {
     const result = await database.query(
       `
@@ -189,11 +240,12 @@ export const lineupRepository = Object.freeze({
           strategy_config = $2::jsonb,
           strategy_revision = strategy_revision + 1,
           updated_at = CURRENT_TIMESTAMP
-        WHERE player_id = $1
+        WHERE lineup_id = $1
           AND strategy_revision = $3
         RETURNING
           lineup_id,
           player_id,
+          lineup_number,
           name,
           is_active,
           strategy_config,
@@ -201,7 +253,7 @@ export const lineupRepository = Object.freeze({
           created_at,
           updated_at
       `,
-      [playerId, JSON.stringify(strategyConfig), expectedRevision],
+      [lineupId, JSON.stringify(strategyConfig), expectedRevision],
     );
 
     return result.rows[0] ? mapLineup(result.rows[0]) : null;

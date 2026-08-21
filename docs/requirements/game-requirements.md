@@ -106,6 +106,9 @@
   and the viewed Discord user's avatar.
 - Lineup displays a five-Card artwork strip, Actual Stat averages, and Battle
   record/win rate. Profile omits Collection size and Lineup status.
+- Each Player has three saved Lineups. `/lineup swap` changes the active
+  Lineup; Lineup editing, Strategy, Battle, Practice, and Duel use the active
+  Lineup.
 - Drop and Pack results are artwork-led. Odds use aligned text columns.
 - Interactive messages disable their controls and show `Interaction Expired`
   after their configured inactivity timeout.
@@ -125,31 +128,31 @@
 - All ledger entries and the cooldown update are one atomic, idempotent
   PostgreSQL transaction.
 
-## Player Level Milestone Rewards (Approved, Not Implemented)
+## Player Level Milestone Rewards
 
-Player Level milestone rewards are approved for a future implementation:
+`/level-rewards` atomically claims every earned, unclaimed milestone through
+Level 30. Card rewards are random active Card Templates at Card Level 1.
 
 | Level | Reward |
 | ---: | --- |
 | 1 | 5,000 Gold |
 | 3 | 300 Shards |
-| 5 | One random Alpha Card |
+| 5 | One Alpha Contract |
 | 10 | One Level Up item |
-| 15 | One random All-Star Card |
+| 15 | One All-Star Contract |
 | 20 | 2,000 Shards |
 | 25 | Two Level Up items |
-| 30 | 4,000 Shards and a special title |
-| 40 | 100,000 Gold |
-| 50 | One random Superstar Card at Level 1, two Level Up items, and a profile cosmetic |
-| 75 | One random Superstar Card at Level 3 and an exclusive title |
-| 100 | One player-selected GOAT Card at Level 1 |
+| 30 | 4,000 Shards and two All-Star Contracts |
 
-The Superstar and GOAT Cards granted by these milestones are account-bound.
-They may be used in Lineup, Battle, Lock, and Upgrade, but may not be traded,
-listed or purchased on Market, or quicksold. Account binding must propagate to
-any Card produced from a bound Card so that Fusion cannot remove the binding.
-Milestone claims must be persistent, atomic, and idempotent. No milestone
-reward, title, cosmetic, account-binding field, or claim flow is implemented yet.
+Milestone claims are persistent, atomic, and idempotent. Levels above 30,
+titles, cosmetics, and account-bound reward Cards remain deferred.
+
+`Alpha Contract` (`ALPHA_CONTRACT`) and `All-Star Contract`
+(`ALL_STAR_CONTRACT`) are Inventory items. `/contract` consumes the selected
+Contract and mints one random active Card of the matching rarity. Its initial
+Card Level uses the shared weighted roll: Level 1 45%, Level 2 28%, Level 3
+14%, Level 4 8%, and Level 5 5%. Contract consumption, Card minting, ownership
+history, and the opening record are one atomic, idempotent transaction.
 
 ## Battle Rewards
 

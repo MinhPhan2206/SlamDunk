@@ -2,6 +2,7 @@ import { SlashCommandBuilder } from "discord.js";
 
 import { gameConfig } from "../../config/game-config.js";
 import { BattleError } from "../../modules/battle/index.js";
+import { battleAccessError } from "../access/community-access.js";
 
 function addOpponentBracketOption(option) {
   option
@@ -39,8 +40,13 @@ export const battleCommand = Object.freeze({
     .setDescription("Battle the SlamDunk AI with your active lineup.")
     .addStringOption(addOpponentBracketOption),
 
-  async execute(interaction, { services, battlePlayback }) {
+  async execute(interaction, { services, battlePlayback, communityAccess }) {
     await interaction.deferReply();
+    const accessError = battleAccessError(interaction, communityAccess);
+    if (accessError) {
+      await interaction.editReply({ content: accessError, embeds: [], components: [] });
+      return;
+    }
     const player = await services.player.getOrCreatePlayer({
       discordUserId: interaction.user.id,
       usernameSnapshot: interaction.user.username,

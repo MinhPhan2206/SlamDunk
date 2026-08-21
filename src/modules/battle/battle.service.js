@@ -5,7 +5,7 @@ import {
   CARD_STAT_FIELDS,
   getActualCardStats,
 } from "../card/index.js";
-import { EconomyCurrency } from "../economy/index.js";
+import { EconomyCurrency, EconomyError } from "../economy/index.js";
 import { cooldownRepository } from "../reward/cooldown.repository.js";
 import { BattleError } from "./battle.errors.js";
 import { selectAiMatchup } from "./ai-matchup.js";
@@ -28,6 +28,10 @@ const PRACTICE_COOLDOWN_TYPE = "PRACTICE";
 const DUEL_COOLDOWN_TYPE = "DUEL";
 const BATTLE_TRANSACTION_TYPE = "BATTLE_REWARD";
 const BATTLE_REFERENCE_TYPE = "BATTLE_MATCH";
+const DUEL_REFERENCE_TYPE = "DUEL";
+const DUEL_STAKE_TRANSACTION_TYPE = "DUEL_BET_STAKE";
+const DUEL_REFUND_TRANSACTION_TYPE = "DUEL_BET_REFUND";
+const DUEL_PAYOUT_TRANSACTION_TYPE = "DUEL_BET_PAYOUT";
 
 function normalizeId(value, fieldName) {
   const normalized = String(value);
@@ -40,6 +44,16 @@ function normalizeId(value, fieldName) {
 function normalizeInteractionId(value) {
   if (typeof value !== "string" || !/^\d+$/.test(value)) {
     throw new TypeError("interactionId must be a numeric string.");
+  }
+  return value;
+}
+
+function normalizeDuelBet(value, maximumBetGold) {
+  if (!Number.isSafeInteger(value) || value < 0 || value > maximumBetGold) {
+    throw new BattleError(
+      "DUEL_BET_INVALID",
+      `Bet must be between 0 and ${maximumBetGold.toLocaleString("en-US")} Gold.`,
+    );
   }
   return value;
 }
@@ -134,6 +148,7 @@ function validateConfig(config) {
   positiveInteger(config.practice, "cooldownSeconds");
   positiveInteger(config.duel, "cooldownSeconds");
   positiveInteger(config.duel, "invitationSeconds");
+  positiveInteger(config.duel, "maximumBetGold");
   for (const field of ["firstFive", "nextFive", "afterTen"]) {
     positiveInteger(config.streakBonusBasisPointsPerWin, field);
   }
@@ -288,6 +303,74 @@ export function createBattleService({
     return Object.freeze({ challenge, challenger, challenged });
   }
 
+  async function debitDuelStake(database, challenge, playerId, side) {
+    if (BigInt(challenge.betGold) === 0n) return;
+    try {
+      await economyService.debit({
+        playerId,
+        currency: EconomyCurrency.GOLD,
+        amount: challenge.betGold,
+        transactionType: DUEL_STAKE_TRANSACTION_TYPE,
+        referenceType: DUEL_REFERENCE_TYPE,
+        referenceId: challenge.publicDuelId,
+        idempotencyKey: `duel:${challenge.publicDuelId}:${side}:stake`,
+      }, { database });
+    } catch (error) {
+      if (error instanceof EconomyError && error.code === "INSUFFICIENT_GOLD") {
+        throw new BattleError(
+          "DUEL_BET_INSUFFICIENT_GOLD",
+          "Both Players need enough Gold to cover the Duel bet.",
+        );
+      }
+      throw error;
+    }
+  }
+
+  async function refundChallengerStake(database, challenge) {
+    if (BigInt(challenge.betGold) === 0n) return;
+    await economyService.credit({
+      playerId: challenge.challengerPlayerId,
+      currency: EconomyCurrency.GOLD,
+      amount: challenge.betGold,
+      transactionType: DUEL_REFUND_TRANSACTION_TYPE,
+      referenceType: DUEL_REFERENCE_TYPE,
+      referenceId: challenge.publicDuelId,
+      idempotencyKey: `duel:${challenge.publicDuelId}:challenger:refund`,
+    }, { database });
+  }
+
+  async function payDuelWinner(database, prepared, winnerTeam) {
+    const betGold = BigInt(prepared.challenge.betGold);
+    if (betGold === 0n) return null;
+    const winnerPlayerId = winnerTeam === 1
+      ? prepared.challengerPlayerId
+      : prepared.challengedPlayerId;
+    const potGold = betGold * 2n;
+    await economyService.credit({
+      playerId: winnerPlayerId,
+      currency: EconomyCurrency.GOLD,
+      amount: potGold,
+      transactionType: DUEL_PAYOUT_TRANSACTION_TYPE,
+      referenceType: DUEL_REFERENCE_TYPE,
+      referenceId: prepared.challenge.publicDuelId,
+      idempotencyKey: `duel:${prepared.challenge.publicDuelId}:winner:payout`,
+    }, { database });
+    return Object.freeze({
+      betGold: betGold.toString(),
+      potGold: potGold.toString(),
+      winnerPlayerId,
+    });
+  }
+
+  async function closeExpiredDuel(database, challenge) {
+    const closed = await duelRepository.close(database, {
+      duelChallengeId: challenge.duelChallengeId,
+      status: "EXPIRED",
+    });
+    if (closed) await refundChallengerStake(database, closed);
+    return closed;
+  }
+
   function duelPreparedFromMatch(match, challenge) {
     const snapshot = match.inputSnapshot;
     return {
@@ -317,7 +400,9 @@ export function createBattleService({
     );
     if (!match) throw new BattleError("DUEL_NOT_FOUND", "Duel match was not found.");
     if (match.status === "COMPLETED") {
-      return battleRepository.loadResult(database, match);
+      const result = await battleRepository.loadResult(database, match);
+      const wager = await payDuelWinner(database, prepared, result.match.winnerTeam);
+      return Object.freeze({ ...result, reward: null, duelWager: wager });
     }
     const challengerTeamId = await battleRepository.createTeam(database, {
       matchId: match.matchId,
@@ -366,8 +451,18 @@ export function createBattleService({
       ownerPlayerId: prepared.challengedPlayerId,
       cardInstanceIds: prepared.aiTeam.map((player) => player.cardInstanceId),
     }, { database });
+    const duelWager = await payDuelWinner(
+      database,
+      prepared,
+      simulation.winnerTeam,
+    );
     const result = await battleRepository.loadResult(database, completedMatch);
-    return Object.freeze({ ...result, reward: null, replayed: prepared.replayed });
+    return Object.freeze({
+      ...result,
+      reward: null,
+      duelWager,
+      replayed: prepared.replayed,
+    });
   }
 
   async function snapshotAiLineup(database, playerTeam, seed, bracket) {
@@ -867,12 +962,16 @@ export function createBattleService({
 
   return Object.freeze({
     async createDuelChallenge(
-      { challengerPlayerId, challengedPlayerId, interactionId },
+      { challengerPlayerId, challengedPlayerId, interactionId, betGold = 0 },
       { database } = {},
     ) {
       const challengerId = normalizeId(challengerPlayerId, "challengerPlayerId");
       const challengedId = normalizeId(challengedPlayerId, "challengedPlayerId");
       const normalizedInteractionId = normalizeInteractionId(interactionId);
+      const normalizedBetGold = normalizeDuelBet(
+        betGold,
+        config.duel.maximumBetGold,
+      );
       if (challengerId === challengedId) {
         throw new BattleError("DUEL_INVALID_OPPONENT", "Choose another Player for this Duel.");
       }
@@ -925,8 +1024,15 @@ export function createBattleService({
           interactionId: normalizedInteractionId,
           challengerPlayerId: challengerId,
           challengedPlayerId: challengedId,
+          betGold: normalizedBetGold,
           expiresAt: addSeconds(currentTime, config.duel.invitationSeconds),
         });
+        await debitDuelStake(
+          transactionDatabase,
+          challenge,
+          challengerId,
+          "challenger",
+        );
         await cooldownRepository.setAvailableAt(transactionDatabase, {
           playerId: challengerId,
           cooldownType: DUEL_COOLDOWN_TYPE,
@@ -963,6 +1069,7 @@ export function createBattleService({
           duelChallengeId: challenge.duelChallengeId,
           status,
         });
+        await refundChallengerStake(transactionDatabase, closed);
         return hydrateDuelChallenge(transactionDatabase, closed);
       };
       return database
@@ -987,10 +1094,7 @@ export function createBattleService({
         }
         const now = await cooldownRepository.getDatabaseTime(transactionDatabase);
         if (challenge.status === "PENDING" && challenge.expiresAt <= now) {
-          await duelRepository.close(transactionDatabase, {
-            duelChallengeId: challenge.duelChallengeId,
-            status: "EXPIRED",
-          });
+          await closeExpiredDuel(transactionDatabase, challenge);
           return Object.freeze({ expired: true });
         }
         if (!["PENDING", "ACCEPTED"].includes(challenge.status)) {
@@ -1013,15 +1117,26 @@ export function createBattleService({
           );
           if (!match) throw new BattleError("DUEL_NOT_FOUND", "Duel match was not found.");
           if (match.status === "COMPLETED") {
+            const preparedReplay = duelPreparedFromMatch(match, challenge);
             return Object.freeze({
               challenge,
               challenger,
               challenged,
-              result: await battleRepository.loadResult(transactionDatabase, match),
+              result: await finalizeDuel(
+                transactionDatabase,
+                preparedReplay,
+                simulate(preparedReplay),
+              ),
             });
           }
           prepared = duelPreparedFromMatch(match, challenge);
         } else {
+          await debitDuelStake(
+            transactionDatabase,
+            challenge,
+            challenge.challengedPlayerId,
+            "challenged",
+          );
           const [challengerLineup, challengedLineup] = await Promise.all([
             snapshotPlayerLineup(transactionDatabase, challenge.challengerPlayerId),
             snapshotPlayerLineup(transactionDatabase, challenge.challengedPlayerId),
@@ -1101,6 +1216,28 @@ export function createBattleService({
         throw new BattleError("DUEL_EXPIRED", "This Duel invitation has expired.");
       }
       return accepted;
+    },
+
+    async expireDueDuelChallenges() {
+      const publicIds = await duelRepository.listExpiredPendingPublicIds(
+        databasePool,
+      );
+      let expiredCount = 0;
+      for (const publicDuelId of publicIds) {
+        const expired = await withTransaction(databasePool, async (database) => {
+          const challenge = await duelRepository.findByPublicIdForUpdate(
+            database,
+            publicDuelId,
+          );
+          if (!challenge || challenge.status !== "PENDING") return false;
+          const now = await cooldownRepository.getDatabaseTime(database);
+          if (challenge.expiresAt > now) return false;
+          await closeExpiredDuel(database, challenge);
+          return true;
+        });
+        if (expired) expiredCount += 1;
+      }
+      return expiredCount;
     },
 
     async getCooldown(playerId, { database = databasePool } = {}) {

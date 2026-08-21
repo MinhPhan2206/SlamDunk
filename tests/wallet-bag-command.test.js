@@ -62,6 +62,8 @@ test("/bag shows Shards, Level Up, future items, and the Discord avatar", async 
         async listItems() {
           return [
             { itemType: "LEVEL_UP", itemName: "Level Up", quantity: 2 },
+            { itemType: "ALPHA_CONTRACT", itemName: "Alpha Contract", quantity: 1 },
+            { itemType: "ALL_STAR_CONTRACT", itemName: "All-Star Contract", quantity: 1 },
             { itemType: "EVENT_TICKET", itemName: "Event Ticket", quantity: 3 },
           ];
         },
@@ -71,6 +73,8 @@ test("/bag shows Shards, Level Up, future items, and the Discord avatar", async 
   const embed = commandInteraction.reply.embeds[0].toJSON();
   assert.match(embed.description, new RegExp(`${UI_EMOJIS.shard.id}.*Shards.*500`));
   assert.match(embed.description, new RegExp(`${UI_EMOJIS.levelUp.id}.*Level Up.*2`));
+  assert.match(embed.description, new RegExp(`${UI_EMOJIS.alphaContract.id}.*Alpha Contract.*1`));
+  assert.match(embed.description, new RegExp(`${UI_EMOJIS.allStarContract.id}.*All-Star Contract.*1`));
   assert.match(embed.description, /🎟️.*Event Ticket.*3/);
   assert.doesNotMatch(embed.description, /Gold/i);
   assert.equal(embed.thumbnail.url, "https://cdn.example/avatar.png");

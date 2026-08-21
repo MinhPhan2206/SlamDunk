@@ -91,6 +91,15 @@ test("Fusion and Level Up item usage preserve Card lifecycle invariants", async 
       },
       { database },
     );
+    const maxLevelSource = await cardInstanceService.mintCard(
+      {
+        cardTemplateId: template.cardTemplateId,
+        ownerPlayerId: playerId,
+        cardLevel: 5,
+        obtainedMethod: "ADMIN_GRANT",
+      },
+      { database },
+    );
 
     const fusionOptions = await upgradeService.listFusionOptions(
       { playerId },
@@ -109,6 +118,20 @@ test("Fusion and Level Up item usage preserve Card lifecycle invariants", async 
         sourceC.instance.cardInstanceId,
       ],
     );
+    await assert.rejects(
+      upgradeService.fuseCards(
+        {
+          playerId,
+          sourceCardIds: [
+            sourceA.instance.cardInstanceId,
+            maxLevelSource.instance.cardInstanceId,
+          ],
+        },
+        { database },
+      ),
+      (error) =>
+        error instanceof UpgradeError && error.code === "FUSION_MAX_LEVEL_MATERIAL",
+    );
 
     const fusion = await upgradeService.fuseCards(
       {
@@ -123,7 +146,7 @@ test("Fusion and Level Up item usage preserve Card lifecycle invariants", async 
     );
 
     assert.equal(fusion.resultCard.cardLevel, 5);
-    assert.equal(fusion.resultCard.serialNumber, "4");
+    assert.equal(fusion.resultCard.serialNumber, "5");
     assert.equal(fusion.resultCard.obtainedMethod, "FUSION");
     const fusionState = await database.query(
       `
@@ -150,8 +173,8 @@ test("Fusion and Level Up item usage preserve Card lifecycle invariants", async 
       ],
     );
     assert.equal(fusionState.rows[0].destroyed_sources, "3");
-    assert.equal(fusionState.rows[0].current_circulation, "1");
-    assert.equal(fusionState.rows[0].total_minted, "4");
+    assert.equal(fusionState.rows[0].current_circulation, "2");
+    assert.equal(fusionState.rows[0].total_minted, "5");
     assert.equal(fusionState.rows[0].fusion_sources, "3");
 
     const upgradeCard = await cardInstanceService.mintCard(

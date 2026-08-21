@@ -18,7 +18,7 @@ const SLOTS = ["PG", "SG", "SF", "PF", "C"];
 const DUEL_ID = "3a038642a1404d938a3dc5b401f17c23";
 const MATCH_ID = "4a038642a1404d938a3dc5b401f17c23";
 
-test("Friendly Duel persists two real lineups without economy progression", async () => {
+test("Wagered Duel settles the pot once without XP or Battle progression", async () => {
   const pool = createPostgresPool({
     connectionString: getDatabaseConfig().databaseUrl,
   });
@@ -49,6 +49,15 @@ test("Friendly Duel persists two real lineups without economy progression", asyn
     const [challenger, challenged] = playerRows.rows;
     await economyService.ensureWallet(challenger.player_id, { database });
     await economyService.ensureWallet(challenged.player_id, { database });
+    for (const player of [challenger, challenged]) {
+      await economyService.credit({
+        playerId: player.player_id,
+        currency: "GOLD",
+        amount: 1_000,
+        transactionType: "TEST_GRANT",
+        idempotencyKey: `duel-test:${runId}:${player.player_id}`,
+      }, { database });
+    }
     const ownedCards = new Map([
       [challenger.player_id, []],
       [challenged.player_id, []],
@@ -105,8 +114,10 @@ test("Friendly Duel persists two real lineups without economy progression", asyn
       challengerPlayerId: challenger.player_id,
       challengedPlayerId: challenged.player_id,
       interactionId,
+      betGold: 100,
     }, { database });
     assert.equal(invitation.challenge.status, "PENDING");
+    assert.equal(invitation.challenge.betGold, "100");
 
     const duel = await service.acceptDuelChallenge({
       publicDuelId: DUEL_ID,
@@ -116,6 +127,8 @@ test("Friendly Duel persists two real lineups without economy progression", asyn
     assert.equal(duel.result.match.mode, "PVP_FRIENDLY_5V5");
     assert.equal(duel.result.match.publicMatchId, MATCH_ID);
     assert.equal(duel.result.reward, null);
+    assert.equal(duel.result.duelWager.betGold, "100");
+    assert.equal(duel.result.duelWager.potGold, "200");
     assert.equal(duel.result.teams.length, 2);
     assert.equal(duel.result.teams[0].teamName, "DuelChallenger");
     assert.equal(duel.result.teams[1].teamName, "DuelOpponent");
@@ -134,7 +147,10 @@ test("Friendly Duel persists two real lineups without economy progression", asyn
        WHERE player_id = ANY($1::bigint[]) ORDER BY player_id`,
       [[challenger.player_id, challenged.player_id]],
     );
-    assert.ok(wallets.rows.every((row) => row.gold_balance === "0"));
+    assert.deepEqual(
+      wallets.rows.map((row) => row.gold_balance).sort(),
+      ["1100", "900"],
+    );
     const records = await database.query(
       `SELECT games_played, games_won, games_lost FROM player_duel_records
        WHERE player_id = ANY($1::bigint[]) ORDER BY player_id`,
@@ -159,6 +175,15 @@ test("Friendly Duel persists two real lineups without economy progression", asyn
       playerId: challenged.player_id,
     }, { database });
     assert.equal(replay.result.match.matchId, duel.result.match.matchId);
+    const replayWallets = await database.query(
+      `SELECT gold_balance FROM wallets
+       WHERE player_id = ANY($1::bigint[]) ORDER BY player_id`,
+      [[challenger.player_id, challenged.player_id]],
+    );
+    assert.deepEqual(
+      replayWallets.rows.map((row) => row.gold_balance).sort(),
+      ["1100", "900"],
+    );
     const replayRecords = await database.query(
       `SELECT games_played FROM player_duel_records
        WHERE player_id = ANY($1::bigint[])`,

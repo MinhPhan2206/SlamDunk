@@ -133,6 +133,7 @@ test("Strategy owner customizes a draft and saves with optimistic revision", asy
     });
     assert.deepEqual(saveInput, {
       playerId: "7",
+      lineupId: "9",
       strategy: store.get(session.sessionId).draftStrategy,
       expectedRevision: 4,
     });

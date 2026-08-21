@@ -11,6 +11,8 @@ test("Slash command registry has valid unique command definitions", () => {
   for (const expected of [
     "market", "sell", "unlist", "buy", "upgrade", "level-up", "card",
     "wallet", "bag", "strategy", "welcome", "practice", "compare",
+    "level-rewards",
+    "contract",
   ]) {
     assert.ok(names.includes(expected));
   }

@@ -33,4 +33,17 @@ export const inventoryRepository = Object.freeze({
     );
     return result.rows.map(mapItem);
   },
+
+  async consumeItem(database, { playerId, itemType, quantity }) {
+    const result = await database.query(
+      `
+        UPDATE player_items
+        SET quantity = quantity - $3, updated_at = CURRENT_TIMESTAMP
+        WHERE player_id = $1 AND item_type = $2 AND quantity >= $3
+        RETURNING quantity
+      `,
+      [playerId, itemType, quantity],
+    );
+    return result.rows[0]?.quantity ?? null;
+  },
 });

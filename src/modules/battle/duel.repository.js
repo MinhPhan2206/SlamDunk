@@ -6,6 +6,7 @@ function mapChallenge(row) {
     requestInteractionId: row.request_interaction_id,
     challengerPlayerId: row.challenger_player_id,
     challengedPlayerId: row.challenged_player_id,
+    betGold: row.bet_gold ?? "0",
     status: row.status,
     matchId: row.match_id,
     expiresAt: row.expires_at,
@@ -68,9 +69,9 @@ export const duelRepository = Object.freeze({
       `
         INSERT INTO duel_challenges (
           public_duel_id, request_interaction_id,
-          challenger_player_id, challenged_player_id, expires_at
+          challenger_player_id, challenged_player_id, bet_gold, expires_at
         )
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
       `,
       [
@@ -78,10 +79,25 @@ export const duelRepository = Object.freeze({
         input.interactionId,
         input.challengerPlayerId,
         input.challengedPlayerId,
+        input.betGold,
         input.expiresAt,
       ],
     );
     return mapChallenge(result.rows[0]);
+  },
+
+  async listExpiredPendingPublicIds(database, limit = 100) {
+    const result = await database.query(
+      `
+        SELECT public_duel_id
+        FROM duel_challenges
+        WHERE status = 'PENDING' AND expires_at <= CURRENT_TIMESTAMP
+        ORDER BY expires_at, duel_challenge_id
+        LIMIT $1
+      `,
+      [limit],
+    );
+    return result.rows.map((row) => row.public_duel_id);
   },
 
   async accept(database, { duelChallengeId, matchId }) {

@@ -14,8 +14,8 @@ test("Battle matchup renderer creates one horizontal image for five AI players",
   const output = await createMatchupImage(lineup);
 
   assert.deepEqual([...output.subarray(1, 4)], [80, 78, 71]);
-  assert.equal(output.readUInt32BE(16), 954);
-  assert.equal(output.readUInt32BE(20), 314);
+  assert.equal(output.readUInt32BE(16), 890);
+  assert.equal(output.readUInt32BE(20), 282);
 
   const playerNameOutput = await createMatchupImage(lineup.map((player) => ({
     ...player,
@@ -42,6 +42,6 @@ test("Duel matchup renderer combines both complete Player lineups", async () => 
   });
 
   assert.deepEqual([...output.subarray(1, 4)], [80, 78, 71]);
-  assert.equal(output.readUInt32BE(16), 954);
-  assert.equal(output.readUInt32BE(20), 792);
+  assert.equal(output.readUInt32BE(16), 890);
+  assert.equal(output.readUInt32BE(20), 728);
 });

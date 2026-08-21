@@ -5,6 +5,8 @@ import { UI_COLORS } from "../ui/theme.js";
 
 const ITEM_ICONS = Object.freeze({
   LEVEL_UP: UI_EMOJIS.levelUp.mention,
+  ALPHA_CONTRACT: UI_EMOJIS.alphaContract.mention,
+  ALL_STAR_CONTRACT: UI_EMOJIS.allStarContract.mention,
   EVENT_TICKET: "🎟️",
   PACK_TICKET: "🎟️",
   CARD_KEY: "🗝️",

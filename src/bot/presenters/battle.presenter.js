@@ -244,6 +244,7 @@ function createGameEmbeds(
   );
   const practice = result.match.mode === "PRACTICE_5V5";
   const duel = result.match.mode === "PVP_FRIENDLY_5V5";
+  const duelPot = result.duelWager?.potGold;
   const opponentName = opponentDisplayName ??
     result.match.inputSnapshot?.opponentDisplayName ??
     (practice ? "Practice Opponent" : "AI Challenge");
@@ -278,14 +279,18 @@ function createGameEmbeds(
       text: practice
         ? `Practice complete${simulated ? " (simulated)" : ""} - no rewards or record changes`
         : duel
-          ? `Friendly Duel complete${simulated ? " (simulated)" : ""} - no rewards, XP, or Battle streak changes`
+          ? duelPot
+            ? `Wagered Duel complete${simulated ? " (simulated)" : ""} - ${Number(duelPot).toLocaleString("en-US")} Gold pot settled`
+            : `Friendly Duel complete${simulated ? " (simulated)" : ""} - no rewards, XP, or Battle streak changes`
         : `Game complete${simulated ? " (simulated)" : ""} - GAME STATS sent separately`,
     });
   } else if (practice || duel) {
     gameEmbed.setFooter({
       text: practice
         ? "Practice - no rewards or record changes"
-        : "Friendly Duel - no rewards, XP, or Battle streak changes",
+        : duelPot
+          ? `Wagered Duel - ${Number(duelPot).toLocaleString("en-US")} Gold pot`
+          : "Friendly Duel - no rewards, XP, or Battle streak changes",
     });
   }
   return [lineupEmbed, gameEmbed];

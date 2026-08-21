@@ -135,6 +135,35 @@ test("Lineup enforces ownership, position eligibility, and unique cards", async 
     assert.equal(twoCardLineup.complete, false);
     assert.equal(twoCardLineup.slots.filter((slot) => slot.cardInstanceId).length, 2);
 
+    const secondLineup = await lineupService.swapActiveLineup(
+      { playerId, lineupNumber: 2 },
+      { database },
+    );
+    assert.equal(secondLineup.lineup.lineupNumber, 2);
+    assert.equal(secondLineup.slots.filter((slot) => slot.cardInstanceId).length, 0);
+    await lineupService.setCard(
+      { playerId, slot: "SF", cardInstanceId: firstCard.instance.cardInstanceId },
+      { database },
+    );
+    const restoredFirstLineup = await lineupService.swapActiveLineup(
+      { playerId, lineupNumber: 1 },
+      { database },
+    );
+    assert.equal(restoredFirstLineup.lineup.lineupNumber, 1);
+    assert.equal(
+      restoredFirstLineup.slots.filter((slot) => slot.cardInstanceId).length,
+      2,
+    );
+    const lineupRows = await database.query(
+      `SELECT lineup_number, is_active FROM lineups
+       WHERE player_id = $1 ORDER BY lineup_number`,
+      [playerId],
+    );
+    assert.deepEqual(
+      lineupRows.rows.map((row) => [Number(row.lineup_number), row.is_active]),
+      [[1, true], [2, false]],
+    );
+
     const afterRemoval = await lineupService.removeCard(
       { playerId, slot: "SF" },
       { database },

@@ -113,11 +113,19 @@ cumulative XP, Level 2 at 3,000, Level 3 at 6,000, and so on.
 
 `player_xp_transactions` is the immutable, idempotent audit trail for XP from
 Battle, Daily, and Weekly rewards. It stores source, reference, amount, XP after
-the award, and Player Level after the award. Level milestone rewards are
-approved in `docs/requirements/game-requirements.md` but are not implemented yet.
+the award, and Player Level after the award.
 
-A future milestone implementation should add an idempotent milestone-claim
-record keyed by `(player_id, milestone_level)`. Titles, profile frames,
+`player_level_reward_claims` persists the milestone level, exact reward
+snapshot, and claim time. Its primary key `(player_id, milestone_level)` makes
+each milestone claim idempotent. The claim transaction locks the Player and
+atomically grants currencies, items, Cards, and the claim record.
+
+`contract_openings` records the Player, Contract code and item type, Discord
+Interaction ID, and resulting Card Template/Instance. The unique Interaction
+ID makes Contract use idempotent; the unique Card Instance ties one opening to
+exactly one minted Card.
+
+Titles, profile frames,
 backgrounds, and badges should use one stable cosmetic catalog rather than
 adding a column for every cosmetic. A minimal future model is:
 
@@ -714,6 +722,7 @@ Suggested fields:
 ```text
 lineup_id              PK
 player_id              FK
+lineup_number          1 | 2 | 3
 name
 is_active
 strategy_config       JSONB
@@ -722,7 +731,11 @@ created_at
 updated_at
 ```
 
-MVP may enforce one active lineup per player. Migration 034 stores the
+Each Player owns up to three saved Lineups and exactly one is active. The
+active Lineup is used by Battle, Practice, Duel, Lineup editing, and Strategy.
+`UNIQUE(player_id, lineup_number)` identifies the three saved slots, while a
+partial unique index enforces at most one active Lineup per Player. Migration
+034 stores the
 versioned Tendency configuration inside `strategy_config`; Tendencies are
 Player-controlled Lineup tactics and are not Card Template data.
 
@@ -933,7 +946,6 @@ Paid Pack purchase/opening tables
 Item inventory model
 Battle snapshot storage strategy
 Battle play-by-play persistence
-Multiple saved lineups
 ```
 
 These should be added only after product decisions are finalized.

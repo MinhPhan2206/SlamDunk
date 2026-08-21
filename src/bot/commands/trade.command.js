@@ -2,6 +2,7 @@ import { SlashCommandBuilder } from "discord.js";
 import { gameConfig } from "../../config/game-config.js";
 import { TradeError } from "../../modules/trade/index.js";
 import { createTradePayload } from "../presenters/trade.presenter.js";
+import { tradeAccessError } from "../access/community-access.js";
 
 export const tradeCommand = Object.freeze({
   componentInactivityTimeoutMs: gameConfig.trade.expiryMinutes * 60_000,
@@ -10,8 +11,13 @@ export const tradeCommand = Object.freeze({
     .setDescription("Start an interactive Direct Trade.")
     .addUserOption((option) => option
       .setName("user").setDescription("The other trade participant.").setRequired(true)),
-  async execute(interaction, { services }) {
+  async execute(interaction, { services, communityAccess }) {
     await interaction.deferReply();
+    const accessError = tradeAccessError(interaction, communityAccess);
+    if (accessError) {
+      await interaction.editReply({ content: accessError, embeds: [], components: [] });
+      return;
+    }
     const invitedUser = interaction.options.getUser("user", true);
     try {
       if (invitedUser.bot || invitedUser.id === interaction.user.id) {

@@ -59,6 +59,6 @@ test("Pack result uses Card artwork and omits OVR and Serial", async () => {
   assert.match(embed.description, /LeBron James/);
   assert.match(embed.description, /Lv\.5/);
   assert.doesNotMatch(embed.description, /OVR|Serial|#1/);
-  assert.equal(payload.files[0].attachment.readUInt32BE(16), 800);
-  assert.equal(payload.files[0].attachment.readUInt32BE(20), 423);
+  assert.equal(payload.files[0].attachment.readUInt32BE(16), 748);
+  assert.equal(payload.files[0].attachment.readUInt32BE(20), 391);
 });

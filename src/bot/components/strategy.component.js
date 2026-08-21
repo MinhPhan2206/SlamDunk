@@ -195,6 +195,7 @@ export const strategyComponent = Object.freeze({
         try {
           const saved = await services.lineup.saveStrategy({
             playerId: current.playerId,
+            lineupId: current.lineupId,
             strategy: current.draftStrategy,
             expectedRevision: current.strategyRevision,
           });

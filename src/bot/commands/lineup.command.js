@@ -8,6 +8,10 @@ const SLOT_CHOICES = ["PG", "SG", "SF", "PF", "C"].map((slot) => ({
   name: slot,
   value: slot,
 }));
+const LINEUP_CHOICES = [1, 2, 3].map((lineupNumber) => ({
+  name: `Lineup ${lineupNumber}`,
+  value: lineupNumber,
+}));
 
 function addSlotOption(subcommand) {
   return subcommand.addStringOption((option) =>
@@ -51,6 +55,18 @@ export const lineupCommand = Object.freeze({
           .setName("remove")
           .setDescription("Remove the card from a lineup slot."),
       ),
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("swap")
+        .setDescription("Switch to one of your three saved lineups.")
+        .addIntegerOption((option) =>
+          option
+            .setName("lineup")
+            .setDescription("Saved lineup to activate.")
+            .setRequired(true)
+            .addChoices(...LINEUP_CHOICES),
+        ),
     ),
 
   async execute(interaction, { services }) {
@@ -90,13 +106,19 @@ export const lineupCommand = Object.freeze({
           playerId: player.playerId,
           slot: interaction.options.getString("slot", true),
         });
+      } else if (subcommand === "swap") {
+        result = await services.lineup.swapActiveLineup({
+          playerId: player.playerId,
+          lineupNumber: interaction.options.getInteger("lineup", true),
+        });
       } else {
         result = await services.lineup.getLineup(player.playerId);
       }
 
       await interaction.editReply(
         await createLineupPayload(result, {
-          title: `${targetUser.globalName ?? targetUser.username}'s Lineup`,
+          title: `${targetUser.globalName ?? targetUser.username}'s Lineup ` +
+            `${result.lineup?.lineupNumber ?? 1}`,
           player,
         }),
       );

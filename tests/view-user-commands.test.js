@@ -116,6 +116,6 @@ test("lineup view user option displays another Player without allowing edits", a
 
   assert.equal(
     commandInteraction.replies[0].embeds[0].toJSON().title,
-    "TARGET USER'S LINEUP",
+    "TARGET USER'S LINEUP 1",
   );
 });

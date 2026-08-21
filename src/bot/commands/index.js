@@ -32,6 +32,8 @@ import { helpCommand } from "./help.command.js";
 import { welcomeCommand } from "./welcome.command.js";
 import { duelCommand } from "./duel.command.js";
 import { compareCommand } from "./compare.command.js";
+import { levelRewardCommand } from "./level-reward.command.js";
+import { contractCommand } from "./contract.command.js";
 
 export const commands = Object.freeze([
   pingCommand,
@@ -68,4 +70,6 @@ export const commands = Object.freeze([
   helpCommand,
   welcomeCommand,
   compareCommand,
+  levelRewardCommand,
+  contractCommand,
 ]);

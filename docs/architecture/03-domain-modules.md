@@ -271,6 +271,7 @@ Examples:
 /claim
 /daily
 /weekly
+/level-rewards
 battle rewards
 future achievements
 ```
@@ -281,6 +282,7 @@ future achievements
 claimReward()
 dailyReward()
 weeklyReward()
+claimAvailableLevelRewards()
 grantBattleReward()
 ```
 
@@ -290,10 +292,15 @@ grantBattleReward()
 Player
 Economy
 Inventory
+Card
 GameConfig
 ```
 
 Reward module does not directly write wallet values.
+
+The Contract module consumes Inventory items and mints guaranteed-rarity Card
+rewards. It depends on Inventory and Card, and persists each opening by Discord
+Interaction ID so retries cannot consume an additional Contract.
 
 ---
 
@@ -465,7 +472,7 @@ Player
 
 ### Responsibility
 
-Own active team composition.
+Own three saved team compositions and select one active Lineup.
 
 ### Main Data
 
@@ -491,6 +498,7 @@ setCard()
 removeCard()
 validateLineup()
 getActiveLineup()
+swapActiveLineup()
 ```
 
 ### Rules
@@ -504,6 +512,9 @@ Other Position → not allowed
 ```
 
 No bench in MVP.
+
+Each Player has three numbered Lineup slots. Card assignments and Strategy are
+stored independently per Lineup; all gameplay reads only the active Lineup.
 
 ---
 

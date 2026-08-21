@@ -212,6 +212,8 @@ function manualHelp() {
           "`/drop` · Choose 1 of 3 Cards. Stores **2 charges** and recovers 1 every **15 minutes**.",
           "`/daily` · Receive daily Gold, Shards, and XP.",
           "`/weekly` · Receive weekly Gold, Shards, and XP.",
+          "`/level-rewards` · Claim completed Player Level milestone rewards.",
+          "`/contract [contract_type]` · Sign a random Player using a Contract.",
           "`/cooldowns` · Check charges and reward timers.",
         ].join("\n"),
       },
@@ -240,6 +242,7 @@ function manualHelp() {
           "`/lineup remove slot:<position>` · Clear a position.",
           "`/lineup view [user]` · View a Player's lineup.",
           "`/strategy` · Configure team settings and Player Tendencies.",
+          "`/lineup swap` · Switch between three saved lineups.",
         ].join("\n"),
       },
       {

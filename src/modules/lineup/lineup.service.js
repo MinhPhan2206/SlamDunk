@@ -27,6 +27,14 @@ function normalizeSlot(slot) {
   return slot;
 }
 
+function normalizeLineupNumber(value) {
+  const normalized = Number(value);
+  if (!Number.isSafeInteger(normalized) || normalized < 1 || normalized > 3) {
+    throw new TypeError("lineupNumber must be 1, 2, or 3.");
+  }
+  return normalized;
+}
+
 function normalizeStrategyRevision(value, fieldName = "strategyRevision") {
   const normalized = Number(value);
   if (!Number.isSafeInteger(normalized) || normalized < 1) {
@@ -89,20 +97,26 @@ export function createLineupService({ databasePool }) {
     },
 
     async saveStrategy(
-      { playerId, strategy, expectedRevision },
+      { playerId, lineupId, strategy, expectedRevision },
       { database = databasePool } = {},
     ) {
       const lineup = await lineupRepository.getOrCreate(
         database,
         normalizeId(playerId, "playerId"),
       );
+      if (lineup.lineupId !== normalizeId(lineupId, "lineupId")) {
+        throw new LineupError(
+          "STRATEGY_LINEUP_CHANGED",
+          "Your active lineup changed. Reopen /strategy and try again.",
+        );
+      }
       const slots = await lineupRepository.findSlots(database, lineup.lineupId);
       const strategyConfig = prunePlayerTendencies(
         normalizeLineupStrategy(strategy),
         slots.map((slot) => slot.cardInstanceId),
       );
       const savedLineup = await lineupRepository.updateStrategy(database, {
-        playerId: normalizeId(playerId, "playerId"),
+        lineupId: lineup.lineupId,
         strategyConfig,
         expectedRevision: normalizeStrategyRevision(
           expectedRevision,
@@ -118,6 +132,42 @@ export function createLineupService({ databasePool }) {
       }
 
       return strategyState(savedLineup);
+    },
+
+    async swapActiveLineup(
+      { playerId, lineupNumber },
+      { database } = {},
+    ) {
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      const normalizedLineupNumber = normalizeLineupNumber(lineupNumber);
+      const operation = async (transactionDatabase) => {
+        await transactionDatabase.query(
+          "SELECT pg_advisory_xact_lock(hashtext($1))",
+          [`lineup-player:${normalizedPlayerId}`],
+        );
+        await lineupRepository.getOrCreate(
+          transactionDatabase,
+          normalizedPlayerId,
+        );
+        await lineupRepository.createSavedLineup(transactionDatabase, {
+          playerId: normalizedPlayerId,
+          lineupNumber: normalizedLineupNumber,
+        });
+        const active = await lineupRepository.activate(transactionDatabase, {
+          playerId: normalizedPlayerId,
+          lineupNumber: normalizedLineupNumber,
+        });
+        if (!active) {
+          throw new LineupError(
+            "LINEUP_NOT_FOUND",
+            "The selected lineup could not be activated.",
+          );
+        }
+        return loadLineup(transactionDatabase, normalizedPlayerId);
+      };
+      return database
+        ? operation(database)
+        : withTransaction(databasePool, operation);
     },
 
     async setCard(

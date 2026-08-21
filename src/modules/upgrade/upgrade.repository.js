@@ -20,7 +20,7 @@ function mapCard(row) {
 }
 
 export const upgradeRepository = Object.freeze({
-  async listFusionGroups(database, playerId) {
+  async listFusionGroups(database, playerId, maximumCardLevel) {
     const result = await database.query(
       `
         SELECT
@@ -36,6 +36,7 @@ export const upgradeRepository = Object.freeze({
         JOIN card_templates ct ON ct.card_template_id = ci.card_template_id
         JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ci.owner_player_id = $1
+          AND ci.card_level < $2
           AND ci.status = 'ACTIVE'
           AND ci.market_lock = FALSE
           AND ci.trade_lock = FALSE
@@ -54,7 +55,7 @@ export const upgradeRepository = Object.freeze({
         HAVING COUNT(*) >= 2
         ORDER BY r.rarity_rank DESC, ct.player_name
       `,
-      [playerId],
+      [playerId, maximumCardLevel],
     );
     return result.rows.map((row) => Object.freeze({
       cardTemplateId: row.card_template_id,
@@ -68,7 +69,7 @@ export const upgradeRepository = Object.freeze({
     }));
   },
 
-  async listFusionCards(database, { playerId, cardTemplateId }) {
+  async listFusionCards(database, { playerId, cardTemplateId, maximumCardLevel }) {
     const result = await database.query(
       `
         SELECT
@@ -93,6 +94,7 @@ export const upgradeRepository = Object.freeze({
         JOIN rarities r ON r.rarity_id = ct.rarity_id
         WHERE ci.owner_player_id = $1
           AND ci.card_template_id = $2
+          AND ci.card_level < $3
           AND ci.status = 'ACTIVE'
           AND ci.market_lock = FALSE
           AND ci.trade_lock = FALSE
@@ -102,7 +104,7 @@ export const upgradeRepository = Object.freeze({
           )
         ORDER BY ci.card_level, ci.obtained_at, ci.card_instance_id
       `,
-      [playerId, cardTemplateId],
+      [playerId, cardTemplateId, maximumCardLevel],
     );
     return result.rows.map(mapCard);
   },

@@ -7,6 +7,8 @@ test("trade command creates an interactive Direct Trade", async () => {
   const replies = [];
   const invited = { id: "345678901234567890", username: "OtherPlayer", bot: false };
   const interaction = {
+    guildId: "123456789012345678",
+    channelId: "223456789012345678",
     user: { id: "234567890123456789", username: "TradeTester" },
     options: { getUser() { return invited; } },
     async deferReply() { replies.push("defer"); },
@@ -34,7 +36,13 @@ test("trade command creates an interactive Direct Trade", async () => {
     },
   };
 
-  await tradeCommand.execute(interaction, { services });
+  await tradeCommand.execute(interaction, {
+    services,
+    communityAccess: {
+      guildId: interaction.guildId,
+      tradeChannelIds: [interaction.channelId],
+    },
+  });
 
   assert.equal(replies[0], "defer");
   assert.equal(replies[1].components[0].components.length, 2);

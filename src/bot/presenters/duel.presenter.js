@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import { formatRarity } from "../../config/rarity-config.js";
 import { UI_COLORS } from "../ui/theme.js";
+import { formatGold } from "../ui/formatters.js";
 
 function displayName(player) {
   return player?.usernameSnapshot ?? "Player";
@@ -22,6 +23,7 @@ export function createDuelInvitationPayload(result) {
   const challengerName = displayName(result.challenger);
   const challengedName = displayName(result.challenged);
   const challengedDiscordId = result.challenged.discordUserId;
+  const betGold = BigInt(result.challenge.betGold ?? 0);
   const embed = new EmbedBuilder()
     .setColor(UI_COLORS.warning)
     .setTitle("DUEL INVITATION")
@@ -41,6 +43,16 @@ export function createDuelInvitationPayload(result) {
       },
     )
     .setFooter({ text: "Friendly Duel · No Gold, XP, or Battle streak changes" });
+  if (betGold > 0n) {
+    embed
+      .addFields({
+        name: "WAGER",
+        value: `${formatGold(betGold)} each · Pot ${formatGold(betGold * 2n)}`,
+      })
+      .setFooter({
+        text: "Wagered Duel · Winner takes the full pot · No XP or streak changes",
+      });
+  }
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`duel:accept:${result.challenge.publicDuelId}`)

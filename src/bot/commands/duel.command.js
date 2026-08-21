@@ -2,6 +2,7 @@ import { SlashCommandBuilder } from "discord.js";
 import { gameConfig } from "../../config/game-config.js";
 import { BattleError } from "../../modules/battle/index.js";
 import { createDuelInvitationPayload } from "../presenters/duel.presenter.js";
+import { duelBetAccessError } from "../access/community-access.js";
 
 export const duelCommand = Object.freeze({
   componentInactivityTimeoutMs: gameConfig.battle.duel.invitationSeconds * 1_000,
@@ -12,12 +13,30 @@ export const duelCommand = Object.freeze({
     .addUserOption((option) => option
       .setName("user")
       .setDescription("The Player you want to challenge.")
-      .setRequired(true)),
+      .setRequired(true))
+    .addIntegerOption((option) => option
+      .setName("bet")
+      .setDescription("Gold wager paid by each Player (Community channels only).")
+      .setMinValue(1)
+      .setMaxValue(gameConfig.battle.duel.maximumBetGold)
+      .setRequired(false)),
 
-  async execute(interaction, { services }) {
+  async execute(interaction, { services, communityAccess }) {
     await interaction.deferReply();
     const opponent = interaction.options.getUser("user", true);
+    const betGold = interaction.options.getInteger("bet") ?? 0;
     try {
+      if (betGold > 0) {
+        const accessError = duelBetAccessError(interaction, communityAccess);
+        if (accessError) {
+          await interaction.editReply({
+            content: accessError,
+            embeds: [],
+            components: [],
+          });
+          return;
+        }
+      }
       if (opponent.bot || opponent.id === interaction.user.id) {
         throw new BattleError(
           "DUEL_INVALID_OPPONENT",
@@ -42,6 +61,7 @@ export const duelCommand = Object.freeze({
         challengerPlayerId: challenger.playerId,
         challengedPlayerId: challenged.playerId,
         interactionId: interaction.id,
+        betGold,
       });
       await interaction.editReply(createDuelInvitationPayload({
         ...result,

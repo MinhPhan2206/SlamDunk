@@ -59,7 +59,11 @@ export function createUpgradeService({
     async listFusionOptions({ playerId }, { database = databasePool } = {}) {
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       return Object.freeze(
-        await upgradeRepository.listFusionGroups(database, normalizedPlayerId),
+        await upgradeRepository.listFusionGroups(
+          database,
+          normalizedPlayerId,
+          upgradeConfig.maximumCardLevel,
+        ),
       );
     },
 
@@ -72,6 +76,7 @@ export function createUpgradeService({
       const cards = await upgradeRepository.listFusionCards(database, {
         playerId: normalizedPlayerId,
         cardTemplateId: normalizedCardTemplateId,
+        maximumCardLevel: upgradeConfig.maximumCardLevel,
       });
       if (cards.length < 2) {
         throw new UpgradeError(
@@ -163,6 +168,12 @@ export function createUpgradeService({
         }
         for (const card of sourceCards) {
           assertOwnedActiveUnlocked(card, normalizedPlayerId);
+          if (card.cardLevel >= upgradeConfig.maximumCardLevel) {
+            throw new UpgradeError(
+              "FUSION_MAX_LEVEL_MATERIAL",
+              "Level 5 Cards cannot be used as Fusion materials.",
+            );
+          }
           if (card.inLineup) {
             throw new UpgradeError(
               "CARD_IN_LINEUP",

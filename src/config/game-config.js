@@ -1,4 +1,18 @@
+function createCardLevelWeights() {
+  return Object.freeze([
+    Object.freeze({ level: 1, weight: 45 }),
+    Object.freeze({ level: 2, weight: 28 }),
+    Object.freeze({ level: 3, weight: 14 }),
+    Object.freeze({ level: 4, weight: 8 }),
+    Object.freeze({ level: 5, weight: 5 }),
+  ]);
+}
+
 export const gameConfig = Object.freeze({
+  vote: Object.freeze({
+    goldPerWeight: 1_000,
+    shardsPerWeight: 25,
+  }),
   claim: Object.freeze({
     cooldownMinutes: 15,
     maximumCharges: 2,
@@ -10,13 +24,7 @@ export const gameConfig = Object.freeze({
     maximumCharges: 2,
     candidateCount: 3,
     selectionSeconds: 20,
-    levelWeights: Object.freeze([
-      Object.freeze({ level: 1, weight: 45 }),
-      Object.freeze({ level: 2, weight: 28 }),
-      Object.freeze({ level: 3, weight: 14 }),
-      Object.freeze({ level: 4, weight: 8 }),
-      Object.freeze({ level: 5, weight: 5 }),
-    ]),
+    levelWeights: createCardLevelWeights(),
     rarityWeights: Object.freeze([
       Object.freeze({ rarityCode: "BASE", weight: 5_249_534_570 }),
       Object.freeze({ rarityCode: "COMMON", weight: 3_201_050_400 }),
@@ -36,13 +44,7 @@ export const gameConfig = Object.freeze({
       priceAmount: 5_000,
       cooldownSeconds: 1,
       cardCount: 3,
-      levelWeights: Object.freeze([
-        Object.freeze({ level: 1, weight: 45 }),
-        Object.freeze({ level: 2, weight: 28 }),
-        Object.freeze({ level: 3, weight: 14 }),
-        Object.freeze({ level: 4, weight: 8 }),
-        Object.freeze({ level: 5, weight: 5 }),
-      ]),
+      levelWeights: createCardLevelWeights(),
       rarityWeights: Object.freeze([
         Object.freeze({ rarityCode: "BASE", weight: 1_387_732_300 }),
         Object.freeze({ rarityCode: "COMMON", weight: 4_393_683_500 }),
@@ -60,13 +62,7 @@ export const gameConfig = Object.freeze({
       priceAmount: 2_000,
       cooldownSeconds: 1,
       cardCount: 1,
-      levelWeights: Object.freeze([
-        Object.freeze({ level: 1, weight: 45 }),
-        Object.freeze({ level: 2, weight: 28 }),
-        Object.freeze({ level: 3, weight: 14 }),
-        Object.freeze({ level: 4, weight: 8 }),
-        Object.freeze({ level: 5, weight: 5 }),
-      ]),
+      levelWeights: createCardLevelWeights(),
       rarityWeights: Object.freeze([
         Object.freeze({ rarityCode: "BASE", weight: 0 }),
         Object.freeze({ rarityCode: "COMMON", weight: 0 }),
@@ -93,6 +89,73 @@ export const gameConfig = Object.freeze({
     maximumGold: 4_000,
     minimumShards: 200,
     maximumShards: 300,
+  }),
+  items: Object.freeze([
+    Object.freeze({ itemType: "LEVEL_UP", itemName: "Level Up" }),
+    Object.freeze({ itemType: "ALPHA_CONTRACT", itemName: "Alpha Contract" }),
+    Object.freeze({ itemType: "ALL_STAR_CONTRACT", itemName: "All-Star Contract" }),
+  ]),
+  contracts: Object.freeze([
+    Object.freeze({
+      contractCode: "alpha",
+      displayName: "Alpha Contract",
+      itemType: "ALPHA_CONTRACT",
+      rarityCode: "ALPHA",
+      levelWeights: createCardLevelWeights(),
+    }),
+    Object.freeze({
+      contractCode: "all_star",
+      displayName: "All-Star Contract",
+      itemType: "ALL_STAR_CONTRACT",
+      rarityCode: "ALL_STAR",
+      levelWeights: createCardLevelWeights(),
+    }),
+  ]),
+  levelRewards: Object.freeze({
+    milestones: Object.freeze([
+      Object.freeze({ level: 1, gold: 5_000 }),
+      Object.freeze({ level: 3, shards: 300 }),
+      Object.freeze({
+        level: 5,
+        items: Object.freeze([
+          Object.freeze({ itemType: "ALPHA_CONTRACT", itemName: "Alpha Contract", quantity: 1 }),
+        ]),
+      }),
+      Object.freeze({
+        level: 10,
+        items: Object.freeze([
+          Object.freeze({ itemType: "LEVEL_UP", itemName: "Level Up", quantity: 1 }),
+        ]),
+      }),
+      Object.freeze({
+        level: 15,
+        items: Object.freeze([
+          Object.freeze({
+            itemType: "ALL_STAR_CONTRACT",
+            itemName: "All-Star Contract",
+            quantity: 1,
+          }),
+        ]),
+      }),
+      Object.freeze({ level: 20, shards: 2_000 }),
+      Object.freeze({
+        level: 25,
+        items: Object.freeze([
+          Object.freeze({ itemType: "LEVEL_UP", itemName: "Level Up", quantity: 2 }),
+        ]),
+      }),
+      Object.freeze({
+        level: 30,
+        shards: 4_000,
+        items: Object.freeze([
+          Object.freeze({
+            itemType: "ALL_STAR_CONTRACT",
+            itemName: "All-Star Contract",
+            quantity: 2,
+          }),
+        ]),
+      }),
+    ]),
   }),
   exchange: Object.freeze({
       maximumQuantity: 100,
@@ -191,6 +254,7 @@ export const gameConfig = Object.freeze({
       duel: Object.freeze({
         cooldownSeconds: 10,
         invitationSeconds: 60,
+        maximumBetGold: 20_000_000,
       }),
       winXp: 150,
     lossXp: 50,

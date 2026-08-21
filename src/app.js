@@ -34,11 +34,17 @@ import { createTradeService } from "./modules/trade/index.js";
 import { createExchangeService } from "./modules/exchange/index.js";
 import { createInventoryService } from "./modules/inventory/index.js";
 import { createOnboardingService } from "./modules/onboarding/index.js";
+import { createVoteService } from "./modules/vote/index.js";
+import { createTopGgClient } from "./integrations/topgg/index.js";
+import { createLevelRewardService } from "./modules/level-reward/index.js";
+import { createContractService } from "./modules/contract/index.js";
 
 export function createApplication({
   discordToken,
   databaseUrl,
   communityInviteUrl,
+  communityAccess = Object.freeze({}),
+  topGg = Object.freeze({}),
   commandPrefix = "dunk",
 }) {
   const client = createDiscordClient();
@@ -50,10 +56,7 @@ export function createApplication({
   });
   const inventoryService = createInventoryService({
     databasePool,
-    itemDefinitions: [{
-      itemType: gameConfig.upgrade.levelUpItemType,
-      itemName: gameConfig.upgrade.levelUpItemName,
-    }],
+    itemDefinitions: gameConfig.items,
   });
   const rewardService = createRewardService({
     databasePool,
@@ -62,6 +65,14 @@ export function createApplication({
     claimConfig: gameConfig.claim,
     dailyConfig: gameConfig.daily,
     weeklyConfig: gameConfig.weekly,
+  });
+  const topGgClient = createTopGgClient({ apiToken: topGg.apiToken });
+  const voteService = createVoteService({
+    databasePool,
+    economyService,
+    topGgClient,
+    voteConfig: gameConfig.vote,
+    botId: topGg.botId,
   });
   const cardTemplateService = createCardTemplateService({ databasePool });
   const traitService = createTraitService({
@@ -72,6 +83,21 @@ export function createApplication({
     databasePool,
     cardTemplateService,
     playerService,
+  });
+  const levelRewardService = createLevelRewardService({
+    databasePool,
+    economyService,
+    inventoryService,
+    cardTemplateService,
+    cardInstanceService,
+    levelRewardConfig: gameConfig.levelRewards,
+  });
+  const contractService = createContractService({
+    databasePool,
+    inventoryService,
+    cardTemplateService,
+    cardInstanceService,
+    contractCatalog: gameConfig.contracts,
   });
   const cardViewService = createCardViewService({
     databasePool,
@@ -160,6 +186,9 @@ export function createApplication({
     trait: traitService,
     inventory: inventoryService,
     onboarding: onboardingService,
+    vote: voteService,
+    levelReward: levelRewardService,
+    contract: contractService,
   });
   const commandRegistry = new Map(
     commands.map((command) => [command.data.name, command]),
@@ -173,15 +202,25 @@ export function createApplication({
     battlePlayback,
     strategyDrafts,
     communityInviteUrl,
+    communityAccess,
   });
   let isStopped = false;
   let marketExpirationTimer = null;
+  let duelExpirationTimer = null;
 
   const expireMarketListings = async () => {
     try {
       await marketService.expireDueListings();
     } catch (error) {
       console.error(`Market expiration failed: ${error.message}`);
+    }
+  };
+
+  const expireDuelChallenges = async () => {
+    try {
+      await battleService.expireDueDuelChallenges();
+    } catch (error) {
+      console.error(`Duel expiration failed: ${error.message}`);
     }
   };
 
@@ -215,10 +254,15 @@ export function createApplication({
       await dropService.completeExpiredOffers();
       await tradeService.expireDueTrades();
       await marketService.expireDueListings();
+      await battleService.expireDueDuelChallenges();
       marketExpirationTimer = setInterval(() => {
         void expireMarketListings();
       }, 60_000);
       marketExpirationTimer.unref?.();
+      duelExpirationTimer = setInterval(() => {
+        void expireDuelChallenges();
+      }, 30_000);
+      duelExpirationTimer.unref?.();
       await client.login(discordToken);
     },
 
@@ -231,6 +275,10 @@ export function createApplication({
       if (marketExpirationTimer) {
         clearInterval(marketExpirationTimer);
         marketExpirationTimer = null;
+      }
+      if (duelExpirationTimer) {
+        clearInterval(duelExpirationTimer);
+        duelExpirationTimer = null;
       }
       battlePlayback.stop();
       strategyDrafts.stop();

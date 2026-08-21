@@ -22,6 +22,8 @@ const DEFINITIONS = Object.freeze([
   ["pack", ["pack", "pk"]],
   ["daily", ["daily", "day"]],
   ["weekly", ["weekly", "wk"]],
+  ["level-rewards", ["level-rewards", "rewards", "lr", "milestones"]],
+  ["contract", ["contract", "sign"]],
   ["exchange", ["exchange", "ex"]],
   ["sort", ["sort"]],
   ["lock", ["lock", "lk"]],

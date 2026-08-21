@@ -322,27 +322,30 @@ begins at 1,000 total XP, Level 2 at 3,000, Level 3 at 6,000, and so on. Battle
 grants 150 XP for a win or 50 XP for a loss; Daily grants 300 XP; Weekly grants
 1,000 XP. Migration 039 adds the idempotent `player_xp_transactions` ledger;
 Migration 040 changes the starting level and existing progress to Level 0.
-Player-level milestone rewards are approved but not implemented:
+Player-level milestone rewards through Level 30 are claimed with
+`/level-rewards`. The claim grants every earned unclaimed milestone atomically;
+random Card rewards are minted at Card Level 1:
 
 | Level | Reward |
 | ---: | --- |
 | 1 | 5,000 Gold |
 | 3 | 300 Shards |
-| 5 | One random Alpha Card |
+| 5 | One Alpha Contract |
 | 10 | One Level Up item |
-| 15 | One random All-Star Card |
+| 15 | One All-Star Contract |
 | 20 | 2,000 Shards |
 | 25 | Two Level Up items |
-| 30 | 4,000 Shards and a special title |
-| 40 | 100,000 Gold |
-| 50 | One random Superstar Card at Level 1, two Level Up items, and a profile cosmetic |
-| 75 | One random Superstar Card at Level 3 and an exclusive title |
-| 100 | One player-selected GOAT Card at Level 1 |
+| 30 | 4,000 Shards and two All-Star Contracts |
 
-Superstar and GOAT Cards granted by these milestones will be account-bound:
-usable in Lineup, Battle, Lock, and Upgrade, but unavailable to Trade, Market,
-and Quicksell. Binding must survive any future transformation such as Fusion.
-Milestone claims, cosmetics, titles, and account binding remain future work.
+Migration 049 persists one claim per Player and milestone. Levels above 30,
+cosmetics, titles, and account binding remain future work.
+
+`Alpha Contract` (`ALPHA_CONTRACT`) and `All-Star Contract`
+(`ALL_STAR_CONTRACT`) are real Inventory items. `/contract` consumes the
+selected Contract and signs one random active Card of its matching rarity.
+Its initial Card Level is rolled independently with Level 1â€“5 weights
+`45% / 28% / 14% / 8% / 5%`. Migration 050 persists Contract openings for
+atomic idempotency.
 
 ---
 
@@ -1671,7 +1674,8 @@ available. Card and Gold modals require an `add` or `remove` action.
 Current primary concept:
 
 ```text
-5v5
+three saved 5v5 Lineups per Player
+exactly one active Lineup
 ```
 
 Slots:
@@ -1699,6 +1703,10 @@ weights and never modify Card Template data or shot accuracy. Offense, Tempo,
 Defense, and Rebounding are edited independently; Strategy has no Preset field.
 
 MVP currently assumes no bench.
+
+`/lineup swap` selects Lineup 1, 2, or 3. Each saved Lineup owns independent
+Card slots and Strategy; Battle, Practice, Duel, `/lineup set`, and `/strategy`
+always use the active Lineup.
 
 ---
 
@@ -2498,14 +2506,15 @@ Implemented concepts:
 
 ```text
 008_create_lineups.sql
-one active lineup per Player
+three saved lineups and one active lineup per Player
 PG, SG, SF, PF, and C slots with no bench
 primary/secondary position eligibility
 owned ACTIVE Card Instance validation
 no duplicate Card Instance in one lineup
-/lineup view, set, and remove subcommands
+/lineup view, set, remove, and swap subcommands
 public Card IDs and Collection positions exposed through /collection
 integration and command tests using node:test
+048_add_three_saved_lineups.sql
 ```
 
 M11 did not implement Battle, Quicksell, Fusion, Market, or Trade.

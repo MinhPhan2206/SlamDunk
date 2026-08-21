@@ -65,5 +65,20 @@ export function createInventoryService({ databasePool, itemDefinitions = [] }) {
       }
       return Object.freeze(items);
     },
+
+    async consumeItem(
+      { playerId, itemType, quantity = 1 },
+      { database = databasePool } = {},
+    ) {
+      const normalizedType = String(itemType).trim().toUpperCase();
+      if (!normalizedType || !Number.isSafeInteger(quantity) || quantity <= 0) {
+        throw new TypeError("A valid itemType and positive quantity are required.");
+      }
+      return inventoryRepository.consumeItem(database, {
+        playerId: normalizePlayerId(playerId),
+        itemType: normalizedType,
+        quantity,
+      });
+    },
   });
 }

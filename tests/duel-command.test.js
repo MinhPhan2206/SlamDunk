@@ -57,6 +57,10 @@ test("duel command creates a 60-second friendly invitation", async () => {
           bot: false,
         };
       },
+      getInteger(name) {
+        assert.equal(name, "bet");
+        return null;
+      },
     },
     async deferReply() {},
     async editReply(payload) { edits.push(payload); },
@@ -83,6 +87,7 @@ test("duel command creates a 60-second friendly invitation", async () => {
             challengerPlayerId: "1",
             challengedPlayerId: "2",
             interactionId: interaction.id,
+            betGold: 0,
           });
           return duelResult();
         },
