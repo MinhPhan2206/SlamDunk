@@ -937,6 +937,19 @@ function situationalState(scores, actingTeam, targetScore) {
   });
 }
 
+function winningTeam(scores, targetScore) {
+  if (scores[1] >= targetScore && scores[1] - scores[2] >= 2) return 1;
+  if (scores[2] >= targetScore && scores[2] - scores[1] >= 2) return 2;
+  return null;
+}
+
+function wouldWin(scores, actingTeam, points, targetScore) {
+  const defenseTeam = actingTeam === 1 ? 2 : 1;
+  const projectedScore = scores[actingTeam] + points;
+  return projectedScore >= targetScore &&
+    projectedScore - scores[defenseTeam] >= 2;
+}
+
 const EMPTY_MOMENTUM = Object.freeze({ slot: null, streak: 0 });
 
 function scoringStreakFor(momentum, player) {
@@ -1086,8 +1099,7 @@ export function simulateBattle({
   let possessionCount = 0;
 
   while (
-    scores[1] < config.targetScore &&
-    scores[2] < config.targetScore &&
+    winningTeam(scores, config.targetScore) === null &&
     possessionCount < config.maximumPossessions
   ) {
     possessionCount += 1;
@@ -1265,7 +1277,12 @@ export function simulateBattle({
     creationScore += qualityTraits.qualityDelta;
     quality = qualityFromScore(creationScore);
     const scoringStreak = scoringStreakFor(scoringMomentum[actingTeam], plan.shooter);
-    const isGameWinningAttempt = scores[actingTeam] + plan.points >= config.targetScore;
+    const isGameWinningAttempt = wouldWin(
+      scores,
+      actingTeam,
+      plan.points,
+      config.targetScore,
+    );
     const shotMakeTraits = resolveBattleTraitModifiers("SHOT_MAKE", {
       action: option.action,
       shotType: plan.shotType,
@@ -1397,7 +1414,8 @@ export function simulateBattle({
     }));
   }
 
-  if (scores[1] < config.targetScore && scores[2] < config.targetScore) {
+  const winnerTeam = winningTeam(scores, config.targetScore);
+  if (winnerTeam === null) {
     throw new Error("Battle exceeded the maximum possession safety limit.");
   }
 
@@ -1410,7 +1428,7 @@ export function simulateBattle({
     tendencyResolverVersion: BATTLE_TENDENCY_RESOLVER_VERSION,
     playerStrategy: strategies[1],
     aiStrategy: strategies[2],
-    winnerTeam: scores[1] >= config.targetScore ? 1 : 2,
+    winnerTeam,
     playerScore: scores[1],
     aiScore: scores[2],
     possessionCount,

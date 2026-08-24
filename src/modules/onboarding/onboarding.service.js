@@ -90,6 +90,7 @@ export function createOnboardingService({
             ownerPlayerId: normalizedPlayerId,
             cardLevel: 1,
             obtainedMethod: "ADMIN_GRANT",
+            accountBound: true,
             referenceType: "WELCOME",
             referenceId: interactionId.trim(),
           }, { database: transactionDatabase });

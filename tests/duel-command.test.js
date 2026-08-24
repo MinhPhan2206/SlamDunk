@@ -111,6 +111,40 @@ test("duel command creates a 60-second friendly invitation", async () => {
   assert.equal(edits[0].components[0].components[1].data.custom_id, `duel:decline:${DUEL_ID}`);
 });
 
+test("friendly Duel is blocked outside configured Duel channels in the Community Server", async () => {
+  const edits = [];
+  let playerLookupCalled = false;
+  const interaction = {
+    guildId: "111111111111111111",
+    channelId: "999999999999999999",
+    user: { id: "111111111111111112", username: "Challenger" },
+    options: {
+      getUser() {
+        return { id: "222222222222222222", username: "Opponent", bot: false };
+      },
+      getInteger() { return null; },
+    },
+    async deferReply() {},
+    async editReply(payload) { edits.push(payload); },
+  };
+
+  await duelCommand.execute(interaction, {
+    services: {
+      player: {
+        async getOrCreatePlayer() { playerLookupCalled = true; },
+      },
+    },
+    communityAccess: {
+      guildId: "111111111111111111",
+      duelChannelIds: ["411111111111111111"],
+    },
+  });
+
+  assert.equal(playerLookupCalled, false);
+  assert.equal(edits.length, 1);
+  assert.match(edits[0].content, /Duel is only available/);
+});
+
 test("accepting a Duel starts shared playback for both participants", async () => {
   const started = [];
   const duel = {

@@ -78,6 +78,7 @@ function normalizeMintInput(input) {
     ownerPlayerId: normalizeId(input.ownerPlayerId, "ownerPlayerId"),
     cardLevel: normalizeCardLevel(input.cardLevel),
     obtainedMethod: normalizeObtainedMethod(input.obtainedMethod),
+    accountBound: input.accountBound === true,
     ...normalizeReference(input.referenceType, input.referenceId),
   });
 }
@@ -154,6 +155,7 @@ export function createCardInstanceService({
           cardLevel: mint.cardLevel,
           obtainedMethod: mint.obtainedMethod,
           publicCardId: generatePublicCardId(),
+          accountBound: mint.accountBound,
         },
       );
       if (instance) break;
@@ -177,6 +179,99 @@ export function createCardInstanceService({
     );
 
     return Object.freeze({ instance, counter, ownershipHistory });
+  }
+
+  async function generateUniquePublicCardIds(transactionDatabase, quantity) {
+    const generated = new Set();
+    for (let attempt = 0; attempt < PUBLIC_CARD_ID_ATTEMPTS; attempt += 1) {
+      while (generated.size < quantity) {
+        generated.add(String(generatePublicCardId()));
+      }
+      const existing = await cardInstanceRepository.findExistingPublicIds(
+        transactionDatabase,
+        [...generated],
+      );
+      for (const publicCardId of existing) generated.delete(publicCardId);
+      if (generated.size === quantity) return [...generated];
+    }
+    throw new CardError(
+      "PUBLIC_CARD_ID_EXHAUSTED",
+      "Unique public Card IDs could not be allocated for this batch.",
+    );
+  }
+
+  async function mintValidatedCards(transactionDatabase, mints) {
+    const indexesByTemplate = new Map();
+    mints.forEach((mint, index) => {
+      const indexes = indexesByTemplate.get(mint.cardTemplateId) ?? [];
+      indexes.push(index);
+      indexesByTemplate.set(mint.cardTemplateId, indexes);
+    });
+
+    const serials = new Array(mints.length);
+    const counters = new Array(mints.length);
+    for (const [cardTemplateId, indexes] of indexesByTemplate) {
+      const counter = await cardMintCounterRepository.allocateSerialRange(
+        transactionDatabase,
+        cardTemplateId,
+        indexes.length,
+      );
+      const firstSerial = BigInt(counter.lastSerialNumber) -
+        BigInt(indexes.length) + 1n;
+      indexes.forEach((mintIndex, offset) => {
+        serials[mintIndex] = String(firstSerial + BigInt(offset));
+        counters[mintIndex] = Object.freeze({
+          ...counter,
+          lastSerialNumber: serials[mintIndex],
+        });
+      });
+    }
+
+    const publicCardIds = await generateUniquePublicCardIds(
+      transactionDatabase,
+      mints.length,
+    );
+    const instances = await cardInstanceRepository.createMany(
+      transactionDatabase,
+      mints.map((mint, index) => ({
+        ...mint,
+        serialNumber: serials[index],
+        publicCardId: publicCardIds[index],
+      })),
+    );
+    const instancesByPublicId = new Map(
+      instances.map((instance) => [instance.publicCardId, instance]),
+    );
+    const orderedInstances = publicCardIds.map((publicCardId) =>
+      instancesByPublicId.get(publicCardId)
+    );
+    if (orderedInstances.some((instance) => !instance)) {
+      throw new CardError(
+        "CARD_BATCH_MINT_FAILED",
+        "The Card batch could not be created completely.",
+      );
+    }
+    const histories = await cardOwnershipRepository.createMany(
+      transactionDatabase,
+      orderedInstances.map((instance, index) => ({
+        cardInstanceId: instance.cardInstanceId,
+        fromPlayerId: null,
+        toPlayerId: mints[index].ownerPlayerId,
+        reason: CREATION_REASONS[mints[index].obtainedMethod],
+        referenceType: mints[index].referenceType,
+        referenceId: mints[index].referenceId,
+      })),
+    );
+    const historiesByInstanceId = new Map(
+      histories.map((history) => [history.cardInstanceId, history]),
+    );
+    return Object.freeze(orderedInstances.map((instance, index) =>
+      Object.freeze({
+        instance,
+        counter: counters[index],
+        ownershipHistory: historiesByInstanceId.get(instance.cardInstanceId),
+      })
+    ));
   }
 
   return Object.freeze({
@@ -289,6 +384,12 @@ export function createCardInstanceService({
           throw new CardError(
             "CARD_NOT_MARKET_AVAILABLE",
             "This card is not available for a Market listing.",
+          );
+        }
+        if (instance.accountBound) {
+          throw new CardError(
+            "CARD_ACCOUNT_BOUND",
+            "This account-bound card cannot be listed on the Market.",
           );
         }
         if (
@@ -427,6 +528,12 @@ export function createCardInstanceService({
           throw new CardError(
             "CARD_NOT_TRADE_AVAILABLE",
             "This card is not available for Direct Trade.",
+          );
+        }
+        if (instance.accountBound) {
+          throw new CardError(
+            "CARD_ACCOUNT_BOUND",
+            "This account-bound card cannot be offered in a Trade.",
           );
         }
         return cardInstanceRepository.setTradeLock(transactionDatabase, {
@@ -569,8 +676,8 @@ export function createCardInstanceService({
     },
 
     async mintCards(inputs, { database } = {}) {
-      if (!Array.isArray(inputs) || inputs.length < 1 || inputs.length > 5) {
-        throw new TypeError("Card mint batch requires between one and five cards.");
+      if (!Array.isArray(inputs) || inputs.length < 1 || inputs.length > 500) {
+        throw new TypeError("Card mint batch requires between one and 500 cards.");
       }
       const mints = inputs.map(normalizeMintInput);
       return useTransaction(
@@ -578,11 +685,7 @@ export function createCardInstanceService({
         database,
         async (transactionDatabase) => {
           await validateMints(transactionDatabase, mints);
-          const results = [];
-          for (const mint of mints) {
-            results.push(await mintValidatedCard(transactionDatabase, mint));
-          }
-          return Object.freeze(results);
+          return mintValidatedCards(transactionDatabase, mints);
         },
       );
     },

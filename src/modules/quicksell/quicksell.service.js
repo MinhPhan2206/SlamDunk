@@ -206,6 +206,7 @@ export function createQuicksellService({
               card.userLock ||
               card.marketLock ||
               card.tradeLock ||
+              card.accountBound ||
               card.inLineup,
           )
         ) {
@@ -335,6 +336,12 @@ export function createQuicksellService({
           throw new QuicksellError(
             "CARD_USER_LOCKED",
             "Unlock this protected card before quickselling it.",
+          );
+        }
+        if (card.accountBound) {
+          throw new QuicksellError(
+            "CARD_ACCOUNT_BOUND",
+            "This account-bound card cannot be quicksold.",
           );
         }
         if (card.inLineup) {

@@ -4,6 +4,7 @@ import {
   parsePrefixMessage,
 } from "../prefix/prefix-command-parser.js";
 import { PrefixMessageInteraction } from "../prefix/prefix-message-interaction.js";
+import { AbuseGuardError } from "../../modules/security/index.js";
 
 function errorMessage(error) {
   return error instanceof Error ? error.message : String(error);
@@ -25,7 +26,23 @@ export function createMessageCreateHandler({ prefix, registry, context = {} }) {
     if (!parsed) return;
 
     const interaction = new PrefixMessageInteraction(message, parsed);
+    let guardLease = null;
     try {
+      const disabled = context.commandAvailability?.disabledCommands
+        ?.includes?.(parsed.commandName);
+      const maintenance = context.commandAvailability?.maintenanceMode === true &&
+        !["help", "ping"].includes(parsed.commandName);
+      if (disabled || maintenance) {
+        await message.reply("This command is temporarily unavailable for maintenance.");
+        return;
+      }
+      guardLease = context.abuseGuard?.acquire({
+        userId: message.author?.id,
+        guildId: message.guildId,
+        channelId: message.channelId,
+        commandName: parsed.commandName,
+        kind: "prefix",
+      });
       await parsed.command.execute(interaction, context);
       if (parsed.command.managesOwnComponentTimeout !== true) {
         await scheduleComponentTimeout(interaction, {
@@ -36,6 +53,10 @@ export function createMessageCreateHandler({ prefix, registry, context = {} }) {
         });
       }
     } catch (error) {
+      if (error instanceof AbuseGuardError) {
+        await message.reply(context.abuseGuard.messageFor(error));
+        return;
+      }
       console.error(
         `Discord prefix command ${prefix} ${parsed.alias} failed: ${errorMessage(error)}`,
       );
@@ -55,6 +76,8 @@ export function createMessageCreateHandler({ prefix, registry, context = {} }) {
           `Failed to send prefix command error response: ${errorMessage(responseError)}`,
         );
       }
+    } finally {
+      guardLease?.release();
     }
   };
 }

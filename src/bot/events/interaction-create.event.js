@@ -1,5 +1,6 @@
 import { MessageFlags } from "discord.js";
 import { scheduleComponentTimeout } from "../components/component-timeout.js";
+import { AbuseGuardError } from "../../modules/security/index.js";
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
@@ -47,6 +48,15 @@ async function sendErrorResponse(interaction) {
   await interaction.reply({ ...message, flags: MessageFlags.Ephemeral });
 }
 
+function commandUnavailable(commandName, config) {
+  const disabled = Array.isArray(config?.disabledCommands)
+    ? config.disabledCommands.includes(commandName)
+    : false;
+  const maintenance = config?.maintenanceMode === true &&
+    !["help", "ping"].includes(commandName);
+  return disabled || maintenance;
+}
+
 export function createInteractionCreateHandler(
   commands,
   context = {},
@@ -55,6 +65,7 @@ export function createInteractionCreateHandler(
   return async function handleInteractionCreate(interaction) {
     let handler;
     let interactionLabel;
+    let guardLease = null;
 
     if (interaction.isAutocomplete?.()) {
       handler = commands.get(interaction.commandName);
@@ -65,8 +76,19 @@ export function createInteractionCreateHandler(
         return;
       }
       try {
+        guardLease = context.abuseGuard?.acquire({
+          userId: interaction.user?.id,
+          guildId: interaction.guildId,
+          channelId: interaction.channelId,
+          commandName: interaction.commandName,
+          kind: "autocomplete",
+        });
         await handler.autocomplete(interaction, context);
       } catch (error) {
+        if (error instanceof AbuseGuardError) {
+          await respondEmptyAutocomplete(interaction, interactionLabel);
+          return;
+        }
         if (isUnknownInteraction(error)) {
           console.warn(`Discord ${interactionLabel} expired before it could respond.`);
           return;
@@ -75,6 +97,8 @@ export function createInteractionCreateHandler(
           `Discord ${interactionLabel} failed: ${getErrorMessage(error)}`,
         );
         await respondEmptyAutocomplete(interaction, interactionLabel);
+      } finally {
+        guardLease?.release();
       }
       return;
     }
@@ -100,6 +124,25 @@ export function createInteractionCreateHandler(
     }
 
     try {
+      if (
+        interaction.isChatInputCommand() &&
+        commandUnavailable(interaction.commandName, context.commandAvailability)
+      ) {
+        await interaction.reply({
+          content: "This command is temporarily unavailable for maintenance.",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+      guardLease = context.abuseGuard?.acquire({
+        userId: interaction.user?.id,
+        guildId: interaction.guildId,
+        channelId: interaction.channelId,
+        commandName: interaction.isChatInputCommand()
+          ? interaction.commandName
+          : interaction.customId.split(":", 1)[0],
+        kind: interaction.isChatInputCommand() ? "command" : "component",
+      });
       await handler.execute(interaction, context);
       if (handler.managesOwnComponentTimeout !== true) {
         await scheduleComponentTimeout(interaction, {
@@ -110,6 +153,19 @@ export function createInteractionCreateHandler(
         });
       }
     } catch (error) {
+      if (error instanceof AbuseGuardError) {
+        const content = context.abuseGuard.messageFor(error);
+        try {
+          if (interaction.deferred || interaction.replied) {
+            await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+          } else {
+            await interaction.reply({ content, flags: MessageFlags.Ephemeral });
+          }
+        } catch (responseError) {
+          console.warn(`Rate-limit response failed: ${getErrorMessage(responseError)}`);
+        }
+        return;
+      }
       console.error(
         `Discord ${interactionLabel} failed: ${getErrorMessage(error)}`,
       );
@@ -121,6 +177,8 @@ export function createInteractionCreateHandler(
           `Failed to send command error response: ${getErrorMessage(responseError)}`,
         );
       }
+    } finally {
+      guardLease?.release();
     }
   };
 }

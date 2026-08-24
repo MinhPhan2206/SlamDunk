@@ -12,6 +12,7 @@ function mapCard(row) {
     marketLock: row.market_lock,
     tradeLock: row.trade_lock,
     userLock: row.user_lock,
+    accountBound: row.account_bound,
     inLineup: row.in_lineup,
     playerName: row.player_name,
     rarityCode: row.rarity_code,
@@ -63,6 +64,7 @@ export const quicksellRepository = Object.freeze({
           ci.market_lock,
           ci.trade_lock,
           ci.user_lock,
+          ci.account_bound,
           ci.serial_number,
           ci.card_level,
           ct.player_name,
@@ -93,7 +95,7 @@ export const quicksellRepository = Object.freeze({
         SELECT
           ci.card_instance_id, ci.public_card_id, ci.card_template_id,
           ci.owner_player_id, ci.status, ci.market_lock, ci.trade_lock,
-          ci.user_lock, ci.serial_number, ci.card_level,
+          ci.user_lock, ci.account_bound, ci.serial_number, ci.card_level,
           ct.player_name, ct.primary_position,
           ct.secondary_position, r.rarity_code, FALSE AS in_lineup
         FROM card_instances ci
@@ -104,6 +106,7 @@ export const quicksellRepository = Object.freeze({
           AND ci.user_lock = FALSE
           AND ci.market_lock = FALSE
           AND ci.trade_lock = FALSE
+          AND ci.account_bound = FALSE
           AND NOT EXISTS (
             SELECT 1 FROM lineup_slots ls
             WHERE ls.card_instance_id = ci.card_instance_id
@@ -170,7 +173,7 @@ export const quicksellRepository = Object.freeze({
         SELECT
           ci.card_instance_id, ci.public_card_id, ci.card_template_id,
           ci.owner_player_id, ci.status, ci.market_lock, ci.trade_lock,
-          ci.user_lock, ci.serial_number, ci.card_level,
+          ci.user_lock, ci.account_bound, ci.serial_number, ci.card_level,
           ct.player_name, ct.primary_position,
           ct.secondary_position, r.rarity_code, qsc.gold_reward,
           qsc.shard_reward,

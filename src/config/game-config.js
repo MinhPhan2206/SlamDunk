@@ -77,10 +77,10 @@ export const gameConfig = Object.freeze({
   daily: Object.freeze({
     cooldownHours: 24,
     xpReward: 300,
-    minimumGold: 500_000,
-    maximumGold: 500_000,
-    minimumShards: 100_000,
-    maximumShards: 100_000,
+    minimumGold: 1_000_000,
+    maximumGold: 1_000_000,
+    minimumShards: 500_000,
+    maximumShards: 500_000,
   }),
   weekly: Object.freeze({
     cooldownHours: 168,
@@ -171,9 +171,9 @@ export const gameConfig = Object.freeze({
     reviewDelaySeconds: 5,
   }),
   battle: Object.freeze({
-    engineVersion: "3.3.0",
-    rulesetVersion: "first-to-21-player-tendencies-v1",
-    configVersion: "battle-v3.2-player-tendencies-situational-traits-1",
+    engineVersion: "3.4.0",
+    rulesetVersion: "first-to-21-win-by-two-player-tendencies-v1",
+    configVersion: "battle-v3.4-win-by-two-1",
     strategyResolverVersion: "battle-strategy-v4",
     traitResolverVersion: "battle-traits-v4",
     tendencyResolverVersion: "battle-tendencies-v2",

@@ -1,6 +1,6 @@
 const OPENING_COLUMNS = `
   pack_opening_id, player_id, pack_code, price_gold, payment_currency,
-  price_amount, status,
+  price_amount, pack_quantity, status,
   discord_interaction_id, card_template_id, card_instance_id,
   completed_at, created_at
 `;
@@ -14,6 +14,7 @@ function mapOpening(row) {
     priceGold: row.price_gold,
     paymentCurrency: row.payment_currency,
     priceAmount: row.price_amount,
+    packQuantity: row.pack_quantity,
     status: row.status,
     discordInteractionId: row.discord_interaction_id,
     cardTemplateId: row.card_template_id,
@@ -44,14 +45,21 @@ export const packOpeningRepository = Object.freeze({
 
   async create(
     database,
-    { playerId, packCode, paymentCurrency, priceAmount, interactionId },
+    {
+      playerId,
+      packCode,
+      paymentCurrency,
+      priceAmount,
+      packQuantity,
+      interactionId,
+    },
   ) {
     const result = await database.query(
       `
         INSERT INTO pack_openings (
           player_id, pack_code, price_gold, payment_currency, price_amount,
-          discord_interaction_id
-        ) VALUES ($1, $2, $3, $4, $5, $6)
+          pack_quantity, discord_interaction_id
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING ${OPENING_COLUMNS}
       `,
       [
@@ -60,6 +68,7 @@ export const packOpeningRepository = Object.freeze({
         paymentCurrency === "GOLD" ? priceAmount : 0,
         paymentCurrency,
         priceAmount,
+        packQuantity,
         interactionId,
       ],
     );

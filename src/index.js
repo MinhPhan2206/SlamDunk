@@ -33,6 +33,18 @@ async function main() {
   process.once("SIGTERM", () => {
     void shutdown("SIGTERM");
   });
+  process.once("unhandledRejection", (error) => {
+    console.error(`Unhandled Promise rejection: ${getErrorMessage(error)}`);
+    void shutdown("unhandledRejection").then(() => {
+      process.exitCode = 1;
+    });
+  });
+  process.once("uncaughtException", (error) => {
+    console.error(`Uncaught process exception: ${getErrorMessage(error)}`);
+    void shutdown("uncaughtException").then(() => {
+      process.exitCode = 1;
+    });
+  });
 
   try {
     await application.start();

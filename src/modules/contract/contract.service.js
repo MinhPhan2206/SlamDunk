@@ -132,6 +132,7 @@ export function createContractService({
           ownerPlayerId: normalizedPlayerId,
           cardLevel,
           obtainedMethod: "EVENT_REWARD",
+          accountBound: true,
           referenceType: REFERENCE_TYPE,
           referenceId: interactionId,
         }, { database: transactionDatabase });

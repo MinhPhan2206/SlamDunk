@@ -139,3 +139,34 @@ test("practice command starts reward-free Battle playback", async () => {
   assert.equal(calls[0].ownerDiscordUserId, interaction.user.id);
   assert.equal(practiceCommand.componentInactivityTimeoutMs, 60_000);
 });
+
+test("practice uses the Battle channel restriction inside the Community Server", async () => {
+  const replies = [];
+  let playerLookupCalled = false;
+  const interaction = {
+    guildId: "111111111111111111",
+    channelId: "999999999999999999",
+    user: { id: "434567890123456789", username: "PracticeTester" },
+    async deferReply() {},
+    async editReply(payload) { replies.push(payload); },
+  };
+
+  await practiceCommand.execute(interaction, {
+    services: {
+      player: {
+        async getOrCreatePlayer() {
+          playerLookupCalled = true;
+        },
+      },
+    },
+    battlePlayback: {},
+    communityAccess: {
+      guildId: "111111111111111111",
+      battleChannelIds: ["311111111111111111"],
+    },
+  });
+
+  assert.equal(playerLookupCalled, false);
+  assert.equal(replies.length, 1);
+  assert.match(replies[0].content, /Community Server channels/);
+});

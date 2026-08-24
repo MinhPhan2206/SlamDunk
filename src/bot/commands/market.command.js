@@ -13,6 +13,7 @@ import {
   createMarketSellDraftPayload,
 } from "../presenters/market.presenter.js";
 import { requesterLine } from "../ui/presentation.js";
+import { SecurityAccessError } from "../../modules/security/index.js";
 
 function cardIdOption(option, description) {
   return option
@@ -37,7 +38,11 @@ async function executeSafely(interaction, operation) {
   try {
     await operation();
   } catch (error) {
-    if (error instanceof MarketError || error instanceof CardError) {
+    if (
+      error instanceof MarketError ||
+      error instanceof CardError ||
+      error instanceof SecurityAccessError
+    ) {
       await interaction.editReply({ content: error.message, embeds: [] });
       return;
     }
@@ -89,6 +94,11 @@ export const sellCommand = Object.freeze({
     }
     await executeSafely(interaction, async () => {
       const player = await playerFor(interaction, services);
+      await services.security?.assertAccess({
+        player,
+        discordUser: interaction.user,
+        feature: "MARKET",
+      });
       const cardInstanceId = await services.collection.resolveOwnedCardReference({
         playerId: player.playerId,
         cardReference,
@@ -131,6 +141,11 @@ export const buyCommand = Object.freeze({
   async execute(interaction, { services }) {
     await executeSafely(interaction, async () => {
       const player = await playerFor(interaction, services);
+      await services.security?.assertAccess({
+        player,
+        discordUser: interaction.user,
+        feature: "MARKET",
+      });
       const result = await services.market.buyListing({
         buyerPlayerId: player.playerId,
         publicCardId: publicCardId(interaction.options.getString("card_id", true)),

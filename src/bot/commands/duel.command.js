@@ -2,7 +2,11 @@ import { SlashCommandBuilder } from "discord.js";
 import { gameConfig } from "../../config/game-config.js";
 import { BattleError } from "../../modules/battle/index.js";
 import { createDuelInvitationPayload } from "../presenters/duel.presenter.js";
-import { duelBetAccessError } from "../access/community-access.js";
+import {
+  duelAccessError,
+  duelBetAccessError,
+} from "../access/community-access.js";
+import { SecurityAccessError } from "../../modules/security/index.js";
 
 export const duelCommand = Object.freeze({
   componentInactivityTimeoutMs: gameConfig.battle.duel.invitationSeconds * 1_000,
@@ -26,6 +30,15 @@ export const duelCommand = Object.freeze({
     const opponent = interaction.options.getUser("user", true);
     const betGold = interaction.options.getInteger("bet") ?? 0;
     try {
+      const channelAccessError = duelAccessError(interaction, communityAccess);
+      if (channelAccessError) {
+        await interaction.editReply({
+          content: channelAccessError,
+          embeds: [],
+          components: [],
+        });
+        return;
+      }
       if (betGold > 0) {
         const accessError = duelBetAccessError(interaction, communityAccess);
         if (accessError) {
@@ -53,6 +66,20 @@ export const duelCommand = Object.freeze({
           usernameSnapshot: opponent.username,
         }),
       ]);
+      if (betGold > 0) {
+        await Promise.all([
+          services.security?.assertAccess({
+            player: challenger,
+            discordUser: interaction.user,
+            feature: "DUEL_BET",
+          }),
+          services.security?.assertAccess({
+            player: challenged,
+            discordUser: opponent,
+            feature: "DUEL_BET",
+          }),
+        ]);
+      }
       const [challengerLineup, challengedLineup] = await Promise.all([
         services.lineup.getLineup(challenger.playerId),
         services.lineup.getLineup(challenged.playerId),
@@ -69,7 +96,7 @@ export const duelCommand = Object.freeze({
         challengedLineup,
       }));
     } catch (error) {
-      if (error instanceof BattleError) {
+      if (error instanceof BattleError || error instanceof SecurityAccessError) {
         const content = error.code === "DUEL_COOLDOWN_ACTIVE"
           ? `${error.message} Try again <t:${Math.floor(error.details.availableAt.getTime() / 1_000)}:R>.`
           : error.message;

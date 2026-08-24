@@ -38,6 +38,8 @@ import { createVoteService } from "./modules/vote/index.js";
 import { createTopGgClient } from "./integrations/topgg/index.js";
 import { createLevelRewardService } from "./modules/level-reward/index.js";
 import { createContractService } from "./modules/contract/index.js";
+import { createAbuseGuard, createSecurityService } from "./modules/security/index.js";
+import { createOperationalMonitor } from "./operations/operational-monitor.js";
 
 export function createApplication({
   discordToken,
@@ -45,10 +47,36 @@ export function createApplication({
   communityInviteUrl,
   communityAccess = Object.freeze({}),
   topGg = Object.freeze({}),
+  security: securityConfig = Object.freeze({}),
+  database: databaseConfig = Object.freeze({}),
+  commandAvailability = Object.freeze({}),
   commandPrefix = "dunk",
 }) {
   const client = createDiscordClient();
-  const databasePool = createPostgresPool({ connectionString: databaseUrl });
+  const databasePool = createPostgresPool({
+    connectionString: databaseUrl,
+    ...databaseConfig,
+  });
+  const securityService = createSecurityService({
+    databasePool,
+    config: securityConfig,
+  });
+  const abuseGuard = createAbuseGuard({
+    maximumHeavyOperations: securityConfig.maximumHeavyOperations,
+    onViolation: (event) => securityService.recordEvent({
+      eventType: event.eventType,
+      discordUserId: event.userId,
+      guildId: event.guildId === "dm" ? null : event.guildId,
+      channelId: event.channelId === "unknown" ? null : event.channelId,
+      commandName: event.commandName,
+      metadata: { kind: event.kind, retryAfterMs: event.retryAfterMs },
+    }),
+  });
+  const operationalMonitor = createOperationalMonitor({
+    databasePool,
+    abuseGuard,
+    intervalMilliseconds: securityConfig.healthLogIntervalMilliseconds,
+  });
   const economyService = createEconomyService({ databasePool });
   const playerService = createPlayerService({
     databasePool,
@@ -189,6 +217,7 @@ export function createApplication({
     vote: voteService,
     levelReward: levelRewardService,
     contract: contractService,
+    security: securityService,
   });
   const commandRegistry = new Map(
     commands.map((command) => [command.data.name, command]),
@@ -203,10 +232,13 @@ export function createApplication({
     strategyDrafts,
     communityInviteUrl,
     communityAccess,
+    abuseGuard,
+    commandAvailability,
   });
   let isStopped = false;
   let marketExpirationTimer = null;
   let duelExpirationTimer = null;
+  let abuseScanTimer = null;
 
   const expireMarketListings = async () => {
     try {
@@ -251,6 +283,7 @@ export function createApplication({
     async start() {
       await checkPostgresConnection(databasePool);
       console.log("PostgreSQL connection established.");
+      operationalMonitor.start();
       await dropService.completeExpiredOffers();
       await tradeService.expireDueTrades();
       await marketService.expireDueListings();
@@ -263,6 +296,16 @@ export function createApplication({
         void expireDuelChallenges();
       }, 30_000);
       duelExpirationTimer.unref?.();
+      abuseScanTimer = setInterval(() => {
+        void securityService.scanAbuseSignals().then((events) => {
+          if (events.length > 0) {
+            console.warn(`Security scan recorded ${events.length} abuse signal(s).`);
+          }
+        }).catch((error) => {
+          console.error(`Security abuse scan failed: ${error.message}`);
+        });
+      }, 15 * 60_000);
+      abuseScanTimer.unref?.();
       await client.login(discordToken);
     },
 
@@ -280,8 +323,14 @@ export function createApplication({
         clearInterval(duelExpirationTimer);
         duelExpirationTimer = null;
       }
+      if (abuseScanTimer) {
+        clearInterval(abuseScanTimer);
+        abuseScanTimer = null;
+      }
       battlePlayback.stop();
       strategyDrafts.stop();
+      operationalMonitor.stop();
+      abuseGuard.stop();
       client.destroy();
       await databasePool.end();
     },

@@ -173,6 +173,7 @@ export function createLevelRewardService({
                 ownerPlayerId: normalizedPlayerId,
                 cardLevel: cardReward.cardLevel,
                 obtainedMethod: "EVENT_REWARD",
+                accountBound: true,
                 referenceType: REFERENCE_TYPE,
                 referenceId: `${referenceId}:${rewardCardIndex}`,
               }, { database: transactionDatabase });

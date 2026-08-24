@@ -16,6 +16,44 @@ function mapOwnershipHistory(row) {
 }
 
 export const cardOwnershipRepository = Object.freeze({
+  async createMany(database, entries) {
+    const result = await database.query(
+      `
+        INSERT INTO card_ownership_history (
+          card_instance_id,
+          from_player_id,
+          to_player_id,
+          reason,
+          reference_type,
+          reference_id
+        )
+        SELECT *
+        FROM UNNEST(
+          $1::BIGINT[], $2::BIGINT[], $3::BIGINT[],
+          $4::TEXT[], $5::TEXT[], $6::TEXT[]
+        )
+        RETURNING
+          ownership_history_id,
+          card_instance_id,
+          from_player_id,
+          to_player_id,
+          reason,
+          reference_type,
+          reference_id,
+          created_at
+      `,
+      [
+        entries.map((entry) => entry.cardInstanceId),
+        entries.map((entry) => entry.fromPlayerId),
+        entries.map((entry) => entry.toPlayerId),
+        entries.map((entry) => entry.reason),
+        entries.map((entry) => entry.referenceType),
+        entries.map((entry) => entry.referenceId),
+      ],
+    );
+    return result.rows.map(mapOwnershipHistory);
+  },
+
   async create(
     database,
     {

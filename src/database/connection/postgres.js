@@ -2,8 +2,21 @@ import pg from "pg";
 
 const { Pool } = pg;
 
-export function createPostgresPool({ connectionString }) {
-  const pool = new Pool({ connectionString });
+export function createPostgresPool({
+  connectionString,
+  maximumConnections = 5,
+  connectionTimeoutMilliseconds = 5_000,
+  idleTimeoutMilliseconds = 30_000,
+  statementTimeoutMilliseconds = 15_000,
+}) {
+  const pool = new Pool({
+    connectionString,
+    max: maximumConnections,
+    connectionTimeoutMillis: connectionTimeoutMilliseconds,
+    idleTimeoutMillis: idleTimeoutMilliseconds,
+    statement_timeout: statementTimeoutMilliseconds,
+    query_timeout: statementTimeoutMilliseconds,
+  });
 
   pool.on("error", (error) => {
     const errorCode = typeof error?.code === "string" ? ` (${error.code})` : "";

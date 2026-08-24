@@ -1712,7 +1712,7 @@ always use the active Lineup.
 
 # 29. Battle
 
-Battle Engine v3.2 is a deterministic, first-to-21 PVE simulation with runtime
+Battle Engine v3.4 is a deterministic, first-to-21 win-by-two PVE simulation with runtime
 playback, immutable Match snapshots, contextual Traits, and saved Lineup
 strategy.
 
@@ -3010,7 +3010,7 @@ preferences to RARITY and removes OVERALL from the allowed sort values.
 
 Battle Engine v2 is implemented and documented in
 `docs/architecture/09-battle-engine.md`. It is a seeded, deterministic,
-possession-based first-to-21 simulation with matchup-aware action selection,
+possession-based first-to-21 win-by-two simulation with matchup-aware action selection,
 shot quality, turnovers, rebounds, box scores, play-by-play, and explicit Trait
 hook stages. Migration 022 persists versioned immutable inputs, ordered
 play-by-play, possession counts, and complete player box scores. Trait effects,

@@ -7,6 +7,7 @@ import {
 import { gameConfig } from "../../config/game-config.js";
 import { CardError } from "../../modules/card/index.js";
 import { TradeError } from "../../modules/trade/index.js";
+import { SecurityAccessError } from "../../modules/security/index.js";
 import { createTradePayload } from "../presenters/trade.presenter.js";
 
 function modal(action, tradeId, offerRevision) {
@@ -70,6 +71,13 @@ export const tradeComponent = Object.freeze({
     });
     await interaction.deferUpdate();
     try {
+      if (!["decline", "cancel"].includes(action)) {
+        await services.security?.assertAccess({
+          player,
+          discordUser: interaction.user,
+          feature: "TRADE",
+        });
+      }
       let result;
       if (action === "accept") {
         result = await services.trade.acceptTrade({
@@ -134,7 +142,11 @@ export const tradeComponent = Object.freeze({
       }
       await interaction.editReply(createTradePayload(result));
     } catch (error) {
-      if (error instanceof TradeError || error instanceof CardError) {
+      if (
+        error instanceof TradeError ||
+        error instanceof CardError ||
+        error instanceof SecurityAccessError
+      ) {
         await interaction.followUp({ content: error.message, ephemeral: true });
         return;
       }

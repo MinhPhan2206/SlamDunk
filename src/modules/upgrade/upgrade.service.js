@@ -218,6 +218,7 @@ export function createUpgradeService({
             ownerPlayerId: normalizedPlayerId,
             cardLevel: resultLevel,
             obtainedMethod: "FUSION",
+            accountBound: sourceCards.some((card) => card.accountBound),
           },
           { database: transactionDatabase },
         );

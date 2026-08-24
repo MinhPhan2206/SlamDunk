@@ -88,8 +88,13 @@ export const practiceCommand = Object.freeze({
     .setDescription("Test your active lineup without rewards or record changes.")
     .addStringOption(addPracticeBracketOption),
 
-  async execute(interaction, { services, battlePlayback }) {
+  async execute(interaction, { services, battlePlayback, communityAccess }) {
     await interaction.deferReply();
+    const accessError = battleAccessError(interaction, communityAccess);
+    if (accessError) {
+      await interaction.editReply({ content: accessError, embeds: [], components: [] });
+      return;
+    }
     const player = await services.player.getOrCreatePlayer({
       discordUserId: interaction.user.id,
       usernameSnapshot: interaction.user.username,

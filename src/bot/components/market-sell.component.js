@@ -10,6 +10,7 @@ import {
   createMarketSellCancelledPayload,
   createMarketSellDraftPayload,
 } from "../presenters/market.presenter.js";
+import { SecurityAccessError } from "../../modules/security/index.js";
 
 const ACTIONS = new Set(["decrease", "increase", "confirm", "cancel"]);
 
@@ -74,6 +75,11 @@ export const marketSellComponent = Object.freeze({
         discordUserId: interaction.user.id,
         usernameSnapshot: interaction.user.username,
       });
+      await services.security?.assertAccess({
+        player,
+        discordUser: interaction.user,
+        feature: "MARKET",
+      });
       const result = await services.market.createListing({
         sellerPlayerId: player.playerId,
         cardInstanceId,
@@ -85,7 +91,11 @@ export const marketSellComponent = Object.freeze({
         components: [],
       });
     } catch (error) {
-      if (error instanceof MarketError || error instanceof CardError) {
+      if (
+        error instanceof MarketError ||
+        error instanceof CardError ||
+        error instanceof SecurityAccessError
+      ) {
         await sendMarketError(interaction, error);
         return;
       }

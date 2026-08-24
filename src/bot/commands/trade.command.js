@@ -3,6 +3,7 @@ import { gameConfig } from "../../config/game-config.js";
 import { TradeError } from "../../modules/trade/index.js";
 import { createTradePayload } from "../presenters/trade.presenter.js";
 import { tradeAccessError } from "../access/community-access.js";
+import { SecurityAccessError } from "../../modules/security/index.js";
 
 export const tradeCommand = Object.freeze({
   componentInactivityTimeoutMs: gameConfig.trade.expiryMinutes * 60_000,
@@ -27,6 +28,18 @@ export const tradeCommand = Object.freeze({
         services.player.getOrCreatePlayer({ discordUserId: interaction.user.id, usernameSnapshot: interaction.user.username }),
         services.player.getOrCreatePlayer({ discordUserId: invitedUser.id, usernameSnapshot: invitedUser.username }),
       ]);
+      await Promise.all([
+        services.security?.assertAccess({
+          player: initiator,
+          discordUser: interaction.user,
+          feature: "TRADE",
+        }),
+        services.security?.assertAccess({
+          player: invited,
+          discordUser: invitedUser,
+          feature: "TRADE",
+        }),
+      ]);
       const result = await services.trade.createTrade({ initiatorPlayerId: initiator.playerId, invitedPlayerId: invited.playerId });
       await interaction.editReply(createTradePayload(result));
       const delay = Math.max(0, result.trade.expiresAt.getTime() - Date.now());
@@ -40,7 +53,7 @@ export const tradeCommand = Object.freeze({
       }, delay);
       timer.unref();
     } catch (error) {
-      if (error instanceof TradeError) {
+      if (error instanceof TradeError || error instanceof SecurityAccessError) {
         await interaction.editReply({ content: error.message, embeds: [], components: [] });
         return;
       }

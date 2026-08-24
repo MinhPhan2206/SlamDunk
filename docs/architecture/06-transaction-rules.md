@@ -631,3 +631,27 @@ For economy/card-changing flows:
 > A Discord success response must only be sent **after** the database transaction commits successfully.
 
 If the transaction rolls back, the user must receive a failure/domain error response.
+
+---
+
+# 21. Pre-Release Abuse Boundary
+
+Rate limiting is an Interaction-layer resource control, not an economy rule.
+Cooldowns and balances remain authoritative in PostgreSQL. Economy commands use
+single-flight protection for fast duplicate rejection, while their database
+transactions and idempotency keys remain the final defense across restarts.
+
+Bulk Pack opening is one operation:
+
+```text
+validate quantity (1-100)
+lock cooldown and Wallet
+debit total price once
+roll quantity * Pack card count
+bulk mint Card Instances and ownership history
+persist one PackOpening batch
+commit or roll back everything
+```
+
+Account-bound Cards cannot be sold, traded, or quicksold. Fusion propagates
+binding when any source Card is bound.

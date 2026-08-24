@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   battleAccessError,
+  duelAccessError,
   duelBetAccessError,
   tradeAccessError,
 } from "../src/bot/access/community-access.js";
@@ -11,7 +12,7 @@ const access = Object.freeze({
   guildId: "111111111111111111",
   tradeChannelIds: ["211111111111111111"],
   battleChannelIds: ["311111111111111111"],
-  duelBetChannelIds: ["411111111111111111"],
+  duelChannelIds: ["411111111111111111"],
 });
 
 function location(guildId, channelId) {
@@ -46,11 +47,26 @@ test("Battle is restricted only while inside the Community Server", () => {
 
 test("Wagered Duel is restricted to its Community Server channels", () => {
   assert.equal(
-    duelBetAccessError(location(access.guildId, access.duelBetChannelIds[0]), access),
+    duelBetAccessError(location(access.guildId, access.duelChannelIds[0]), access),
     null,
   );
   assert.match(
     duelBetAccessError(location("999999999999999999", "888888888888888888"), access),
     /Wagered Duels/,
+  );
+});
+
+test("Every Duel is restricted while inside the Community Server", () => {
+  assert.equal(
+    duelAccessError(location("999999999999999999", "888888888888888888"), access),
+    null,
+  );
+  assert.equal(
+    duelAccessError(location(access.guildId, access.duelChannelIds[0]), access),
+    null,
+  );
+  assert.match(
+    duelAccessError(location(access.guildId, "888888888888888888"), access),
+    /Duel is only available/,
   );
 });

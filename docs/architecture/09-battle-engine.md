@@ -16,7 +16,7 @@ points for Traits later.
 
 ```text
 5 vs 5: PG / SG / SF / PF / C
-First team to reach at least 21 points wins
+First team to reach at least 21 points while leading by 2 wins
 3PT = 3 points
 Mid Range / Finish = 2 points
 No bench, fatigue, substitutions, free throws, tactics, rewards, or active
@@ -106,7 +106,7 @@ Start possession
 → resolve shot make or miss
 → resolve rebound after a miss
 → update score, box score, and play-by-play events
-→ continue until one team reaches at least 21
+→ continue until one team reaches at least 21 and leads by 2
 ```
 
 Shot creation and shot making are separate calculations. The shot-quality

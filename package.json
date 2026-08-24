@@ -14,6 +14,9 @@
     "admin:grant-gold-all": "node scripts/grant-gold-to-all.js",
     "admin:grant-resources-all": "node scripts/grant-resources-to-all.js",
     "admin:grant-cards": "node scripts/grant-cards.js",
+    "admin:player-security": "node scripts/manage-player-security.js",
+    "audit:reconcile": "node scripts/reconcile-economy.js",
+    "audit:abuse": "node scripts/scan-abuse-signals.js",
     "test": "node --test"
   },
   "dependencies": {

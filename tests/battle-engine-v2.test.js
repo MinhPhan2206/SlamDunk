@@ -33,7 +33,7 @@ function team(prefix, adjustment = 0) {
   }));
 }
 
-test("Battle Engine v3 is deterministic and produces a valid first-to-21 result", () => {
+test("Battle Engine v3 is deterministic and produces a valid first-to-21 win-by-two result", () => {
   const input = {
     playerTeam: team("Player", 2),
     aiTeam: team("AI"),
@@ -44,13 +44,14 @@ test("Battle Engine v3 is deterministic and produces a valid first-to-21 result"
   const second = simulateBattle(input);
 
   assert.deepEqual(second, first);
-  assert.equal(first.engineVersion, "3.3.0");
+  assert.equal(first.engineVersion, "3.4.0");
   assert.equal(first.strategyResolverVersion, "battle-strategy-v4");
   assert.equal(first.traitResolverVersion, "battle-traits-v4");
   assert.equal(first.tendencyResolverVersion, "battle-tendencies-v2");
   assert.equal(first.playByPlay.length, first.possessionCount);
   assert.ok(first.playerScore >= 21 || first.aiScore >= 21);
-  assert.equal(first.winnerTeam, first.playerScore >= 21 ? 1 : 2);
+  assert.ok(Math.abs(first.playerScore - first.aiScore) >= 2);
+  assert.equal(first.winnerTeam, first.playerScore > first.aiScore ? 1 : 2);
 
   const validActions = new Set([...Object.values(ACTIONS), "TURNOVER"]);
   assert.ok(first.playByPlay.every((event) => validActions.has(event.action)));
@@ -115,6 +116,7 @@ test("Battle Engine v3 terminates safely across representative seeds", () => {
     });
     assert.ok(result.possessionCount <= gameConfig.battle.maximumPossessions);
     assert.ok(result.playerScore >= 21 || result.aiScore >= 21);
+    assert.ok(Math.abs(result.playerScore - result.aiScore) >= 2);
   }
 });
 

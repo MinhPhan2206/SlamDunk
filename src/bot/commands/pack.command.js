@@ -24,7 +24,12 @@ export const packCommand = Object.freeze({
   data: new SlashCommandBuilder()
     .setName("pack")
     .setDescription("Buy and immediately open a Card Pack.")
-    .addStringOption(packTypeOption),
+    .addStringOption(packTypeOption)
+    .addIntegerOption((option) => option
+      .setName("quantity")
+      .setDescription("Number of Packs to open in one batch (1-100).")
+      .setMinValue(1)
+      .setMaxValue(100)),
 
   async execute(interaction, { services }) {
     await interaction.deferReply();
@@ -36,6 +41,7 @@ export const packCommand = Object.freeze({
       const result = await services.pack.openPack({
         playerId: player.playerId,
         packCode: interaction.options.getString("pack_type", true),
+        quantity: interaction.options.getInteger("quantity") ?? 1,
         interactionId: interaction.id,
       });
       await interaction.editReply(await createPackOpeningPayload(result));

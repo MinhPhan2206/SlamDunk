@@ -13,6 +13,7 @@ const CARD_INSTANCE_COLUMNS = `
   market_lock,
   trade_lock,
   user_lock,
+  account_bound,
   created_at,
   updated_at
 `;
@@ -37,12 +38,53 @@ function mapCardInstance(row) {
     marketLock: row.market_lock,
     tradeLock: row.trade_lock,
     userLock: row.user_lock,
+    accountBound: row.account_bound,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   });
 }
 
 export const cardInstanceRepository = Object.freeze({
+  async findExistingPublicIds(database, publicCardIds) {
+    const result = await database.query(
+      `SELECT public_card_id FROM card_instances WHERE public_card_id = ANY($1::BIGINT[])`,
+      [publicCardIds],
+    );
+    return new Set(result.rows.map((row) => String(row.public_card_id)));
+  },
+
+  async createMany(database, cards) {
+    const result = await database.query(
+      `
+        INSERT INTO card_instances (
+          card_template_id,
+          public_card_id,
+          owner_player_id,
+          serial_number,
+          card_level,
+          obtained_method,
+          account_bound
+        )
+        SELECT *
+        FROM UNNEST(
+          $1::BIGINT[], $2::BIGINT[], $3::BIGINT[],
+          $4::BIGINT[], $5::SMALLINT[], $6::TEXT[], $7::BOOLEAN[]
+        )
+        RETURNING ${CARD_INSTANCE_COLUMNS}
+      `,
+      [
+        cards.map((card) => card.cardTemplateId),
+        cards.map((card) => card.publicCardId),
+        cards.map((card) => card.ownerPlayerId),
+        cards.map((card) => card.serialNumber),
+        cards.map((card) => card.cardLevel),
+        cards.map((card) => card.obtainedMethod),
+        cards.map((card) => card.accountBound),
+      ],
+    );
+    return result.rows.map(mapCardInstance);
+  },
+
   async isInLineup(database, cardInstanceId) {
     const result = await database.query(
       "SELECT EXISTS (SELECT 1 FROM lineup_slots WHERE card_instance_id = $1) AS in_lineup",
@@ -174,6 +216,7 @@ export const cardInstanceRepository = Object.freeze({
           AND status = 'ACTIVE'
           AND market_lock = TRUE
           AND trade_lock = FALSE
+          AND account_bound = FALSE
         RETURNING ${CARD_INSTANCE_COLUMNS}
       `,
       [cardInstanceId, fromPlayerId, toPlayerId],
@@ -200,6 +243,7 @@ export const cardInstanceRepository = Object.freeze({
           AND status = 'ACTIVE'
           AND market_lock = FALSE
           AND trade_lock = TRUE
+          AND account_bound = FALSE
         RETURNING ${CARD_INSTANCE_COLUMNS}
       `,
       [cardInstanceId, fromPlayerId, toPlayerId],
@@ -217,6 +261,7 @@ export const cardInstanceRepository = Object.freeze({
       cardLevel,
       obtainedMethod,
       publicCardId,
+      accountBound,
     },
   ) {
     const result = await database.query(
@@ -227,9 +272,10 @@ export const cardInstanceRepository = Object.freeze({
           owner_player_id,
           serial_number,
           card_level,
-          obtained_method
+          obtained_method,
+          account_bound
         )
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (public_card_id) DO NOTHING
         RETURNING ${CARD_INSTANCE_COLUMNS}
       `,
@@ -240,6 +286,7 @@ export const cardInstanceRepository = Object.freeze({
         serialNumber,
         cardLevel,
         obtainedMethod,
+        accountBound,
       ],
     );
 

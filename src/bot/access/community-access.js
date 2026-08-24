@@ -15,6 +15,11 @@ function location(interaction) {
   };
 }
 
+function duelChannels(config) {
+  const configured = ids(config, "duelChannelIds");
+  return configured.length > 0 ? configured : ids(config, "duelBetChannelIds");
+}
+
 export function tradeAccessError(interaction, config) {
   const guildId = String(config?.guildId ?? "");
   const allowed = ids(config, "tradeChannelIds");
@@ -36,9 +41,20 @@ export function battleAccessError(interaction, config) {
   return null;
 }
 
+export function duelAccessError(interaction, config) {
+  const guildId = String(config?.guildId ?? "");
+  const current = location(interaction);
+  if (!guildId || current.guildId !== guildId) return null;
+  const allowed = duelChannels(config);
+  if (!allowed.includes(current.channelId)) {
+    return `Duel is only available in these Community Server channels: ${channelList(allowed)}`;
+  }
+  return null;
+}
+
 export function duelBetAccessError(interaction, config) {
   const guildId = String(config?.guildId ?? "");
-  const allowed = ids(config, "duelBetChannelIds");
+  const allowed = duelChannels(config);
   const current = location(interaction);
   if (!guildId || current.guildId !== guildId || !allowed.includes(current.channelId)) {
     return `Wagered Duels are only available in the Community Server Duel channels. ${channelList(allowed)}`;

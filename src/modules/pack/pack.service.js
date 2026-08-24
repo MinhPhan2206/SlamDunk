@@ -80,6 +80,17 @@ function addSeconds(date, seconds) {
   return new Date(date.getTime() + seconds * 1_000);
 }
 
+function normalizeQuantity(quantity) {
+  const value = quantity ?? 1;
+  if (!Number.isSafeInteger(value) || value < 1 || value > 100) {
+    throw new PackError(
+      "PACK_QUANTITY_INVALID",
+      "Pack quantity must be between 1 and 100.",
+    );
+  }
+  return value;
+}
+
 export function createPackService({
   packCatalog,
   databasePool,
@@ -140,6 +151,8 @@ export function createPackService({
       source: "pack",
       opening,
       pack: findPack(opening.packCode),
+      packQuantity: opening.packQuantity ?? 1,
+      totalPrice: Number(opening.priceAmount),
       cards: Object.freeze(cards),
       templates: Object.freeze(cards.map((card) => card.template)),
       instances: Object.freeze(cards.map((card) => card.instance)),
@@ -156,12 +169,26 @@ export function createPackService({
     listPacks() {
       return Object.freeze([...catalog.packs.values()]);
     },
-    async openPack({ playerId, packCode, interactionId }, { database: suppliedDatabase } = {}) {
+    async openPack(
+      { playerId, packCode, interactionId, quantity = 1 },
+      { database: suppliedDatabase } = {},
+    ) {
       const pack = findPack(packCode);
+      const packQuantity = normalizeQuantity(quantity);
+      const totalPrice = pack.priceAmount * packQuantity;
+      const totalCards = pack.cardCount * packQuantity;
+      if (!Number.isSafeInteger(totalPrice) || totalCards > 500) {
+        throw new PackError("PACK_BATCH_TOO_LARGE", "This Pack batch is too large.");
+      }
       const operation = async (database) => {
         const existing = await packOpeningRepository.findByInteractionId(database, interactionId);
         if (existing) {
-          if (existing.playerId !== String(playerId) || existing.packCode !== pack.packCode || existing.status !== "COMPLETED") {
+          if (
+            existing.playerId !== String(playerId) ||
+            existing.packCode !== pack.packCode ||
+            (existing.packQuantity ?? 1) !== packQuantity ||
+            existing.status !== "COMPLETED"
+          ) {
             throw new PackError("PACK_IDEMPOTENCY_CONFLICT", "This interaction is already associated with another Pack operation.");
           }
           return hydrate(database, existing, true);
@@ -176,12 +203,13 @@ export function createPackService({
           playerId,
           packCode: pack.packCode,
           paymentCurrency: pack.priceCurrency,
-          priceAmount: pack.priceAmount,
+          priceAmount: totalPrice,
+          packQuantity,
           interactionId,
         });
         try {
           await economyService.debit({
-            playerId, currency: pack.priceCurrency, amount: pack.priceAmount,
+            playerId, currency: pack.priceCurrency, amount: totalPrice,
             transactionType: "PACK_PURCHASE", referenceType: "PACK_OPENING",
             referenceId: opening.packOpeningId,
             idempotencyKey: `pack:${interactionId}:${pack.priceCurrency.toLowerCase()}`,
@@ -194,14 +222,14 @@ export function createPackService({
               : "Shards";
             throw new PackError(
               insufficientCode,
-              `You need ${pack.priceAmount} ${currencyName} to open this Pack.`,
+              `You need ${totalPrice} ${currencyName} to open this Pack batch.`,
             );
           }
           throw error;
         }
         const templatePools = await getTemplatePools(database);
         const selections = [];
-        for (let index = 0; index < pack.cardCount; index += 1) {
+        for (let index = 0; index < totalCards; index += 1) {
           const template = pickTemplate(templatePools, pack, rollInteger);
           const cardPosition = index + 1;
           selections.push(Object.freeze({
@@ -246,6 +274,8 @@ export function createPackService({
           source: "pack",
           opening: completed,
           pack,
+          packQuantity,
+          totalPrice,
           cards: Object.freeze(cards),
           templates: Object.freeze(cards.map((card) => card.template)),
           instances: Object.freeze(cards.map((card) => card.instance)),
