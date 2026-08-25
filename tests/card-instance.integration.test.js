@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getDatabaseConfig } from "../src/config/env.js";
+import { getTestDatabaseConfig } from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import {
   CardError,
@@ -32,7 +32,7 @@ function createTemplateInput(edition) {
 
 test("Card Instances receive per-template serials and ownership history", async () => {
   const pool = createPostgresPool({
-    connectionString: getDatabaseConfig().databaseUrl,
+    connectionString: getTestDatabaseConfig().databaseUrl,
   });
   const database = await pool.connect();
   const cardTemplateService = createCardTemplateService({ databasePool: pool });

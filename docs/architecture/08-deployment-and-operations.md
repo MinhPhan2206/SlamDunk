@@ -86,8 +86,15 @@ eligibility gates, allowing local test accounts to keep working.
 ## Security Audit and Response
 
 `security_events` stores rate-limit and operator actions separately from the
-immutable economy ledger. `player_security_profiles` supports temporary trading
-or whole-account restrictions without deleting Player data.
+immutable economy ledger. `player_security_profiles` supports temporary system
+reward, trading, or whole-account restrictions without deleting Player data.
+
+- Earning freeze blocks system-issued rewards, XP, free Cards, and Quicksell.
+- Trading freeze blocks Market settlement, Trade, and wagered Duel.
+- Disabled accounts cannot mutate gameplay state; read-only views and safe
+  cancellation/refund flows remain available.
+- `risk_score` is monitoring-only for the initial release. Operators apply an
+  explicit restriction after review instead of automatic punishment.
 
 Every 15 minutes, the application records deduplicated signals for repeated
 Duel, completed Trade, and Market counterpart pairs. Signals support manual
@@ -97,6 +104,7 @@ Operator commands:
 
 ```text
 npm run admin:player-security -- show <discord_user_id>
+npm run admin:player-security -- freeze-earning <discord_user_id> <minutes>
 npm run admin:player-security -- freeze-trading <discord_user_id> <minutes>
 npm run admin:player-security -- disable <discord_user_id> <minutes>
 npm run admin:player-security -- clear <discord_user_id>
@@ -108,6 +116,38 @@ Corrections must use compensating ledger entries; never update production
 wallet balances manually. Review rate-limit spikes, one-way transfers, unusual
 Market pricing, repeated counterpart activity, database pool waiting, process
 restarts, and Discord API errors.
+
+## Migration and Restore Runbook
+
+Before deployment, put new mutations into maintenance mode and take a verified
+database backup. Run `npm run db:migrate` exactly once per release; the runner
+holds a PostgreSQL advisory lock, records each SQL file SHA-256 checksum, and
+rolls back the failing migration transaction. Application startup performs a
+read-only schema check and must not start with pending, missing, or edited
+migrations.
+
+If a checksum mismatch occurs, never edit `schema_migrations` or overwrite the
+stored checksum. Restore the historical SQL file exactly as deployed, then add
+a new forward-only migration for the correction. If a migration fails, keep the
+bot in maintenance mode, preserve the error and database logs, fix the new
+pending migration only if it has never committed anywhere, and rerun it. Once a
+migration has committed in any shared environment, correct it with another
+migration rather than rewriting history.
+
+Application rollback does not imply schema rollback. Deploy the previous
+application only when it remains compatible with the migrated schema; otherwise
+ship a forward fix. For disaster recovery, restore the backup into an isolated
+database, configure it as `TEST_DATABASE_URL`, run `npm run db:migrate:test`,
+then `npm test` and `npm run audit:reconcile` against the restored copy before
+promoting it. Never test a restore using production credentials or the live
+production database.
+
+`npm run audit:reconcile` compares Wallet and Item balances with their immutable
+ledgers, Player XP with XP history, Card counters with actual circulation,
+ownership chains with current owners, and Pack, Contract, Trade, and Market
+records with ownership audit events. Any non-zero result is an alert and must be
+investigated before deployment continues; repair with an explicit compensating
+operation, never by changing immutable audit rows.
 
 ## Release Gate
 

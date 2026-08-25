@@ -35,6 +35,7 @@ function voteReference(discordUserId, createdAt) {
 export function createVoteService({
   databasePool,
   economyService,
+  securityService,
   topGgClient,
   voteConfig,
   botId,
@@ -80,6 +81,10 @@ export function createVoteService({
       const rewardShards = shardsPerWeight * vote.weight;
       const referenceId = voteReference(normalizedDiscordUserId, vote.createdAt);
       const claim = async (transactionDatabase) => {
+        await securityService?.assertCanEarn(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const gold = await economyService.credit({
           playerId: normalizedPlayerId,
           currency: EconomyCurrency.GOLD,

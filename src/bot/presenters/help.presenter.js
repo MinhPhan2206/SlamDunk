@@ -304,11 +304,11 @@ function manualHelp() {
       {
         name: "Message Shortcuts",
         value: [
-          "Start a message with `dunk`; full command names and shortcuts both work.",
-          "Cards · `dunk d` · `dunk pk` · `dunk col` · `dunk card <name>`",
-          "Compete · `dunk b [bracket]` · `dunk pr [bracket]` · `dunk vs @player` · `dunk st`",
-          "Resources · `dunk cl` · `dunk cd` · `dunk w` · `dunk inv`",
-          "Use `dunk help` or `dunk commands` to open this guide.",
+          "Start a message with `sd`; full command names and shortcuts both work.",
+          "Cards · `sd d` · `sd pk` · `sd col` · `sd card <name>`",
+          "Compete · `sd b [bracket]` · `sd pr [bracket]` · `sd vs @player` · `sd st`",
+          "Resources · `sd cl` · `sd cd` · `sd w` · `sd inv`",
+          "Use `sd help` or `sd commands` to open this guide.",
         ].join("\n"),
       },
       {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getDatabaseConfig } from "../src/config/env.js";
+import { getTestDatabaseConfig } from "../src/config/env.js";
 import { gameConfig } from "../src/config/game-config.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import {
@@ -14,7 +14,7 @@ import { createUpgradeService } from "../src/modules/upgrade/index.js";
 
 test("account-bound Cards cannot transfer and remain bound through Fusion", async () => {
   const pool = createPostgresPool({
-    connectionString: getDatabaseConfig().databaseUrl,
+    connectionString: getTestDatabaseConfig().databaseUrl,
   });
   const database = await pool.connect();
   const templates = createCardTemplateService({ databasePool: pool });
@@ -73,4 +73,3 @@ test("account-bound Cards cannot transfer and remain bound through Fusion", asyn
     await pool.end();
   }
 });
-

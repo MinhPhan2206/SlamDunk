@@ -35,6 +35,17 @@ function normalizeRevision(value) {
   return revision;
 }
 
+function normalizeItemQuantity(value) {
+  const quantity = Number(value);
+  if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+    throw new TradeError(
+      "TRADE_ITEM_QUANTITY_INVALID",
+      "Item quantity must be a positive integer.",
+    );
+  }
+  return quantity;
+}
+
 function normalizeOfferOperation(value, { allowSet = false } = {}) {
   const operation = String(value ?? (allowSet ? "SET" : "")).trim().toUpperCase();
   const allowed = allowSet ? ["ADD", "REMOVE", "SET"] : ["ADD", "REMOVE"];
@@ -121,14 +132,14 @@ function assertCanEditOffer(trade, participants, playerId) {
 }
 
 async function getState(database, trade) {
-  const [participants, cards] = await Promise.all([
-    tradeRepository.findParticipants(database, trade.tradeId),
-    tradeRepository.findCards(database, trade.tradeId),
-  ]);
+  const participants = await tradeRepository.findParticipants(database, trade.tradeId);
+  const cards = await tradeRepository.findCards(database, trade.tradeId);
+  const items = await tradeRepository.findItems(database, trade.tradeId);
   return Object.freeze({
     trade,
     participants: Object.freeze(participants),
     cards: Object.freeze(cards),
+    items: Object.freeze(items),
   });
 }
 
@@ -136,15 +147,23 @@ export function createTradeService({
   databasePool,
   cardInstanceService,
   economyService,
+  inventoryService,
   playerService,
+  securityService,
   tradeConfig,
 }) {
   if (
     !Number.isSafeInteger(tradeConfig?.maximumCardsPerPlayer) ||
     !Number.isSafeInteger(tradeConfig?.maximumGoldPerPlayer) ||
     !Number.isSafeInteger(tradeConfig?.expiryMinutes) ||
-    !Number.isSafeInteger(tradeConfig?.reviewDelaySeconds)
+    !Number.isSafeInteger(tradeConfig?.reviewDelaySeconds) ||
+    !Array.isArray(tradeConfig?.tradeableItemTypes) ||
+    typeof inventoryService?.consumeItem !== "function" ||
+    typeof inventoryService?.grantItem !== "function"
   ) throw new TypeError("Valid tradeConfig is required.");
+  const tradeableItemTypes = new Set(
+    tradeConfig.tradeableItemTypes.map((itemType) => String(itemType).toUpperCase()),
+  );
   const service = {
     async createTrade(
       { initiatorPlayerId, invitedPlayerId },
@@ -160,10 +179,14 @@ export function createTradeService({
       }
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
-        const players = await Promise.all([
-          playerService.getPlayerById(initiatorId, { database: transactionDatabase }),
-          playerService.getPlayerById(invitedId, { database: transactionDatabase }),
-        ]);
+        await securityService?.assertCanTrade(
+          { playerIds: [initiatorId, invitedId] },
+          { database: transactionDatabase },
+        );
+        const players = [
+          await playerService.getPlayerById(initiatorId, { database: transactionDatabase }),
+          await playerService.getPlayerById(invitedId, { database: transactionDatabase }),
+        ];
         if (players.some((player) => !player)) {
           throw new TradeError(
             "TRADE_PLAYER_NOT_FOUND",
@@ -195,6 +218,10 @@ export function createTradeService({
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [normalizedPlayerId] },
+          { database: transactionDatabase },
+        );
         const trade = await tradeRepository.findByIdForUpdate(
           transactionDatabase,
           normalizedTradeId,
@@ -223,6 +250,10 @@ export function createTradeService({
       const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [normalizedPlayerId] },
+          { database: transactionDatabase },
+        );
         const trade = await tradeRepository.findByIdForUpdate(
           transactionDatabase,
           normalizedTradeId,
@@ -284,6 +315,10 @@ export function createTradeService({
       const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [normalizedPlayerId] },
+          { database: transactionDatabase },
+        );
         const trade = await tradeRepository.findByIdForUpdate(
           transactionDatabase,
           normalizedTradeId,
@@ -335,6 +370,10 @@ export function createTradeService({
       const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [normalizedPlayerId] },
+          { database: transactionDatabase },
+        );
         const trade = await tradeRepository.findByIdForUpdate(
           transactionDatabase,
           normalizedTradeId,
@@ -380,12 +419,114 @@ export function createTradeService({
       });
     },
 
+    async setItemOffer(
+      { tradeId, playerId, itemType, quantity, operation, offerRevision },
+      { database } = {},
+    ) {
+      const normalizedTradeId = normalizeId(tradeId, "tradeId");
+      const normalizedPlayerId = normalizeId(playerId, "playerId");
+      const normalizedRevision = normalizeRevision(offerRevision);
+      const normalizedOperation = normalizeOfferOperation(operation);
+      const normalizedItemType = String(itemType ?? "").trim().toUpperCase();
+      const normalizedQuantity = normalizeItemQuantity(quantity);
+      if (!tradeableItemTypes.has(normalizedItemType)) {
+        throw new TradeError(
+          "TRADE_ITEM_NOT_ALLOWED",
+          "This item cannot be offered in Direct Trade.",
+        );
+      }
+
+      return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [normalizedPlayerId] },
+          { database: transactionDatabase },
+        );
+        const trade = await tradeRepository.findByIdForUpdate(
+          transactionDatabase,
+          normalizedTradeId,
+        );
+        assertOpenTrade(trade);
+        assertCurrentRevision(trade, normalizedRevision);
+        const state = await getState(transactionDatabase, trade);
+        assertParticipant(state.participants, normalizedPlayerId);
+        assertAcceptedTrade(state.participants);
+        assertCanEditOffer(trade, state.participants, normalizedPlayerId);
+        const currentItem = state.items.find((item) =>
+          item.offeredByPlayerId === normalizedPlayerId &&
+          item.itemType === normalizedItemType
+        );
+        const currentQuantity = currentItem?.quantity ?? 0;
+
+        if (normalizedOperation === "ADD") {
+          const remaining = await inventoryService.consumeItem(
+            {
+              playerId: normalizedPlayerId,
+              itemType: normalizedItemType,
+              quantity: normalizedQuantity,
+            },
+            { database: transactionDatabase },
+          );
+          if (remaining === null) {
+            throw new TradeError(
+              "TRADE_ITEM_INSUFFICIENT",
+              "You do not have enough of this item.",
+            );
+          }
+          await tradeRepository.setItemQuantity(transactionDatabase, {
+            tradeId: trade.tradeId,
+            offeredByPlayerId: normalizedPlayerId,
+            itemType: normalizedItemType,
+            quantity: currentQuantity + normalizedQuantity,
+          });
+        } else {
+          if (!currentItem || normalizedQuantity > currentQuantity) {
+            throw new TradeError(
+              "TRADE_ITEM_REMOVE_INVALID",
+              "You cannot remove more items than you currently offer.",
+            );
+          }
+          await inventoryService.grantItem(
+            {
+              playerId: normalizedPlayerId,
+              itemType: normalizedItemType,
+              quantity: normalizedQuantity,
+            },
+            { database: transactionDatabase },
+          );
+          const remainingOffered = currentQuantity - normalizedQuantity;
+          if (remainingOffered === 0) {
+            await tradeRepository.resolveItem(transactionDatabase, {
+              tradeItemId: currentItem.tradeItemId,
+              outcome: "REMOVED",
+            });
+          } else {
+            await tradeRepository.setItemQuantity(transactionDatabase, {
+              tradeId: trade.tradeId,
+              offeredByPlayerId: normalizedPlayerId,
+              itemType: normalizedItemType,
+              quantity: remainingOffered,
+            });
+          }
+        }
+
+        const updatedTrade = await tradeRepository.advanceOfferRevision(
+          transactionDatabase,
+          trade.tradeId,
+        );
+        return getState(transactionDatabase, updatedTrade);
+      });
+    },
+
     async readyTrade({ tradeId, playerId, offerRevision }, { database } = {}) {
       const normalizedTradeId = normalizeId(tradeId, "tradeId");
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [normalizedPlayerId] },
+          { database: transactionDatabase },
+        );
         const trade = await tradeRepository.findByIdForUpdate(
           transactionDatabase,
           normalizedTradeId,
@@ -403,13 +544,14 @@ export function createTradeService({
         }
         const hasValue =
           state.cards.length > 0 ||
+          state.items.length > 0 ||
           state.participants.some(
             (participant) => BigInt(participant.goldOffered) > 0n,
           );
         if (!hasValue) {
           throw new TradeError(
             "TRADE_EMPTY",
-            "Add a Card or Gold before marking this Direct Trade Ready.",
+            "Add a Card, Gold, or Item before marking this Direct Trade Ready.",
           );
         }
 
@@ -437,6 +579,10 @@ export function createTradeService({
       const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [normalizedPlayerId] },
+          { database: transactionDatabase },
+        );
         const trade = await tradeRepository.findByIdForUpdate(
           transactionDatabase,
           normalizedTradeId,
@@ -477,6 +623,10 @@ export function createTradeService({
       const normalizedRevision = normalizeRevision(offerRevision);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [normalizedPlayerId] },
+          { database: transactionDatabase },
+        );
         const trade = await tradeRepository.findByIdForUpdate(
           transactionDatabase,
           normalizedTradeId,
@@ -516,6 +666,10 @@ export function createTradeService({
           isFinalForRevision(participant, normalizedRevision))) {
           return Object.freeze({ ...state, completed: false });
         }
+        await securityService?.assertCanTrade(
+          { playerIds: state.participants.map(({ playerId }) => playerId) },
+          { database: transactionDatabase },
+        );
 
         const cardIds = state.cards.map((card) => card.cardInstanceId);
         const instances = await cardInstanceService.getInstancesForUpdate(cardIds, {
@@ -590,7 +744,21 @@ export function createTradeService({
             { database: transactionDatabase },
           );
         }
+        for (const offeredItem of state.items) {
+          await inventoryService.grantItem(
+            {
+              playerId: otherPlayer.get(offeredItem.offeredByPlayerId),
+              itemType: offeredItem.itemType,
+              quantity: offeredItem.quantity,
+            },
+            { database: transactionDatabase },
+          );
+        }
         await tradeRepository.resolveAllCards(transactionDatabase, {
+          tradeId: trade.tradeId,
+          outcome: "TRANSFERRED",
+        });
+        await tradeRepository.resolveAllItems(transactionDatabase, {
           tradeId: trade.tradeId,
           outcome: "TRANSFERRED",
         });
@@ -608,6 +776,7 @@ export function createTradeService({
           trade: completedTrade,
           participants: state.participants,
           cards: state.cards,
+          items: state.items,
           settlement,
           completed: true,
         });
@@ -639,7 +808,21 @@ export function createTradeService({
             { database: transactionDatabase },
           );
         }
+        for (const item of state.items) {
+          await inventoryService.grantItem(
+            {
+              playerId: item.offeredByPlayerId,
+              itemType: item.itemType,
+              quantity: item.quantity,
+            },
+            { database: transactionDatabase },
+          );
+        }
         await tradeRepository.resolveAllCards(transactionDatabase, {
+          tradeId: trade.tradeId,
+          outcome: "CANCELLED",
+        });
+        await tradeRepository.resolveAllItems(transactionDatabase, {
           tradeId: trade.tradeId,
           outcome: "CANCELLED",
         });
@@ -651,6 +834,7 @@ export function createTradeService({
           trade: cancelledTrade,
           participants: state.participants,
           cards: state.cards,
+          items: state.items,
         });
       });
     },
@@ -670,6 +854,10 @@ export function createTradeService({
         throw new TradeError("TRADE_CARD_LIMIT", `Each Player can offer at most ${tradeConfig.maximumCardsPerPlayer} cards.`);
       }
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [normalizedPlayerId] },
+          { database: transactionDatabase },
+        );
         const trade = await tradeRepository.findByIdForUpdate(transactionDatabase, normalizedTradeId);
         assertOpenTrade(trade);
         assertCurrentRevision(trade, normalizedRevision);
@@ -735,7 +923,18 @@ export function createTradeService({
         for (const card of state.cards) {
           await cardInstanceService.unlockFromTrade({ cardInstanceId: card.cardInstanceId, ownerPlayerId: card.offeredByPlayerId }, { database: transactionDatabase });
         }
+        for (const item of state.items) {
+          await inventoryService.grantItem(
+            {
+              playerId: item.offeredByPlayerId,
+              itemType: item.itemType,
+              quantity: item.quantity,
+            },
+            { database: transactionDatabase },
+          );
+        }
         await tradeRepository.resolveAllCards(transactionDatabase, { tradeId: trade.tradeId, outcome: "EXPIRED" });
+        await tradeRepository.resolveAllItems(transactionDatabase, { tradeId: trade.tradeId, outcome: "EXPIRED" });
         const expired = await tradeRepository.markExpired(transactionDatabase, trade.tradeId);
         return Object.freeze({ ...state, trade: expired });
       });

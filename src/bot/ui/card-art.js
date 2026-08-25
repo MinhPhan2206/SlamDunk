@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const IMAGE_ROOT = new URL("../../../assets/images/", import.meta.url);
-const UNKNOWN_PATH = fileURLToPath(new URL("unknown-player.png", IMAGE_ROOT));
+const UNKNOWN_PATH = fileURLToPath(new URL("unknown-player.webp", IMAGE_ROOT));
 const RARITY_FOLDERS = Object.freeze({
   GOAT: "Goat",
   SUPERSTAR: "Superstar",
@@ -36,7 +36,7 @@ function buildArtPaths() {
   for (const [rarityCode, folderName] of Object.entries(RARITY_FOLDERS)) {
     const folderUrl = new URL(`${folderName}/`, IMAGE_ROOT);
     for (const entry of readdirSync(folderUrl, { withFileTypes: true })) {
-      if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== ".png") {
+      if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== ".webp") {
         continue;
       }
       const artName = normalizeArtName(path.parse(entry.name).name);
@@ -47,8 +47,6 @@ function buildArtPaths() {
 }
 
 const ART_PATHS = buildArtPaths();
-const imageCache = new Map();
-
 export function getCardArtPath({ playerName, rarityCode }) {
   const normalizedRarity = String(rarityCode).toUpperCase();
   const cardKey = `${normalizedRarity}:${normalizeArtName(playerName)}`;
@@ -57,7 +55,5 @@ export function getCardArtPath({ playerName, rarityCode }) {
 }
 
 export function readCardArt(card) {
-  const artPath = getCardArtPath(card);
-  if (!imageCache.has(artPath)) imageCache.set(artPath, readFile(artPath));
-  return imageCache.get(artPath);
+  return readFile(getCardArtPath(card));
 }

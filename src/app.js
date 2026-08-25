@@ -1,4 +1,5 @@
 import { Events } from "discord.js";
+import { fileURLToPath } from "node:url";
 
 import { createDiscordClient } from "./bot/client/discord-client.js";
 import { createBattlePlayback } from "./bot/battle/battle-playback.js";
@@ -8,11 +9,12 @@ import { createInteractionCreateHandler } from "./bot/events/interaction-create.
 import { createMessageCreateHandler } from "./bot/events/message-create.event.js";
 import { createPrefixCommandRegistry } from "./bot/prefix/prefix-command-registry.js";
 import { createStrategyDraftStore } from "./bot/strategy/strategy-draft-store.js";
-import { gameConfig } from "./config/game-config.js";
+import { getGameConfig } from "./config/game-config.js";
 import {
   checkPostgresConnection,
   createPostgresPool,
 } from "./database/connection/postgres.js";
+import { assertSchemaCurrent } from "./database/migrations/migration-runner.js";
 import {
   createCardInstanceService,
   createCardTemplateService,
@@ -38,8 +40,18 @@ import { createVoteService } from "./modules/vote/index.js";
 import { createTopGgClient } from "./integrations/topgg/index.js";
 import { createLevelRewardService } from "./modules/level-reward/index.js";
 import { createContractService } from "./modules/contract/index.js";
-import { createAbuseGuard, createSecurityService } from "./modules/security/index.js";
+import {
+  createAbuseGuard,
+  createSecurityEventAggregator,
+  createSecurityService,
+} from "./modules/security/index.js";
 import { createOperationalMonitor } from "./operations/operational-monitor.js";
+import { getCardStripCacheSnapshot } from "./bot/ui/card-strip-image.js";
+import { getImageRuntimeSnapshot } from "./bot/ui/image-runtime.js";
+
+const MIGRATIONS_DIRECTORY = fileURLToPath(
+  new URL("../migrations/", import.meta.url),
+);
 
 export function createApplication({
   discordToken,
@@ -50,8 +62,10 @@ export function createApplication({
   security: securityConfig = Object.freeze({}),
   database: databaseConfig = Object.freeze({}),
   commandAvailability = Object.freeze({}),
-  commandPrefix = "dunk",
+  commandPrefix = "sd",
+  economyProfile = "development",
 }) {
+  const gameConfig = getGameConfig(economyProfile);
   const client = createDiscordClient();
   const databasePool = createPostgresPool({
     connectionString: databaseUrl,
@@ -61,9 +75,17 @@ export function createApplication({
     databasePool,
     config: securityConfig,
   });
+  const securityEventAggregator = createSecurityEventAggregator({
+    writeEvents: (events) => securityService.recordEvents(events),
+    flushIntervalMs: securityConfig.violationFlushIntervalMilliseconds,
+    maximumPendingKeys: securityConfig.maximumPendingViolations,
+    maximumEventsPerFlush: securityConfig.maximumViolationsPerFlush,
+  });
   const abuseGuard = createAbuseGuard({
     maximumHeavyOperations: securityConfig.maximumHeavyOperations,
-    onViolation: (event) => securityService.recordEvent({
+    maximumTrackedWindows: securityConfig.maximumRateWindows,
+    cleanupIntervalMs: securityConfig.rateWindowCleanupMilliseconds,
+    onViolation: (event) => securityEventAggregator.record({
       eventType: event.eventType,
       discordUserId: event.userId,
       guildId: event.guildId === "dm" ? null : event.guildId,
@@ -75,6 +97,11 @@ export function createApplication({
   const operationalMonitor = createOperationalMonitor({
     databasePool,
     abuseGuard,
+    securityEventMetrics: () => securityEventAggregator.snapshot(),
+    imageMetrics: () => ({
+      cache: getCardStripCacheSnapshot(),
+      runtime: getImageRuntimeSnapshot(),
+    }),
     intervalMilliseconds: securityConfig.healthLogIntervalMilliseconds,
   });
   const economyService = createEconomyService({ databasePool });
@@ -90,6 +117,7 @@ export function createApplication({
     databasePool,
     economyService,
     playerService,
+    securityService,
     claimConfig: gameConfig.claim,
     dailyConfig: gameConfig.daily,
     weeklyConfig: gameConfig.weekly,
@@ -98,6 +126,7 @@ export function createApplication({
   const voteService = createVoteService({
     databasePool,
     economyService,
+    securityService,
     topGgClient,
     voteConfig: gameConfig.vote,
     botId: topGg.botId,
@@ -111,6 +140,7 @@ export function createApplication({
     databasePool,
     cardTemplateService,
     playerService,
+    securityService,
   });
   const levelRewardService = createLevelRewardService({
     databasePool,
@@ -118,6 +148,7 @@ export function createApplication({
     inventoryService,
     cardTemplateService,
     cardInstanceService,
+    securityService,
     levelRewardConfig: gameConfig.levelRewards,
   });
   const contractService = createContractService({
@@ -125,6 +156,7 @@ export function createApplication({
     inventoryService,
     cardTemplateService,
     cardInstanceService,
+    securityService,
     contractCatalog: gameConfig.contracts,
   });
   const cardViewService = createCardViewService({
@@ -135,6 +167,7 @@ export function createApplication({
     databasePool,
     cardInstanceService,
     cardTemplateService,
+    securityService,
     dropConfig: gameConfig.drop,
   });
   const packService = createPackService({
@@ -143,14 +176,16 @@ export function createApplication({
     economyService,
     cardTemplateService,
     cardInstanceService,
+    securityService,
   });
   const collectionService = createCollectionService({ databasePool });
-  const lineupService = createLineupService({ databasePool });
+  const lineupService = createLineupService({ databasePool, securityService });
   const onboardingService = createOnboardingService({
     databasePool,
     cardTemplateService,
     cardInstanceService,
     lineupService,
+    securityService,
   });
   const battleService = createBattleService({
     databasePool,
@@ -160,6 +195,7 @@ export function createApplication({
     traitService,
     playerService,
     economyService,
+    securityService,
     battleConfig: gameConfig.battle,
   });
   const battlePlayback = createBattlePlayback({
@@ -169,28 +205,34 @@ export function createApplication({
   const quicksellService = createQuicksellService({
     databasePool,
     economyService,
+    securityService,
     quicksellConfig: gameConfig.quicksell,
   });
   const upgradeService = createUpgradeService({
     databasePool,
     cardInstanceService,
+    securityService,
     upgradeConfig: gameConfig.upgrade,
   });
   const marketService = createMarketService({
     databasePool,
     cardInstanceService,
     economyService,
+    securityService,
   });
   const tradeService = createTradeService({
     databasePool,
     cardInstanceService,
     economyService,
+    inventoryService,
     playerService,
+    securityService,
     tradeConfig: gameConfig.trade,
   });
   const exchangeService = createExchangeService({
     databasePool,
     economyService,
+    securityService,
     exchangeConfig: gameConfig.exchange,
     upgradeConfig: gameConfig.upgrade,
   });
@@ -283,6 +325,10 @@ export function createApplication({
     async start() {
       await checkPostgresConnection(databasePool);
       console.log("PostgreSQL connection established.");
+      const schema = await assertSchemaCurrent(databasePool, MIGRATIONS_DIRECTORY);
+      console.log(`Database schema current at ${schema.latestMigration}.`);
+      abuseGuard.start();
+      securityEventAggregator.start();
       operationalMonitor.start();
       await dropService.completeExpiredOffers();
       await tradeService.expireDueTrades();
@@ -332,6 +378,11 @@ export function createApplication({
       operationalMonitor.stop();
       abuseGuard.stop();
       client.destroy();
+      try {
+        await securityEventAggregator.stop();
+      } catch (error) {
+        console.error(`Final security event flush failed: ${error.message}`);
+      }
       await databasePool.end();
     },
   });

@@ -24,8 +24,11 @@ Install the Node.js dependencies with `npm install`, then copy `.env.example` to
 `.env` and provide `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, `DISCORD_GUILD_ID`, and
 `DATABASE_URL`.
 
-PostgreSQL must be running and reachable through `DATABASE_URL`. At startup,
-SlamDunk verifies the database connection before logging into Discord.
+PostgreSQL must be running and reachable through `DATABASE_URL`. Integration
+tests require a separate database through `TEST_DATABASE_URL`; the test guard
+rejects a URL targeting the same host/database as `DATABASE_URL` and refuses to
+run when `NODE_ENV=production`. At startup, SlamDunk verifies the runtime
+database connection before logging into Discord.
 
 Apply pending database migrations explicitly:
 
@@ -33,11 +36,33 @@ Apply pending database migrations explicitly:
 npm run db:migrate
 ```
 
+Apply the same migrations to the isolated test database before running tests:
+
+```text
+npm run db:migrate:test
+```
+
 Register the development guild commands explicitly:
 
 ```text
-npm run register:commands
+npm run register:commands:dev
 ```
+
+Development and production use the same codebase but separate Discord
+Applications, credentials, and PostgreSQL databases. Production credentials
+must be supplied by the deployment environment rather than committed files.
+Development uses `ECONOMY_CONFIG_PROFILE=development` and
+`DATABASE_SSL_MODE=disable`. Production requires
+`ECONOMY_CONFIG_PROFILE=production`, database TLS, an explicit Community Guild,
+and Trade, Battle, and Duel channel IDs; startup fails if these are missing.
+With `NODE_ENV=production`, register public commands globally as an explicit
+deployment step:
+
+```text
+npm run register:commands:global
+```
+
+Global command registration is never performed when the bot starts.
 
 Start the bot:
 
@@ -45,8 +70,8 @@ Start the bot:
 npm start
 ```
 
-Run the integration tests after PostgreSQL is available and migrations are up
-to date:
+Run the test suite after both PostgreSQL databases are available and their
+migrations are up to date:
 
 ```text
 npm test

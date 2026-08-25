@@ -339,13 +339,18 @@ migrations/
 ├── 011_create_market_listings.sql
 ├── 012_create_direct_trades.sql
 ├── 013_separate_drop_from_pack.sql
-└── 023_add_public_match_ids.sql
+├── ...
+├── 055_add_trade_items.sql
+└── 056_add_immutable_audit_trails.sql
 ```
 
 Future migrations are added only when their implementation milestone begins.
 The project uses its explicit SQL migration runner and does not use an ORM.
 
 Never manually edit production schema without migration history.
+Applied migration files are protected by SHA-256 checksums. The runner holds a
+PostgreSQL advisory lock during deployment, and application startup refuses to
+continue when migrations are pending, missing, or modified.
 
 ---
 

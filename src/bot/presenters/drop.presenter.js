@@ -9,8 +9,8 @@ import { formatPositions } from "../ui/formatters.js";
 import { createUiEmbed } from "../ui/presentation.js";
 import { rarityColor, UI_COLORS } from "../ui/theme.js";
 
-const DROP_IMAGE_NAME = "drop-candidates.png";
-const REVEAL_IMAGE_NAME = "drop-result.png";
+const DROP_IMAGE_NAME = "drop-candidates.webp";
+const REVEAL_IMAGE_NAME = "drop-result.webp";
 
 function selectionCustomId(dropSessionId, candidatePosition) {
   return `drop:select:${dropSessionId}:${candidatePosition}`;

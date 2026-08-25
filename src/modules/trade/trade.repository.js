@@ -49,6 +49,18 @@ function mapTradeCard(row) {
   });
 }
 
+function mapTradeItem(row) {
+  return Object.freeze({
+    tradeItemId: row.trade_item_id,
+    tradeId: row.trade_id,
+    offeredByPlayerId: row.offered_by_player_id,
+    itemType: row.item_type,
+    quantity: Number(row.quantity),
+    active: row.active,
+    outcome: row.outcome,
+  });
+}
+
 const TRADE_COLUMNS = `
   trade_id,
   created_by_player_id,
@@ -159,6 +171,73 @@ export const tradeRepository = Object.freeze({
       [tradeId],
     );
     return result.rows.map(mapTradeCard);
+  },
+
+  async findItems(database, tradeId) {
+    const result = await database.query(
+      `
+        SELECT
+          trade_item_id,
+          trade_id,
+          offered_by_player_id,
+          item_type,
+          quantity,
+          active,
+          outcome
+        FROM trade_items
+        WHERE trade_id = $1
+          AND (active OR outcome IN ('TRANSFERRED', 'CANCELLED', 'EXPIRED'))
+        ORDER BY offered_by_player_id, item_type
+      `,
+      [tradeId],
+    );
+    return result.rows.map(mapTradeItem);
+  },
+
+  async setItemQuantity(
+    database,
+    { tradeId, offeredByPlayerId, itemType, quantity },
+  ) {
+    await database.query(
+      `
+        INSERT INTO trade_items (
+          trade_id,
+          offered_by_player_id,
+          item_type,
+          quantity
+        )
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (trade_id, offered_by_player_id, item_type) DO UPDATE
+        SET
+          quantity = EXCLUDED.quantity,
+          active = TRUE,
+          outcome = NULL,
+          resolved_at = NULL
+      `,
+      [tradeId, offeredByPlayerId, itemType, quantity],
+    );
+  },
+
+  async resolveItem(database, { tradeItemId, outcome }) {
+    await database.query(
+      `
+        UPDATE trade_items
+        SET active = FALSE, outcome = $2, resolved_at = CURRENT_TIMESTAMP
+        WHERE trade_item_id = $1 AND active = TRUE
+      `,
+      [tradeItemId, outcome],
+    );
+  },
+
+  async resolveAllItems(database, { tradeId, outcome }) {
+    await database.query(
+      `
+        UPDATE trade_items
+        SET active = FALSE, outcome = $2, resolved_at = CURRENT_TIMESTAMP
+        WHERE trade_id = $1 AND active = TRUE
+      `,
+      [tradeId, outcome],
+    );
   },
 
   async findActiveCard(database, { tradeId, cardInstanceId }) {

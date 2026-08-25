@@ -52,12 +52,25 @@ function userMessage(error) {
 export function createAbuseGuard({
   policies = DEFAULT_POLICIES,
   maximumHeavyOperations = 4,
+  maximumTrackedWindows = 50_000,
+  cleanupIntervalMs = 60_000,
   now = Date.now,
   onViolation = null,
+  scheduleRecurring = setInterval,
+  cancelRecurring = clearInterval,
 } = {}) {
+  if (!Number.isSafeInteger(maximumTrackedWindows) || maximumTrackedWindows < 1) {
+    throw new TypeError("maximumTrackedWindows must be a positive integer.");
+  }
+  if (!Number.isSafeInteger(cleanupIntervalMs) || cleanupIntervalMs < 1) {
+    throw new TypeError("cleanupIntervalMs must be a positive integer.");
+  }
   const windows = new Map();
   const inFlight = new Set();
   let heavyOperations = 0;
+  let cleanupTimer = null;
+  let cleanupRuns = 0;
+  let capacityEvictions = 0;
 
   const report = (event) => {
     try {
@@ -70,9 +83,30 @@ export function createAbuseGuard({
     }
   };
 
+  function cleanupExpiredRateWindows(timestamp = now()) {
+    cleanupRuns += 1;
+    for (const [key, state] of windows) {
+      state.timestamps = state.timestamps.filter(
+        (entry) => timestamp - entry < state.windowMs,
+      );
+      if (state.timestamps.length === 0) windows.delete(key);
+    }
+    return windows.size;
+  }
+
+  function makeRoomForWindow(timestamp) {
+    if (windows.size < maximumTrackedWindows) return;
+    cleanupExpiredRateWindows(timestamp);
+    while (windows.size >= maximumTrackedWindows) {
+      windows.delete(windows.keys().next().value);
+      capacityEvictions += 1;
+    }
+  }
+
   function consumeWindow(key, policy, timestamp) {
     if (!policy) return;
-    const active = (windows.get(key) ?? []).filter(
+    const current = windows.get(key);
+    const active = (current?.timestamps ?? []).filter(
       (entry) => timestamp - entry < policy.windowMs,
     );
     if (active.length >= policy.limit) {
@@ -84,7 +118,9 @@ export function createAbuseGuard({
       );
     }
     active.push(timestamp);
-    windows.set(key, active);
+    if (!current) makeRoomForWindow(timestamp);
+    else windows.delete(key);
+    windows.set(key, { timestamps: active, windowMs: policy.windowMs });
   }
 
   function consumeRateLimit(scope) {
@@ -137,14 +173,30 @@ export function createAbuseGuard({
   return Object.freeze({
     acquire,
     messageFor: userMessage,
+    cleanup: cleanupExpiredRateWindows,
+    start() {
+      if (cleanupTimer) return;
+      cleanupTimer = scheduleRecurring(
+        () => cleanupExpiredRateWindows(),
+        cleanupIntervalMs,
+      );
+      cleanupTimer.unref?.();
+    },
     snapshot() {
       return Object.freeze({
         heavyOperations,
         inFlightOperations: inFlight.size,
         trackedRateWindows: windows.size,
+        maximumTrackedWindows,
+        cleanupRuns,
+        capacityEvictions,
       });
     },
     stop() {
+      if (cleanupTimer) {
+        cancelRecurring(cleanupTimer);
+        cleanupTimer = null;
+      }
       windows.clear();
       inFlight.clear();
       heavyOperations = 0;

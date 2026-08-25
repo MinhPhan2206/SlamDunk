@@ -69,6 +69,7 @@ function addMinutes(date, minutes) {
 export function createQuicksellService({
   databasePool,
   economyService,
+  securityService,
   quicksellConfig,
 }) {
   validateRewards(quicksellConfig?.rewards);
@@ -94,6 +95,10 @@ export function createQuicksellService({
       const normalizedInteractionId = normalizeInteractionId(interactionId);
       const parsed = parseParams(params, cardInstanceId);
       const operation = async (transactionDatabase) => {
+        await securityService?.assertCanEarn(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const existing = await quicksellRepository.findSessionByInteraction(
           transactionDatabase,
           normalizedInteractionId,
@@ -174,6 +179,10 @@ export function createQuicksellService({
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       const normalizedSessionId = normalizeId(quicksellSessionId, "quicksellSessionId");
       const operation = async (transactionDatabase) => {
+        await securityService?.assertCanEarn(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const session = await quicksellRepository.findSessionForUpdate(
           transactionDatabase,
           normalizedSessionId,
@@ -306,6 +315,10 @@ export function createQuicksellService({
       );
 
       const operation = async (transactionDatabase) => {
+        await securityService?.assertCanEarn(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const card = await quicksellRepository.findCardForUpdate(
           transactionDatabase,
           normalizedCardInstanceId,

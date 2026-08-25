@@ -1,5 +1,8 @@
 import { createApplication } from "./app.js";
-import { getApplicationRuntimeConfig } from "./config/env.js";
+import {
+  getApplicationRuntimeConfig,
+  getSanitizedStartupConfig,
+} from "./config/env.js";
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
@@ -7,6 +10,7 @@ function getErrorMessage(error) {
 
 async function main() {
   const config = getApplicationRuntimeConfig();
+  console.log(JSON.stringify(getSanitizedStartupConfig(config)));
   const application = createApplication(config);
   let isShuttingDown = false;
 

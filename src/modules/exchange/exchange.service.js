@@ -3,7 +3,13 @@ import { EconomyCurrency, EconomyError } from "../economy/index.js";
 import { ExchangeError } from "./exchange.errors.js";
 import { exchangeRepository } from "./exchange.repository.js";
 
-export function createExchangeService({ databasePool, economyService, exchangeConfig, upgradeConfig }) {
+export function createExchangeService({
+  databasePool,
+  economyService,
+  securityService,
+  exchangeConfig,
+  upgradeConfig,
+}) {
   const maximumQuantity = exchangeConfig.maximumQuantity;
   if (!Number.isSafeInteger(maximumQuantity) || maximumQuantity < 1) {
     throw new TypeError("exchangeConfig.maximumQuantity must be a positive integer.");
@@ -49,6 +55,7 @@ export function createExchangeService({ databasePool, economyService, exchangeCo
         if (existing) {
           return Object.freeze({ exchange: existing, offer: appliedOffer, replayed: true });
         }
+        await securityService?.assertPlayerActive({ playerId }, { database });
         let debit;
         try {
           debit = await economyService.debit({

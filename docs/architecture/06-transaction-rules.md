@@ -177,6 +177,7 @@ The 5-second review safety delay elapsed
 Both sides Final Accepted the same unchanged offer revision
 All offered cards still valid
 All offered Gold still available
+All offered Items remain in Trade escrow
 ```
 
 ## Transaction
@@ -194,13 +195,14 @@ BEGIN
 6. Verify Gold offers
 
 7. Apply Gold transfers
-8. Apply Card ownership transfers
+8. Grant escrowed Items to the opposite participants
+9. Apply Card ownership transfers
 
-9. Create ownership histories
-10. Create EconomyTransactions
+10. Create ownership histories
+11. Create EconomyTransactions
 
-11. Clear all trade locks
-12. Mark Trade COMPLETED
+12. Resolve Item escrow and clear all trade locks
+13. Mark Trade COMPLETED
 
 COMMIT
 ```
@@ -212,6 +214,12 @@ Either participant may undo Ready before completion. During Final Review this
 returns the whole Trade to Editing and clears both participants' approvals.
 Card and Gold offers cannot be edited until both persisted invitation
 acceptances exist.
+
+Tradeable Items are `Level Up`, `Alpha Contract`, and `All-Star Contract`.
+Adding an Item removes it from the Player inventory into Trade escrow in the
+same transaction as the offer revision. Removing the offer, cancelling, or
+expiring the Trade returns it to the original Player. Completion grants it to
+the opposite participant atomically with Gold and Card settlement.
 
 Fee:
 
@@ -655,3 +663,27 @@ commit or roll back everything
 
 Account-bound Cards cannot be sold, traded, or quicksold. Fusion propagates
 binding when any source Card is bound.
+
+---
+
+# 22. Audit and Reconciliation Rule
+
+Current-state tables and append-only audit tables must change in the same
+database transaction. Item balance changes are captured by the `player_items`
+database trigger so direct repository updates cannot bypass the Item ledger.
+XP, ownership, security, Item, and economy audit rows are immutable.
+
+Before deployment and on a production schedule, reconciliation must compare:
+
+```text
+Wallet ↔ EconomyTransaction
+PlayerItem ↔ ItemTransaction
+Player XP/Level ↔ PlayerXpTransaction
+CardInstance ↔ CardMintCounter
+Card owner ↔ CardOwnershipHistory chain
+Pack / Contract / Trade / Market ↔ ownership references
+```
+
+Any mismatch is a deployment failure and an operational alert. Repair current
+state through an explicit, reviewed compensating transaction; never rewrite the
+audit trail.

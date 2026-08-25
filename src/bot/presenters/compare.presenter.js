@@ -11,7 +11,7 @@ import { createUiEmbed } from "../ui/presentation.js";
 import { compactCodeTable } from "../ui/text-table.js";
 import { UI_COLORS } from "../ui/theme.js";
 
-const COMPARE_IMAGE_NAME = "card-comparison.png";
+const COMPARE_IMAGE_NAME = "card-comparison.webp";
 const STATS = Object.freeze([
   ["3 Point", "threePoint"],
   ["Mid Range", "midRange"],

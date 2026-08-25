@@ -95,7 +95,7 @@ test("lineup set command assigns a Card Instance to a slot", async () => {
   assert.match(embed.fields[2].value, /60\.0%/);
   assert.match(embed.fields[2].value, /2.*Streak/);
   assert.match(embed.footer.text, /Missing SG, SF, PF, C/);
-  assert.equal(replies[1].payload.files[0].name, "lineup.png");
+  assert.equal(replies[1].payload.files[0].name, "lineup.webp");
 });
 
 test("lineup swap activates one of three saved lineups", async () => {

@@ -1,11 +1,5 @@
 import { createCardStripImage } from "../ui/card-strip-image.js";
-
-let sharpModule;
-
-async function getSharp() {
-  if (!sharpModule) sharpModule = import("sharp").then((module) => module.default);
-  return sharpModule;
-}
+import { renderImage } from "../ui/image-runtime.js";
 
 function escapeXml(value) {
   return String(value)
@@ -31,12 +25,11 @@ export async function createDuelMatchupImage(
   challengedLineup,
   { challengerName = "Challenger", challengedName = "Opponent" } = {},
 ) {
-  const sharp = await getSharp();
   const [top, bottom] = await Promise.all([
     createCardStripImage(cards(challengerLineup)),
     createCardStripImage(cards(challengedLineup)),
   ]);
-  const metadata = await sharp(top).metadata();
+  const metadata = await renderImage((sharp) => sharp(top).metadata());
   const width = metadata.width;
   const stripHeight = metadata.height;
   const headingHeight = 58;
@@ -54,7 +47,7 @@ export async function createDuelMatchupImage(
       ${label(challengedName, headingHeight + stripHeight + versusHeight + 39, "#8b5cf6")}
     </svg>
   `);
-  return sharp(background)
+  return renderImage((sharp) => sharp(background)
     .composite([
       { input: top, top: headingHeight, left: 0 },
       {
@@ -63,6 +56,6 @@ export async function createDuelMatchupImage(
         left: 0,
       },
     ])
-    .png({ compressionLevel: 9 })
-    .toBuffer();
+    .webp({ quality: 85, effort: 4 })
+    .toBuffer());
 }

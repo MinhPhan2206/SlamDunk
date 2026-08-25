@@ -168,7 +168,7 @@ test("Battle playback renders live possessions and then a postgame report", asyn
   assert.equal(edits[0].embeds[0].toJSON().title, "Your Matchup");
   assert.equal(edits[0].content, `\`${PUBLIC_MATCH_ID}\``);
   assert.equal(edits[0].embeds[0].toJSON().description, undefined);
-  assert.equal(edits[0].files[0].name, "battle-matchup.png");
+  assert.equal(edits[0].files[0].name, "battle-matchup.webp");
   assert.equal(renderedLineup[0].cardName, "AI PG");
   assert.equal(edits[0].components[0].components[0].data.label, "Simulate");
 

@@ -2,13 +2,19 @@ import { getDatabaseConfig } from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import { withTransaction } from "../src/database/transaction/transaction-manager.js";
 
-const VALID_ACTIONS = new Set(["show", "freeze-trading", "disable", "clear"]);
+const VALID_ACTIONS = new Set([
+  "show",
+  "freeze-earning",
+  "freeze-trading",
+  "disable",
+  "clear",
+]);
 
 function argumentsFromProcess() {
   const [action, discordUserId, minutesText = "60"] = process.argv.slice(2);
   if (!VALID_ACTIONS.has(action) || !/^\d{17,20}$/.test(discordUserId ?? "")) {
     throw new Error(
-      "Usage: npm run admin:player-security -- <show|freeze-trading|disable|clear> <discord_user_id> [minutes]",
+      "Usage: npm run admin:player-security -- <show|freeze-earning|freeze-trading|disable|clear> <discord_user_id> [minutes]",
     );
   }
   const minutes = Number(minutesText);
@@ -32,23 +38,37 @@ async function main() {
       const playerId = playerResult.rows[0]?.player_id;
       if (!playerId) throw new Error("Player was not found.");
       if (input.action !== "show") {
-        const tradingUntil = input.action === "freeze-trading"
-          ? new Date(Date.now() + input.minutes * 60_000)
-          : null;
-        const disabledUntil = input.action === "disable"
-          ? new Date(Date.now() + input.minutes * 60_000)
-          : null;
+        const restrictionUntil = new Date(Date.now() + input.minutes * 60_000);
         await database.query(
           `
             INSERT INTO player_security_profiles (
-              player_id, trading_frozen_until, disabled_until
-            ) VALUES ($1, $2, $3)
+              player_id, earning_frozen_until, trading_frozen_until,
+              disabled_until
+            ) VALUES (
+              $1,
+              CASE WHEN $2 = 'freeze-earning' THEN $3::TIMESTAMPTZ END,
+              CASE WHEN $2 = 'freeze-trading' THEN $3::TIMESTAMPTZ END,
+              CASE WHEN $2 = 'disable' THEN $3::TIMESTAMPTZ END
+            )
             ON CONFLICT (player_id) DO UPDATE SET
-              trading_frozen_until = $2,
-              disabled_until = $3,
+              earning_frozen_until = CASE
+                WHEN $2 = 'clear' THEN NULL
+                WHEN $2 = 'freeze-earning' THEN $3::TIMESTAMPTZ
+                ELSE player_security_profiles.earning_frozen_until
+              END,
+              trading_frozen_until = CASE
+                WHEN $2 = 'clear' THEN NULL
+                WHEN $2 = 'freeze-trading' THEN $3::TIMESTAMPTZ
+                ELSE player_security_profiles.trading_frozen_until
+              END,
+              disabled_until = CASE
+                WHEN $2 = 'clear' THEN NULL
+                WHEN $2 = 'disable' THEN $3::TIMESTAMPTZ
+                ELSE player_security_profiles.disabled_until
+              END,
               updated_at = CURRENT_TIMESTAMP
           `,
-          [playerId, tradingUntil, disabledUntil],
+          [playerId, input.action, restrictionUntil],
         );
         await database.query(
           `
@@ -84,4 +104,3 @@ main().catch((error) => {
   console.error(`Player security operation failed: ${error.message}`);
   process.exitCode = 1;
 });
-

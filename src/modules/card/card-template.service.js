@@ -159,6 +159,32 @@ export function createCardTemplateService({ databasePool }) {
       return template;
     },
 
+    async getTemplatesByIds(cardTemplateIds, { database = databasePool } = {}) {
+      if (!Array.isArray(cardTemplateIds) || cardTemplateIds.length === 0) {
+        throw new TypeError("cardTemplateIds must be a non-empty array.");
+      }
+      const normalizedIds = [...new Set(cardTemplateIds.map((cardTemplateId) =>
+        normalizeId(cardTemplateId, "cardTemplateId")
+      ))];
+      const templates = await cardTemplateRepository.findByIds(
+        database,
+        normalizedIds,
+      );
+      const templatesById = new Map(
+        templates.map((template) => [String(template.cardTemplateId), template]),
+      );
+      const ordered = normalizedIds.map((cardTemplateId) =>
+        templatesById.get(cardTemplateId)
+      );
+      if (ordered.some((template) => !template)) {
+        throw new CardError(
+          "CARD_TEMPLATE_NOT_FOUND",
+          "One or more Card Templates were not found.",
+        );
+      }
+      return Object.freeze(ordered);
+    },
+
     async listTemplatesByRarity(
       rarityCode,
       {

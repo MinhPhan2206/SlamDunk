@@ -121,6 +121,21 @@ export const cardInstanceRepository = Object.freeze({
     return mapCardInstance(result.rows[0]);
   },
 
+  async findByIds(database, cardInstanceIds) {
+    if (!Array.isArray(cardInstanceIds) || cardInstanceIds.length === 0) {
+      return Object.freeze([]);
+    }
+    const result = await database.query(
+      `
+        SELECT ${CARD_INSTANCE_COLUMNS}
+        FROM card_instances
+        WHERE card_instance_id = ANY($1::BIGINT[])
+      `,
+      [cardInstanceIds],
+    );
+    return Object.freeze(result.rows.map(mapCardInstance));
+  },
+
   async findByIdForUpdate(database, cardInstanceId) {
     const result = await database.query(
       `

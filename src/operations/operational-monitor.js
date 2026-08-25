@@ -1,6 +1,8 @@
 export function createOperationalMonitor({
   databasePool,
   abuseGuard,
+  imageMetrics = () => null,
+  securityEventMetrics = () => null,
   intervalMilliseconds = 300_000,
 }) {
   let timer = null;
@@ -13,6 +15,8 @@ export function createOperationalMonitor({
       memoryMegabytes: {
         rss: Math.round(memory.rss / 1_048_576),
         heapUsed: Math.round(memory.heapUsed / 1_048_576),
+        external: Math.round(memory.external / 1_048_576),
+        arrayBuffers: Math.round(memory.arrayBuffers / 1_048_576),
       },
       postgres: {
         total: databasePool.totalCount,
@@ -20,6 +24,8 @@ export function createOperationalMonitor({
         waiting: databasePool.waitingCount,
       },
       abuseGuard: abuseGuard.snapshot(),
+      securityEvents: securityEventMetrics(),
+      imageRendering: imageMetrics(),
     }));
   };
 
@@ -37,4 +43,3 @@ export function createOperationalMonitor({
     },
   });
 }
-

@@ -60,6 +60,7 @@ export function createOnboardingService({
   cardTemplateService,
   cardInstanceService,
   lineupService,
+  securityService,
   randomIndex = (maximum) => randomInt(maximum),
 }) {
   return Object.freeze({
@@ -75,6 +76,10 @@ export function createOnboardingService({
         if (player.starterLineupGrantedAt) {
           return Object.freeze({ alreadyGranted: true, cards: Object.freeze([]) });
         }
+        await securityService?.assertCanEarn(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
 
         const templates = await cardTemplateService.listPackableTemplates({ database: transactionDatabase });
         const assignments = assignStarterTemplates(templates, randomIndex);

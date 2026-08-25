@@ -11,7 +11,7 @@ import { readCardArt } from "../ui/card-art.js";
 import { createUiEmbed } from "../ui/presentation.js";
 import { rarityColor, UI_COLORS } from "../ui/theme.js";
 
-const CARD_IMAGE_NAME = "card.png";
+const CARD_IMAGE_NAME = "card.webp";
 
 export function createCardSearchPayload({ query, candidates, viewerDiscordUserId }) {
   const select = new StringSelectMenuBuilder()

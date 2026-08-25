@@ -111,6 +111,33 @@ export const securityRepository = Object.freeze({
     );
   },
 
+  async createEvents(database, inputs) {
+    if (!Array.isArray(inputs) || inputs.length === 0) return 0;
+    const result = await database.query(
+      `
+        INSERT INTO security_events (
+          event_type, severity, discord_user_id, guild_id, channel_id,
+          command_name, metadata
+        )
+        SELECT *
+        FROM UNNEST(
+          $1::TEXT[], $2::TEXT[], $3::TEXT[], $4::TEXT[],
+          $5::TEXT[], $6::TEXT[], $7::JSONB[]
+        )
+      `,
+      [
+        inputs.map((input) => input.eventType),
+        inputs.map((input) => input.severity),
+        inputs.map((input) => input.discordUserId),
+        inputs.map((input) => input.guildId),
+        inputs.map((input) => input.channelId),
+        inputs.map((input) => input.commandName),
+        inputs.map((input) => JSON.stringify(input.metadata ?? {})),
+      ],
+    );
+    return result.rowCount;
+  },
+
   async findPlayerProfile(database, playerId) {
     const result = await database.query(
       `
@@ -122,5 +149,31 @@ export const securityRepository = Object.freeze({
       [playerId],
     );
     return result.rows[0] ?? null;
+  },
+
+  async findPlayerProfilesForShare(database, playerIds) {
+    if (!Array.isArray(playerIds) || playerIds.length === 0) return [];
+    await database.query(
+      `
+        SELECT player_id
+        FROM players
+        WHERE player_id = ANY($1::BIGINT[])
+        ORDER BY player_id
+        FOR SHARE
+      `,
+      [playerIds],
+    );
+    const result = await database.query(
+      `
+        SELECT player_id, risk_score, earning_frozen_until,
+          trading_frozen_until, disabled_until, updated_at
+        FROM player_security_profiles
+        WHERE player_id = ANY($1::BIGINT[])
+        ORDER BY player_id
+        FOR SHARE
+      `,
+      [playerIds],
+    );
+    return result.rows;
   },
 });

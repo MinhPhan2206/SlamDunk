@@ -162,6 +162,7 @@ export function createRewardService({
   databasePool,
   economyService,
   playerService,
+  securityService,
   claimConfig,
   dailyConfig,
   weeklyConfig,
@@ -228,6 +229,10 @@ export function createRewardService({
         databasePool,
         database,
         async (transactionDatabase) => {
+          await securityService?.assertCanEarn(
+            { playerId: normalizedPlayerId },
+            { database: transactionDatabase },
+          );
           const currentTime =
             await cooldownRepository.getDatabaseTime(transactionDatabase);
           const cooldown = await cooldownRepository.getOrCreateForUpdate(
@@ -330,6 +335,10 @@ export function createRewardService({
       const normalizedPlayerId = normalizePlayerId(playerId);
       const normalizedInteractionId = normalizeInteractionId(interactionId);
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanEarn(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const currentTime = await cooldownRepository.getDatabaseTime(transactionDatabase);
         const cooldown = await cooldownRepository.getOrCreateForUpdate(transactionDatabase, {
           playerId: normalizedPlayerId,
@@ -404,6 +413,10 @@ export function createRewardService({
       const normalizedPlayerId = normalizePlayerId(playerId);
       const normalizedInteractionId = normalizeInteractionId(interactionId);
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanEarn(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const currentTime = await cooldownRepository.getDatabaseTime(transactionDatabase);
         const cooldown = await cooldownRepository.getOrCreateForUpdate(transactionDatabase, {
           playerId: normalizedPlayerId,

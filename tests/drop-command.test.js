@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import sharp from "sharp";
 
 import { dropCommand } from "../src/bot/commands/drop.command.js";
 import { dropSelectionComponent } from "../src/bot/components/drop-selection.component.js";
@@ -70,8 +71,10 @@ test("drop command displays three persisted choices", async () => {
     replies[1].payload.components[0].components[1].data.custom_id,
     "drop:select:10:2",
   );
-  assert.equal(replies[1].payload.files[0].name, "drop-candidates.png");
-  assert.equal(replies[1].payload.files[0].attachment.readUInt32BE(16), 748);
+  assert.equal(replies[1].payload.files[0].name, "drop-candidates.webp");
+  const metadata = await sharp(replies[1].payload.files[0].attachment).metadata();
+  assert.equal(metadata.format, "webp");
+  assert.equal(metadata.width, 748);
   assert.equal(
     replies[1].payload.embeds[0].toJSON().footer.text,
     "Choose within 20 seconds · Card 1 is selected on timeout",

@@ -51,6 +51,7 @@ export function createMarketService({
   databasePool,
   cardInstanceService,
   economyService,
+  securityService,
 }) {
   async function expireDueListings(
     { limit = 100 } = {},
@@ -105,6 +106,10 @@ export function createMarketService({
       );
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanTrade(
+          { playerIds: [sellerId] },
+          { database: transactionDatabase },
+        );
         let card;
         try {
           card = await cardInstanceService.lockForMarket(
@@ -281,6 +286,10 @@ export function createMarketService({
             "You cannot buy your own Market listing.",
           );
         }
+        await securityService?.assertCanTrade(
+          { playerIds: [buyerId, listing.sellerPlayerId] },
+          { database: transactionDatabase },
+        );
 
         const card = await cardInstanceService.getInstanceForUpdate(
           listing.cardInstanceId,

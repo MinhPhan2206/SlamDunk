@@ -142,6 +142,20 @@ export function createPlayerService({ databasePool, economyService }) {
       return playerRepository.findById(database, validatePlayerId(playerId));
     },
 
+    async getPlayersByIds(playerIds, { database = databasePool } = {}) {
+      if (!Array.isArray(playerIds) || playerIds.length === 0) {
+        throw new TypeError("playerIds must be a non-empty array.");
+      }
+      const normalizedIds = [...new Set(playerIds.map(validatePlayerId))];
+      const players = await playerRepository.findByIds(database, normalizedIds);
+      const playersById = new Map(
+        players.map((player) => [String(player.playerId), player]),
+      );
+      return Object.freeze(normalizedIds
+        .map((playerId) => playersById.get(playerId))
+        .filter(Boolean));
+    },
+
     async getPlayer(discordUserId) {
       validateDiscordUserId(discordUserId);
       return playerRepository.findByDiscordUserId(databasePool, discordUserId);

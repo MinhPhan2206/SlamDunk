@@ -62,6 +62,7 @@ export function createContractService({
   inventoryService,
   cardTemplateService,
   cardInstanceService,
+  securityService,
   contractCatalog,
   rollInteger = randomInt,
 }) {
@@ -110,6 +111,11 @@ export function createContractService({
           ]);
           return Object.freeze({ contract, opening: existing, template, instance, replayed: true });
         }
+
+        await securityService?.assertPlayerActive(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
 
         const remainingQuantity = await inventoryService.consumeItem({
           playerId: normalizedPlayerId,

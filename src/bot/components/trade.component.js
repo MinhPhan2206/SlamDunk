@@ -12,6 +12,7 @@ import { createTradePayload } from "../presenters/trade.presenter.js";
 
 function modal(action, tradeId, offerRevision) {
   const cards = action === "cards";
+  const items = action === "items";
   const operation = new TextInputBuilder()
     .setCustomId("operation")
     .setLabel("Action")
@@ -21,17 +22,32 @@ function modal(action, tradeId, offerRevision) {
     .setMaxLength(6)
     .setRequired(true);
   const value = new TextInputBuilder()
-    .setCustomId(cards ? "card_ids" : "gold")
-    .setLabel(cards ? "Card IDs or collection numbers (max 10)" : "Gold amount (max 20,000,000)")
+    .setCustomId(cards ? "card_ids" : items ? "item" : "gold")
+    .setLabel(cards
+      ? "Card IDs or collection numbers (max 10)"
+      : items ? "Item" : "Gold amount (max 20,000,000)")
     .setStyle(cards ? TextInputStyle.Paragraph : TextInputStyle.Short)
     .setRequired(true);
+  if (items) {
+    value.setPlaceholder("level up, alpha contract, or all-star contract");
+  }
+  const rows = [
+    new ActionRowBuilder().addComponents(operation),
+    new ActionRowBuilder().addComponents(value),
+  ];
+  if (items) {
+    rows.push(new ActionRowBuilder().addComponents(
+      new TextInputBuilder()
+        .setCustomId("quantity")
+        .setLabel("Quantity")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true),
+    ));
+  }
   return new ModalBuilder()
     .setCustomId(`trade:${action}:${tradeId}:${offerRevision}`)
-    .setTitle(cards ? "Edit Offered Cards" : "Edit Offered Gold")
-    .addComponents(
-      new ActionRowBuilder().addComponents(operation),
-      new ActionRowBuilder().addComponents(value),
-    );
+    .setTitle(cards ? "Edit Offered Cards" : items ? "Edit Offered Items" : "Edit Offered Gold")
+    .addComponents(...rows);
 }
 
 function parseOperation(value) {
@@ -56,12 +72,31 @@ function parseCardIds(value) {
   return ids;
 }
 
+function parseItemType(value) {
+  const normalized = value.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  const aliases = new Map([
+    ["level_up", "LEVEL_UP"],
+    ["levelup", "LEVEL_UP"],
+    ["alpha_contract", "ALPHA_CONTRACT"],
+    ["all_star_contract", "ALL_STAR_CONTRACT"],
+    ["allstar_contract", "ALL_STAR_CONTRACT"],
+  ]);
+  const itemType = aliases.get(normalized);
+  if (!itemType) {
+    throw new TradeError(
+      "TRADE_ITEM_NOT_ALLOWED",
+      "Choose Level Up, Alpha Contract, or All-Star Contract.",
+    );
+  }
+  return itemType;
+}
+
 export const tradeComponent = Object.freeze({
   namespace: "trade",
   componentInactivityTimeoutMs: gameConfig.trade.expiryMinutes * 60_000,
   async execute(interaction, { services }) {
     const [, action, tradeId, offerRevision] = interaction.customId.split(":");
-    if (interaction.isButton() && ["cards", "gold"].includes(action)) {
+    if (interaction.isButton() && ["cards", "gold", "items"].includes(action)) {
       await interaction.showModal(modal(action, tradeId, offerRevision));
       return;
     }
@@ -114,6 +149,19 @@ export const tradeComponent = Object.freeze({
           tradeId,
           playerId: player.playerId,
           goldOffered: interaction.fields.getTextInputValue("gold").trim(),
+          operation: parseOperation(
+            interaction.fields.getTextInputValue("operation"),
+          ),
+          offerRevision,
+        });
+      } else if (action === "items") {
+        result = await services.trade.setItemOffer({
+          tradeId,
+          playerId: player.playerId,
+          itemType: parseItemType(
+            interaction.fields.getTextInputValue("item"),
+          ),
+          quantity: interaction.fields.getTextInputValue("quantity").trim(),
           operation: parseOperation(
             interaction.fields.getTextInputValue("operation"),
           ),

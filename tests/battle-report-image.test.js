@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import sharp from "sharp";
 
 import {
   calculateMvpScore,
@@ -87,4 +88,12 @@ test("Battle report renderer creates the redesigned fixed-size PNG", async () =>
   assert.equal(output.readUInt32BE(16), 1_200);
   assert.equal(output.readUInt32BE(20), 1_400);
   assert.ok(output.length > 10_000);
+
+  const mvpRegion = await sharp(output)
+    .extract({ left: 70, top: 303, width: 198, height: 206 })
+    .stats();
+  assert.ok(
+    mvpRegion.channels.some((channel) => channel.stdev > 10),
+    "MVP card art should be visible in the report",
+  );
 });

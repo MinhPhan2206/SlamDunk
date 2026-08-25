@@ -21,6 +21,23 @@ test("Trade Card modal asks whether Cards are added or removed", async () => {
   assert.equal(tradeComponent.componentInactivityTimeoutMs, 180_000);
 });
 
+test("Trade Item modal accepts an item type, quantity, and add/remove action", async () => {
+  let modal;
+  const interaction = {
+    customId: "trade:items:9:3",
+    isButton() { return true; },
+    async showModal(value) { modal = value.toJSON(); },
+  };
+
+  await tradeComponent.execute(interaction, { services: {} });
+
+  assert.equal(modal.custom_id, "trade:items:9:3");
+  assert.deepEqual(
+    modal.components.map((row) => row.components[0].custom_id),
+    ["operation", "item", "quantity"],
+  );
+});
+
 test("Accepting the invitation opens Trade controls after both Players accept", async () => {
   let acceptedInput;
   let edited;
@@ -58,8 +75,9 @@ test("Accepting the invitation opens Trade controls after both Players accept", 
 
   assert.deepEqual(acceptedInput, { tradeId: "9", playerId: "7" });
   assert.equal(edited.embeds[0].toJSON().title, "DIRECT TRADE");
-  assert.equal(edited.components[0].components.length, 5);
-  assert.equal(edited.components[0].components[2].data.custom_id, "trade:ready:9:0");
+  assert.equal(edited.components.length, 2);
+  assert.equal(edited.components[0].components[2].data.custom_id, "trade:items:9:0");
+  assert.equal(edited.components[1].components[0].data.custom_id, "trade:ready:9:0");
 });
 
 test("Final Accept is routed with the exact offer revision", async () => {

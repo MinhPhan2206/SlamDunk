@@ -95,6 +95,7 @@ export function createCardInstanceService({
   databasePool,
   cardTemplateService,
   playerService,
+  securityService,
   generatePublicCardId = () =>
     randomInt(PUBLIC_CARD_ID_MINIMUM, PUBLIC_CARD_ID_MAXIMUM_EXCLUSIVE),
 }) {
@@ -117,25 +118,50 @@ export function createCardInstanceService({
     return instance;
   }
 
+  async function getInstancesByIds(
+    cardInstanceIds,
+    { database = databasePool } = {},
+  ) {
+    if (!Array.isArray(cardInstanceIds) || cardInstanceIds.length === 0) {
+      throw new TypeError("cardInstanceIds must be a non-empty array.");
+    }
+    const normalizedIds = [...new Set(cardInstanceIds.map((cardInstanceId) =>
+      normalizeId(cardInstanceId, "cardInstanceId")
+    ))];
+    const instances = await cardInstanceRepository.findByIds(
+      database,
+      normalizedIds,
+    );
+    const instancesById = new Map(
+      instances.map((instance) => [String(instance.cardInstanceId), instance]),
+    );
+    const ordered = normalizedIds.map((cardInstanceId) =>
+      instancesById.get(cardInstanceId)
+    );
+    if (ordered.some((instance) => !instance)) {
+      throw new CardError(
+        "CARD_INSTANCE_NOT_FOUND",
+        "One or more Card Instances were not found.",
+      );
+    }
+    return Object.freeze(ordered);
+  }
+
   async function validateMints(transactionDatabase, mints) {
     const templateIds = [...new Set(mints.map((mint) => mint.cardTemplateId))];
-    for (const cardTemplateId of templateIds) {
-      await cardTemplateService.getTemplate(cardTemplateId, {
-        database: transactionDatabase,
-      });
-    }
+    await cardTemplateService.getTemplatesByIds(templateIds, {
+      database: transactionDatabase,
+    });
 
     const ownerIds = [...new Set(mints.map((mint) => mint.ownerPlayerId))];
-    for (const ownerPlayerId of ownerIds) {
-      const owner = await playerService.getPlayerById(ownerPlayerId, {
-        database: transactionDatabase,
-      });
-      if (!owner) {
-        throw new CardError(
-          "PLAYER_NOT_FOUND",
-          "Card owner Player was not found.",
-        );
-      }
+    const owners = await playerService.getPlayersByIds(ownerIds, {
+      database: transactionDatabase,
+    });
+    if (owners.length !== ownerIds.length) {
+      throw new CardError(
+        "PLAYER_NOT_FOUND",
+        "One or more Card owner Players were not found.",
+      );
     }
   }
 
@@ -208,16 +234,36 @@ export function createCardInstanceService({
       indexesByTemplate.set(mint.cardTemplateId, indexes);
     });
 
+    const allocations = [...indexesByTemplate]
+      .map(([cardTemplateId, indexes]) => Object.freeze({
+        cardTemplateId,
+        quantity: indexes.length,
+      }))
+      .sort((left, right) =>
+        BigInt(left.cardTemplateId) < BigInt(right.cardTemplateId) ? -1 : 1
+      );
+    const allocatedCounters = await cardMintCounterRepository.allocateSerialRanges(
+      transactionDatabase,
+      allocations,
+    );
+    const allocatedByTemplate = new Map(allocatedCounters.map((counter) => [
+      String(counter.cardTemplateId),
+      counter,
+    ]));
+    if (allocatedByTemplate.size !== allocations.length) {
+      throw new CardError(
+        "CARD_SERIAL_ALLOCATION_FAILED",
+        "Card serial ranges could not be allocated completely.",
+      );
+    }
+
     const serials = new Array(mints.length);
     const counters = new Array(mints.length);
-    for (const [cardTemplateId, indexes] of indexesByTemplate) {
-      const counter = await cardMintCounterRepository.allocateSerialRange(
-        transactionDatabase,
-        cardTemplateId,
-        indexes.length,
-      );
+    for (const { cardTemplateId, quantity } of allocations) {
+      const indexes = indexesByTemplate.get(cardTemplateId);
+      const counter = allocatedByTemplate.get(String(cardTemplateId));
       const firstSerial = BigInt(counter.lastSerialNumber) -
-        BigInt(indexes.length) + 1n;
+        BigInt(quantity) + 1n;
       indexes.forEach((mintIndex, offset) => {
         serials[mintIndex] = String(firstSerial + BigInt(offset));
         counters[mintIndex] = Object.freeze({
@@ -282,6 +328,10 @@ export function createCardInstanceService({
       const normalizedOwnerPlayerId = normalizeId(ownerPlayerId, "ownerPlayerId");
       const normalizedCardInstanceId = normalizeId(cardInstanceId, "cardInstanceId");
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertPlayerActive(
+          { playerId: normalizedOwnerPlayerId },
+          { database: transactionDatabase },
+        );
         const instance = await cardInstanceRepository.findByIdForUpdate(
           transactionDatabase,
           normalizedCardInstanceId,
@@ -307,6 +357,10 @@ export function createCardInstanceService({
       const normalizedOwnerPlayerId = normalizeId(ownerPlayerId, "ownerPlayerId");
       const normalizedCardInstanceId = normalizeId(cardInstanceId, "cardInstanceId");
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertPlayerActive(
+          { playerId: normalizedOwnerPlayerId },
+          { database: transactionDatabase },
+        );
         const instance = await cardInstanceRepository.findByIdForUpdate(
           transactionDatabase,
           normalizedCardInstanceId,
@@ -691,6 +745,7 @@ export function createCardInstanceService({
     },
 
     getInstance,
+    getInstancesByIds,
 
     async getMintCounter(cardTemplateId, { database = databasePool } = {}) {
       const normalizedCardTemplateId = normalizeId(

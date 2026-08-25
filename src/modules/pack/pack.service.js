@@ -97,6 +97,7 @@ export function createPackService({
   economyService,
   cardTemplateService,
   cardInstanceService,
+  securityService,
   rollInteger = randomInt,
 }) {
   const catalog = normalizeCatalog(packCatalog);
@@ -132,20 +133,31 @@ export function createPackService({
         cardInstanceId: opening.cardInstanceId,
       })];
     }
-    const cards = [];
-    for (const openingCard of openingCards) {
-      cards.push(Object.freeze({
-        openingCard,
-        template: await cardTemplateService.getTemplate(
-          openingCard.cardTemplateId,
-          { database },
-        ),
-        instance: await cardInstanceService.getInstance(
-          openingCard.cardInstanceId,
-          { database },
-        ),
-      }));
-    }
+    const templateIds = [...new Set(openingCards.map((card) =>
+      String(card.cardTemplateId)
+    ))];
+    const instanceIds = [...new Set(openingCards.map((card) =>
+      String(card.cardInstanceId)
+    ))];
+    const templates = templateIds.length > 0
+      ? await cardTemplateService.getTemplatesByIds(templateIds, { database })
+      : [];
+    const instances = instanceIds.length > 0
+      ? await cardInstanceService.getInstancesByIds(instanceIds, { database })
+      : [];
+    const templatesById = new Map(templates.map((template) => [
+      String(template.cardTemplateId),
+      template,
+    ]));
+    const instancesById = new Map(instances.map((instance) => [
+      String(instance.cardInstanceId),
+      instance,
+    ]));
+    const cards = openingCards.map((openingCard) => Object.freeze({
+      openingCard,
+      template: templatesById.get(String(openingCard.cardTemplateId)),
+      instance: instancesById.get(String(openingCard.cardInstanceId)),
+    }));
     const firstCard = cards[0];
     return Object.freeze({
       source: "pack",
@@ -193,6 +205,7 @@ export function createPackService({
           }
           return hydrate(database, existing, true);
         }
+        await securityService?.assertPlayerActive({ playerId }, { database });
         const currentTime = await cooldownRepository.getDatabaseTime(database);
         const cooldownType = `PACK_${pack.packCode.toUpperCase()}`;
         const cooldown = await cooldownRepository.getOrCreateForUpdate(database, { playerId, cooldownType });

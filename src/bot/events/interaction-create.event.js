@@ -1,6 +1,9 @@
 import { MessageFlags } from "discord.js";
 import { scheduleComponentTimeout } from "../components/component-timeout.js";
-import { AbuseGuardError } from "../../modules/security/index.js";
+import {
+  AbuseGuardError,
+  SecurityAccessError,
+} from "../../modules/security/index.js";
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
@@ -153,6 +156,19 @@ export function createInteractionCreateHandler(
         });
       }
     } catch (error) {
+      if (error instanceof SecurityAccessError) {
+        const payload = { content: error.message, flags: MessageFlags.Ephemeral };
+        try {
+          if (interaction.deferred || interaction.replied) {
+            await interaction.followUp(payload);
+          } else {
+            await interaction.reply(payload);
+          }
+        } catch (responseError) {
+          console.warn(`Security response failed: ${getErrorMessage(responseError)}`);
+        }
+        return;
+      }
       if (error instanceof AbuseGuardError) {
         const content = context.abuseGuard.messageFor(error);
         try {

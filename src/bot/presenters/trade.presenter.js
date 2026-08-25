@@ -45,6 +45,26 @@ function offeredCardLine(card) {
     `Lv.${card.cardLevel} · \`!${card.publicCardId}\``;
 }
 
+const TRADE_ITEM_UI = Object.freeze({
+  LEVEL_UP: Object.freeze({ name: "Level Up", emoji: UI_EMOJIS.levelUp.mention }),
+  ALPHA_CONTRACT: Object.freeze({
+    name: "Alpha Contract",
+    emoji: UI_EMOJIS.alphaContract.mention,
+  }),
+  ALL_STAR_CONTRACT: Object.freeze({
+    name: "All-Star Contract",
+    emoji: UI_EMOJIS.allStarContract.mention,
+  }),
+});
+
+function offeredItemLine(item) {
+  const display = TRADE_ITEM_UI[item.itemType] ?? {
+    name: item.itemType,
+    emoji: "📦",
+  };
+  return `• ${display.emoji} **${display.name}** × ${item.quantity}`;
+}
+
 function participantStatus(participant, trade) {
   if (
     participant.finalAcceptedAt &&
@@ -57,9 +77,12 @@ function participantStatus(participant, trade) {
   return "✏️ EDITING";
 }
 
-function participantField(participant, cards, trade) {
+function participantField(participant, cards, items, trade) {
   const offeredCards = cards.filter((card) =>
     card.offeredByPlayerId === participant.playerId
+  );
+  const offeredItems = items.filter((item) =>
+    item.offeredByPlayerId === participant.playerId
   );
   return {
     name: `${participant.username} GIVES`,
@@ -69,6 +92,10 @@ function participantField(participant, cards, trade) {
       `🃏 **Cards ${offeredCards.length}/${MAX_TRADE_CARDS}**`,
       offeredCards.length
         ? offeredCards.map(offeredCardLine).join("\n")
+        : "• None",
+      `📦 **Items ${offeredItems.reduce((sum, item) => sum + item.quantity, 0)}**`,
+      offeredItems.length
+        ? offeredItems.map(offeredItemLine).join("\n")
         : "• None",
     ].join("\n"),
     inline: true,
@@ -94,7 +121,12 @@ function tradeEmbed(result) {
           `Expires <t:${expiryTimestamp(result.trade)}:R>.`
       : "This Direct Trade is closed.");
   for (const participant of result.participants) {
-    embed.addFields(participantField(participant, result.cards, result.trade));
+    embed.addFields(participantField(
+      participant,
+      result.cards ?? [],
+      result.items ?? [],
+      result.trade,
+    ));
   }
   return embed.setFooter({
     text: `Trade #${result.trade.tradeId} • Offer version ${result.trade.offerRevision}`,
@@ -130,23 +162,30 @@ export function createTradePayload(result) {
           .setLabel("Cancel Trade").setStyle(ButtonStyle.Danger),
       )]
       : open
-        ? [new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`trade:cards:${result.trade.tradeId}:${revision}`)
-          .setLabel("Cards").setEmoji("🃏").setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId(`trade:gold:${result.trade.tradeId}:${revision}`)
-          .setLabel("Gold").setEmoji(UI_EMOJIS.gold.component).setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-          .setCustomId(`trade:ready:${result.trade.tradeId}:${revision}`)
-          .setLabel("Ready").setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId(`trade:undo:${result.trade.tradeId}:${revision}`)
-          .setLabel("Undo Ready").setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-          .setCustomId(`trade:cancel:${result.trade.tradeId}:${revision}`)
-          .setLabel("Cancel Trade").setStyle(ButtonStyle.Danger),
-      )]
+        ? [
+          new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+              .setCustomId(`trade:cards:${result.trade.tradeId}:${revision}`)
+              .setLabel("Cards").setEmoji("🃏").setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+              .setCustomId(`trade:gold:${result.trade.tradeId}:${revision}`)
+              .setLabel("Gold").setEmoji(UI_EMOJIS.gold.component).setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+              .setCustomId(`trade:items:${result.trade.tradeId}:${revision}`)
+              .setLabel("Items").setEmoji("📦").setStyle(ButtonStyle.Primary),
+          ),
+          new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+              .setCustomId(`trade:ready:${result.trade.tradeId}:${revision}`)
+              .setLabel("Ready").setStyle(ButtonStyle.Success),
+            new ButtonBuilder()
+              .setCustomId(`trade:undo:${result.trade.tradeId}:${revision}`)
+              .setLabel("Undo Ready").setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder()
+              .setCustomId(`trade:cancel:${result.trade.tradeId}:${revision}`)
+              .setLabel("Cancel Trade").setStyle(ButtonStyle.Danger),
+          ),
+        ]
         : [];
   const discordUserIds = result.participants
     .map((participant) => participant.discordUserId)

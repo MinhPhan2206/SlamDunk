@@ -74,7 +74,7 @@ async function loadLineup(database, playerId) {
   });
 }
 
-export function createLineupService({ databasePool }) {
+export function createLineupService({ databasePool, securityService }) {
   return Object.freeze({
     async getLineup(playerId, { database = databasePool } = {}) {
       return loadLineup(database, normalizeId(playerId, "playerId"));
@@ -100,6 +100,7 @@ export function createLineupService({ databasePool }) {
       { playerId, lineupId, strategy, expectedRevision },
       { database = databasePool } = {},
     ) {
+      await securityService?.assertPlayerActive({ playerId }, { database });
       const lineup = await lineupRepository.getOrCreate(
         database,
         normalizeId(playerId, "playerId"),
@@ -141,6 +142,10 @@ export function createLineupService({ databasePool }) {
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       const normalizedLineupNumber = normalizeLineupNumber(lineupNumber);
       const operation = async (transactionDatabase) => {
+        await securityService?.assertPlayerActive(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         await transactionDatabase.query(
           "SELECT pg_advisory_xact_lock(hashtext($1))",
           [`lineup-player:${normalizedPlayerId}`],
@@ -182,6 +187,10 @@ export function createLineupService({ databasePool }) {
       );
 
       const operation = async (transactionDatabase) => {
+        await securityService?.assertPlayerActive(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const lineup = await lineupRepository.getOrCreate(
           transactionDatabase,
           normalizedPlayerId,
@@ -256,6 +265,10 @@ export function createLineupService({ databasePool }) {
       const normalizedPlayerId = normalizeId(playerId, "playerId");
       const normalizedSlot = normalizeSlot(slot);
       const operation = async (transactionDatabase) => {
+        await securityService?.assertPlayerActive(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const lineup = await lineupRepository.getOrCreate(
           transactionDatabase,
           normalizedPlayerId,

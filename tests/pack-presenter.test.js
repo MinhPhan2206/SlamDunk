@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import sharp from "sharp";
 
 import { packCommand } from "../src/bot/commands/pack.command.js";
 import { createPackOpeningPayload } from "../src/bot/presenters/pack.presenter.js";
@@ -53,12 +54,14 @@ test("Pack result uses Card artwork and omits OVR and Serial", async () => {
   });
 
   const embed = payload.embeds[0].toJSON();
-  assert.equal(payload.files[0].name, "pack-result.png");
+  assert.equal(payload.files[0].name, "pack-result.webp");
   assert.match(embed.description, /Michael Jordan/);
   assert.match(embed.description, /Stephen Curry/);
   assert.match(embed.description, /LeBron James/);
   assert.match(embed.description, /Lv\.5/);
   assert.doesNotMatch(embed.description, /OVR|Serial|#1/);
-  assert.equal(payload.files[0].attachment.readUInt32BE(16), 748);
-  assert.equal(payload.files[0].attachment.readUInt32BE(20), 391);
+  const metadata = await sharp(payload.files[0].attachment).metadata();
+  assert.equal(metadata.format, "webp");
+  assert.equal(metadata.width, 748);
+  assert.equal(metadata.height, 391);
 });

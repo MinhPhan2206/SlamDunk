@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getDatabaseConfig } from "../src/config/env.js";
+import { getTestDatabaseConfig } from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import {
   createCardInstanceService,
@@ -12,7 +12,7 @@ import { createOnboardingService } from "../src/modules/onboarding/index.js";
 import { createPlayerService } from "../src/modules/player/index.js";
 
 test("onboarding grants one complete Base starter lineup exactly once", async () => {
-  const pool = createPostgresPool({ connectionString: getDatabaseConfig().databaseUrl });
+  const pool = createPostgresPool({ connectionString: getTestDatabaseConfig().databaseUrl });
   const database = await pool.connect();
   const cardTemplateService = createCardTemplateService({ databasePool: pool });
   const playerService = createPlayerService({ databasePool: pool });

@@ -119,6 +119,21 @@ export const cardTemplateRepository = Object.freeze({
     return mapCardTemplate(result.rows[0]);
   },
 
+  async findByIds(database, cardTemplateIds) {
+    if (!Array.isArray(cardTemplateIds) || cardTemplateIds.length === 0) {
+      return Object.freeze([]);
+    }
+    const result = await database.query(
+      `
+        SELECT ${CARD_TEMPLATE_COLUMNS}
+        FROM (${JOINED_TEMPLATES}) card_templates
+        WHERE card_template_id = ANY($1::BIGINT[])
+      `,
+      [cardTemplateIds],
+    );
+    return Object.freeze(result.rows.map(mapCardTemplate));
+  },
+
   async create(database, template) {
     const result = await database.query(
       `

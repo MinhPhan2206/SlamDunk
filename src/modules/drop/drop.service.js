@@ -179,6 +179,7 @@ export function createDropService({
   databasePool,
   cardInstanceService,
   cardTemplateService,
+  securityService,
   dropConfig,
   rollInteger = randomInt,
 }) {
@@ -257,6 +258,10 @@ export function createDropService({
       const normalizedInteractionId = normalizeInteractionId(interactionId);
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanEarn(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const currentTime =
           await cooldownRepository.getDatabaseTime(transactionDatabase);
         const cooldown = await cooldownRepository.getOrCreateForUpdate(
@@ -346,6 +351,10 @@ export function createDropService({
       );
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertCanEarn(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const cooldown = await cooldownRepository.getOrCreateForUpdate(
           transactionDatabase,
           {

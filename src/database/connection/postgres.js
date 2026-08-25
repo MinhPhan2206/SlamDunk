@@ -8,6 +8,7 @@ export function createPostgresPool({
   connectionTimeoutMilliseconds = 5_000,
   idleTimeoutMilliseconds = 30_000,
   statementTimeoutMilliseconds = 15_000,
+  ssl = false,
 }) {
   const pool = new Pool({
     connectionString,
@@ -16,6 +17,7 @@ export function createPostgresPool({
     idleTimeoutMillis: idleTimeoutMilliseconds,
     statement_timeout: statementTimeoutMilliseconds,
     query_timeout: statementTimeoutMilliseconds,
+    ssl,
   });
 
   pool.on("error", (error) => {

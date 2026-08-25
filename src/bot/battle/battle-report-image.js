@@ -1,4 +1,5 @@
 import { readCardArt } from "../ui/card-art.js";
+import { renderImage } from "../ui/image-runtime.js";
 import { colorHex, rarityColor } from "../ui/theme.js";
 
 const WIDTH = 1_200;
@@ -6,12 +7,6 @@ const HEIGHT = 1_400;
 const TEAM_ONE_COLOR = "#f59e0b";
 const TEAM_TWO_COLOR = "#3b82f6";
 const SLOT_ORDER = Object.freeze(["PG", "SG", "SF", "PF", "C"]);
-let sharpModule;
-
-async function getSharp() {
-  if (!sharpModule) sharpModule = import("sharp").then((module) => module.default);
-  return sharpModule;
-}
 
 function escapeXml(value) {
   return String(value)
@@ -211,14 +206,10 @@ function leaderCard(title, player, stat, x, color) {
     <text x="${x}" y="672" text-anchor="middle" class="leader-stat">${escapeXml(stat)}</text>`;
 }
 
-async function createReportSvg(result, ownerDisplayName, opponentDisplayName) {
+function createReportSvg(result, ownerDisplayName, opponentDisplayName) {
   const { playerTeam, aiTeam } = getTeams(result);
   const mvp = selectGameMvp(result);
   const leaders = selectGameLeaders(result);
-  const mvpArt = (await readCardArt({
-    playerName: mvp.cardName,
-    rarityCode: mvp.rarityCode,
-  })).toString("base64");
   const ownerName = truncate(ownerDisplayName, 24);
   const opponentName = truncate(opponentDisplayName, 24);
   const bracket = String(result.reward?.bracketName ?? "Battle").toUpperCase();
@@ -244,7 +235,6 @@ async function createReportSvg(result, ownerDisplayName, opponentDisplayName) {
           <stop offset="0" stop-color="#2a1704"/><stop offset="0.5" stop-color="#0a1017"/>
           <stop offset="1" stop-color="#071b34"/>
         </linearGradient>
-        <clipPath id="mvp-art"><rect x="70" y="303" width="198" height="206" rx="12"/></clipPath>
       </defs>
       <style>
         text { font-family: Arial, "DejaVu Sans", sans-serif; }
@@ -288,10 +278,7 @@ async function createReportSvg(result, ownerDisplayName, opponentDisplayName) {
         stroke="#d9a928" stroke-width="2"/>
       <rect x="42" y="266" width="1116" height="48" rx="12" fill="#211a0a"/>
       <text x="600" y="298" text-anchor="middle" class="mvp-title">★ GAME MVP</text>
-      <rect x="66" y="299" width="206" height="214" rx="14" fill="#090e13"
-        stroke="${mvpColor}" stroke-width="3"/>
-      <image href="data:image/png;base64,${mvpArt}" x="70" y="303" width="198" height="206"
-        preserveAspectRatio="xMidYMid meet" clip-path="url(#mvp-art)"/>
+      <rect x="66" y="299" width="206" height="214" rx="14" fill="#090e13"/>
       <text x="310" y="356" class="mvp-name">${escapeXml(truncate(mvp.cardName.toUpperCase(), 28))}</text>
       <text x="310" y="392" class="mvp-meta" fill="${mvpColor}">${escapeXml(mvp.rarityName)} · ${escapeXml(positions)} · Level ${mvp.cardLevel}</text>
       <text x="310" y="443" class="mvp-major">${mvp.points} PTS · ${mvp.rebounds} REB · ${mvp.assists} AST</text>
@@ -328,12 +315,30 @@ export async function createBattleReportImage(
     opponentDisplayName = "AI Opponent",
   } = {},
 ) {
-  const sharp = await getSharp();
-  return sharp(Buffer.from(await createReportSvg(
-    result,
-    ownerDisplayName,
-    opponentDisplayName,
-  )))
-    .png({ compressionLevel: 9 })
-    .toBuffer();
+  const mvp = selectGameMvp(result);
+  const [svg, mvpArt] = await Promise.all([
+    Promise.resolve(Buffer.from(createReportSvg(
+      result,
+      ownerDisplayName,
+      opponentDisplayName,
+    ))),
+    readCardArt({
+      playerName: mvp.cardName,
+      rarityCode: mvp.rarityCode,
+    }),
+  ]);
+  return renderImage(async (sharp) => {
+    const mvpOverlay = await sharp(mvpArt)
+      .resize(198, 206, {
+        fit: "contain",
+        background: { r: 9, g: 14, b: 19, alpha: 1 },
+      })
+      .png()
+      .toBuffer();
+
+    return sharp(svg)
+      .composite([{ input: mvpOverlay, left: 70, top: 303 }])
+      .png({ compressionLevel: 9 })
+      .toBuffer();
+  });
 }

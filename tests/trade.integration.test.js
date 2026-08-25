@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getDatabaseConfig } from "../src/config/env.js";
+import { getTestDatabaseConfig } from "../src/config/env.js";
 import { gameConfig } from "../src/config/game-config.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import {
@@ -9,6 +9,7 @@ import {
   createCardTemplateService,
 } from "../src/modules/card/index.js";
 import { EconomyCurrency, createEconomyService } from "../src/modules/economy/index.js";
+import { createInventoryService } from "../src/modules/inventory/index.js";
 import { createPlayerService } from "../src/modules/player/index.js";
 import { TradeError, createTradeService } from "../src/modules/trade/index.js";
 
@@ -33,11 +34,15 @@ function templateInput(testRunId) {
 
 test("Direct Trade revisions support two-phase approval and atomic settlement", async () => {
   const pool = createPostgresPool({
-    connectionString: getDatabaseConfig().databaseUrl,
+    connectionString: getTestDatabaseConfig().databaseUrl,
   });
   const database = await pool.connect();
   const economyService = createEconomyService({ databasePool: pool });
   const playerService = createPlayerService({ databasePool: pool, economyService });
+  const inventoryService = createInventoryService({
+    databasePool: pool,
+    itemDefinitions: gameConfig.items,
+  });
   const cardTemplateService = createCardTemplateService({ databasePool: pool });
   const cardInstanceService = createCardInstanceService({
     databasePool: pool,
@@ -48,6 +53,7 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
     databasePool: pool,
     cardInstanceService,
     economyService,
+    inventoryService,
     playerService,
     tradeConfig: { ...gameConfig.trade, reviewDelaySeconds: 0 },
   });
@@ -98,6 +104,14 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
         { database },
       );
     }
+    await inventoryService.grantItem(
+      { playerId: playerAId, itemType: "LEVEL_UP", quantity: 3 },
+      { database },
+    );
+    await inventoryService.grantItem(
+      { playerId: playerBId, itemType: "ALPHA_CONTRACT", quantity: 2 },
+      { database },
+    );
 
     const template = await cardTemplateService.createTemplate(
       templateInput(testRunId),
@@ -173,6 +187,28 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
     );
     state = await tradeService.setGoldOffer(
       { tradeId, playerId: playerAId, goldOffered: 20, operation: "REMOVE", offerRevision: state.trade.offerRevision },
+      { database },
+    );
+    state = await tradeService.setItemOffer(
+      {
+        tradeId,
+        playerId: playerAId,
+        itemType: "LEVEL_UP",
+        quantity: 1,
+        operation: "ADD",
+        offerRevision: state.trade.offerRevision,
+      },
+      { database },
+    );
+    state = await tradeService.setItemOffer(
+      {
+        tradeId,
+        playerId: playerBId,
+        itemType: "ALPHA_CONTRACT",
+        quantity: 1,
+        operation: "ADD",
+        offerRevision: state.trade.offerRevision,
+      },
       { database },
     );
     state = await tradeService.readyTrade(
@@ -259,7 +295,17 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
           (SELECT COUNT(*) FROM card_ownership_history
            WHERE reference_type = 'TRADE' AND reference_id = $5) AS history_count,
           (SELECT COUNT(*) FROM trade_cards
-           WHERE trade_id = $6 AND outcome = 'TRANSFERRED') AS transferred_cards
+           WHERE trade_id = $6 AND outcome = 'TRANSFERRED') AS transferred_cards,
+          (SELECT quantity FROM player_items
+           WHERE player_id = $1 AND item_type = 'LEVEL_UP') AS level_up_a,
+          (SELECT quantity FROM player_items
+           WHERE player_id = $2 AND item_type = 'LEVEL_UP') AS level_up_b,
+          (SELECT quantity FROM player_items
+           WHERE player_id = $1 AND item_type = 'ALPHA_CONTRACT') AS alpha_a,
+          (SELECT quantity FROM player_items
+           WHERE player_id = $2 AND item_type = 'ALPHA_CONTRACT') AS alpha_b,
+          (SELECT COUNT(*) FROM trade_items
+           WHERE trade_id = $6 AND outcome = 'TRANSFERRED') AS transferred_items
       `,
       [
         playerAId,
@@ -280,6 +326,11 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
     assert.equal(finalState.rows[0].ledger_count, "2");
     assert.equal(finalState.rows[0].history_count, "2");
     assert.equal(finalState.rows[0].transferred_cards, "2");
+    assert.equal(finalState.rows[0].level_up_a, 2);
+    assert.equal(finalState.rows[0].level_up_b, 1);
+    assert.equal(finalState.rows[0].alpha_a, 1);
+    assert.equal(finalState.rows[0].alpha_b, 1);
+    assert.equal(finalState.rows[0].transferred_items, "2");
 
     const cancelCard = await cardInstanceService.mintCard(
       {
@@ -295,12 +346,23 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
       { database },
     );
     await acceptBoth(cancellable.trade.tradeId);
-    await tradeService.addCard(
+    let cancellableState = await tradeService.addCard(
       {
         tradeId: cancellable.trade.tradeId,
         playerId: playerAId,
         cardInstanceId: cancelCard.instance.cardInstanceId,
         offerRevision: cancellable.trade.offerRevision,
+      },
+      { database },
+    );
+    cancellableState = await tradeService.setItemOffer(
+      {
+        tradeId: cancellable.trade.tradeId,
+        playerId: playerAId,
+        itemType: "LEVEL_UP",
+        quantity: 1,
+        operation: "ADD",
+        offerRevision: cancellableState.trade.offerRevision,
       },
       { database },
     );
@@ -314,6 +376,11 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
       { database },
     );
     assert.equal(unlocked.tradeLock, false);
+    assert.equal(
+      (await inventoryService.listItems(playerAId, { database }))
+        .find((item) => item.itemType === "LEVEL_UP").quantity,
+      2,
+    );
 
     const expiryCard = await cardInstanceService.mintCard(
       {
@@ -329,12 +396,23 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
       { database },
     );
     await acceptBoth(expiring.trade.tradeId);
-    await tradeService.addCard(
+    let expiringState = await tradeService.addCard(
       {
         tradeId: expiring.trade.tradeId,
         playerId: playerAId,
         cardInstanceId: expiryCard.instance.cardInstanceId,
         offerRevision: expiring.trade.offerRevision,
+      },
+      { database },
+    );
+    expiringState = await tradeService.setItemOffer(
+      {
+        tradeId: expiring.trade.tradeId,
+        playerId: playerAId,
+        itemType: "ALPHA_CONTRACT",
+        quantity: 1,
+        operation: "ADD",
+        offerRevision: expiringState.trade.offerRevision,
       },
       { database },
     );
@@ -346,6 +424,11 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
     assert.equal(
       (await cardInstanceService.getInstance(expiryCard.instance.cardInstanceId, { database })).tradeLock,
       false,
+    );
+    assert.equal(
+      (await inventoryService.listItems(playerAId, { database }))
+        .find((item) => item.itemType === "ALPHA_CONTRACT").quantity,
+      1,
     );
 
     await assert.rejects(
@@ -406,6 +489,7 @@ test("Direct Trade revisions support two-phase approval and atomic settlement", 
       databasePool: pool,
       cardInstanceService,
       economyService,
+      inventoryService,
       playerService,
       tradeConfig: { ...gameConfig.trade, reviewDelaySeconds: 5 },
     });

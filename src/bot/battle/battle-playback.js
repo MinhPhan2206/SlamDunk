@@ -187,7 +187,7 @@ export function createBattlePlayback({
       if (matchupImage) {
         initialPayload.files = [{
           attachment: matchupImage,
-          name: "battle-matchup.png",
+          name: "battle-matchup.webp",
         }];
       }
       await interaction.editReply(initialPayload);

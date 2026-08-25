@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { gameConfig } from "../src/config/game-config.js";
-import { getDatabaseConfig } from "../src/config/env.js";
+import { getTestDatabaseConfig } from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import { createEconomyService } from "../src/modules/economy/index.js";
 import { createBattleService } from "../src/modules/battle/index.js";
@@ -39,7 +39,7 @@ function templateInput(slot, index, testRunId) {
 
 test("Battle persists snapshots and applies one idempotent result", async () => {
   const pool = createPostgresPool({
-    connectionString: getDatabaseConfig().databaseUrl,
+    connectionString: getTestDatabaseConfig().databaseUrl,
   });
   const database = await pool.connect();
   const economyService = createEconomyService({ databasePool: pool });

@@ -10,5 +10,5 @@ test("single-card image returns the original Card artwork without rendering", as
     readCardArt(card),
     createCardStripImage([card]),
   ]);
-  assert.strictEqual(output, source);
+  assert.deepEqual(output, source);
 });

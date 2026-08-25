@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getDatabaseConfig } from "../src/config/env.js";
+import { getTestDatabaseConfig } from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import { createEconomyService } from "../src/modules/economy/index.js";
 import { createVoteService } from "../src/modules/vote/index.js";
 
 test("Top.gg vote reward is atomic, weighted, and idempotent", async () => {
-  const pool = createPostgresPool({ connectionString: getDatabaseConfig().databaseUrl });
+  const pool = createPostgresPool({ connectionString: getTestDatabaseConfig().databaseUrl });
   const database = await pool.connect();
   const economy = createEconomyService({ databasePool: pool });
   const run = Date.now().toString();

@@ -244,13 +244,16 @@ Hai Card Instance nguồn được giữ lại trong lịch sử với trạng t
 
 ## M16 Direct Trade Behavior
 
-- Direct Trade có đúng hai Player và có thể chứa Card cùng Gold tuỳ chọn.
+- Direct Trade có đúng hai Player và có thể chứa Card, Gold cùng Item tuỳ chọn.
 - Trade fee bằng 0.
 - Card được thêm vào offer sẽ bị trade-lock cho đến khi remove, cancel hoặc
   Trade hoàn tất.
-- Mọi thay đổi Card hoặc Gold offer đều xoá confirmation của cả hai bên.
-- Khi cả hai xác nhận final offer, Gold và Card ownership được chuyển trong
+- Mọi thay đổi Card, Gold hoặc Item offer đều xoá confirmation của cả hai bên.
+- Khi cả hai xác nhận final offer, Gold, Item escrow và Card ownership được chuyển trong
   cùng một PostgreSQL transaction.
+- Item có thể trade gồm Level Up, Alpha Contract và All-Star Contract. Item
+  được đưa vào escrow khi thêm vào offer và được hoàn trả khi remove, cancel
+  hoặc Trade hết hạn.
 - Mỗi người có thể offer tối đa 10 Card và 20.000.000 Gold.
 - Trade hết hạn sau 3 phút, chuyển sang `EXPIRED` và mở khóa Card.
 - `/trade user:<user>` dùng buttons và modal để sửa Card, Gold, confirm hoặc cancel;

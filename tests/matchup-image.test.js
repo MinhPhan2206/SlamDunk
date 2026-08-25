@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import sharp from "sharp";
 
 import { createMatchupImage } from "../src/bot/battle/matchup-image.js";
 import { createDuelMatchupImage } from "../src/bot/battle/duel-matchup-image.js";
@@ -13,9 +14,10 @@ test("Battle matchup renderer creates one horizontal image for five AI players",
   }));
   const output = await createMatchupImage(lineup);
 
-  assert.deepEqual([...output.subarray(1, 4)], [80, 78, 71]);
-  assert.equal(output.readUInt32BE(16), 890);
-  assert.equal(output.readUInt32BE(20), 282);
+  const metadata = await sharp(output).metadata();
+  assert.equal(metadata.format, "webp");
+  assert.equal(metadata.width, 890);
+  assert.equal(metadata.height, 282);
 
   const playerNameOutput = await createMatchupImage(lineup.map((player) => ({
     ...player,
@@ -41,7 +43,8 @@ test("Duel matchup renderer combines both complete Player lineups", async () => 
     challengedName: "Opponent",
   });
 
-  assert.deepEqual([...output.subarray(1, 4)], [80, 78, 71]);
-  assert.equal(output.readUInt32BE(16), 890);
-  assert.equal(output.readUInt32BE(20), 728);
+  const metadata = await sharp(output).metadata();
+  assert.equal(metadata.format, "webp");
+  assert.equal(metadata.width, 890);
+  assert.equal(metadata.height, 728);
 });

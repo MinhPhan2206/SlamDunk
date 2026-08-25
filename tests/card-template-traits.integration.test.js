@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getDatabaseConfig } from "../src/config/env.js";
+import { getTestDatabaseConfig } from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import { createCardTemplateService } from "../src/modules/card/index.js";
 import { TraitError, createTraitService } from "../src/modules/trait/index.js";
@@ -27,7 +27,7 @@ function createTemplateInput(edition) {
 
 test("Card Templates own fixed Trait assignments and tiers", async () => {
   const pool = createPostgresPool({
-    connectionString: getDatabaseConfig().databaseUrl,
+    connectionString: getTestDatabaseConfig().databaseUrl,
   });
   const database = await pool.connect();
   const cardTemplateService = createCardTemplateService({ databasePool: pool });

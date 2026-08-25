@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { gameConfig } from "../src/config/game-config.js";
-import { getDatabaseConfig } from "../src/config/env.js";
+import { getTestDatabaseConfig } from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import { createBattleService } from "../src/modules/battle/index.js";
 import {
@@ -20,7 +20,7 @@ const MATCH_ID = "4a038642a1404d938a3dc5b401f17c23";
 
 test("Wagered Duel settles the pot once without XP or Battle progression", async () => {
   const pool = createPostgresPool({
-    connectionString: getDatabaseConfig().databaseUrl,
+    connectionString: getTestDatabaseConfig().databaseUrl,
   });
   const database = await pool.connect();
   const economyService = createEconomyService({ databasePool: pool });

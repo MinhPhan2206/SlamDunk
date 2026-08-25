@@ -96,6 +96,7 @@ export function createLevelRewardService({
   inventoryService,
   cardTemplateService,
   cardInstanceService,
+  securityService,
   levelRewardConfig,
   rollInteger = randomInt,
 }) {
@@ -119,6 +120,12 @@ export function createLevelRewardService({
         const available = milestones.filter(
           ({ level }) => level <= player.playerLevel && !claimedLevels.has(level),
         );
+        if (available.length > 0) {
+          await securityService?.assertCanEarn(
+            { playerId: normalizedPlayerId },
+            { database: transactionDatabase },
+          );
+        }
         const needsCards = available.some(({ cards }) => cards.length > 0);
         const templates = needsCards
           ? await cardTemplateService.listPackableTemplates({ database: transactionDatabase })

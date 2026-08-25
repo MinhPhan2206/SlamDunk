@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getDatabaseConfig } from "../src/config/env.js";
+import { getTestDatabaseConfig } from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import {
   createCardInstanceService,
@@ -31,7 +31,7 @@ function templateInput(edition, primaryPosition, secondaryPosition) {
 
 test("Lineup enforces ownership, position eligibility, and unique cards", async () => {
   const pool = createPostgresPool({
-    connectionString: getDatabaseConfig().databaseUrl,
+    connectionString: getTestDatabaseConfig().databaseUrl,
   });
   const database = await pool.connect();
   const cardTemplateService = createCardTemplateService({ databasePool: pool });

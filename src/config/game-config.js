@@ -9,6 +9,7 @@ function createCardLevelWeights() {
 }
 
 export const gameConfig = Object.freeze({
+  economyProfile: "development",
   vote: Object.freeze({
     goldPerWeight: 1_000,
     shardsPerWeight: 25,
@@ -167,6 +168,11 @@ export const gameConfig = Object.freeze({
   trade: Object.freeze({
     maximumCardsPerPlayer: 10,
     maximumGoldPerPlayer: 20_000_000,
+    tradeableItemTypes: Object.freeze([
+      "LEVEL_UP",
+      "ALPHA_CONTRACT",
+      "ALL_STAR_CONTRACT",
+    ]),
     expiryMinutes: 3,
     reviewDelaySeconds: 5,
   }),
@@ -326,3 +332,22 @@ export const gameConfig = Object.freeze({
     levelUpItemName: "Level Up",
   }),
 });
+
+const productionGameConfig = Object.freeze({
+  ...gameConfig,
+  economyProfile: "production",
+  daily: Object.freeze({
+    cooldownHours: 24,
+    xpReward: 300,
+    minimumGold: 1_500,
+    maximumGold: 2_000,
+    minimumShards: 20,
+    maximumShards: 30,
+  }),
+});
+
+export function getGameConfig(profile = "development") {
+  if (profile === "development") return gameConfig;
+  if (profile === "production") return productionGameConfig;
+  throw new Error("Unknown game economy profile.");
+}

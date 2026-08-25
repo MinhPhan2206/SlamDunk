@@ -4,7 +4,10 @@ import {
   parsePrefixMessage,
 } from "../prefix/prefix-command-parser.js";
 import { PrefixMessageInteraction } from "../prefix/prefix-message-interaction.js";
-import { AbuseGuardError } from "../../modules/security/index.js";
+import {
+  AbuseGuardError,
+  SecurityAccessError,
+} from "../../modules/security/index.js";
 
 function errorMessage(error) {
   return error instanceof Error ? error.message : String(error);
@@ -53,6 +56,10 @@ export function createMessageCreateHandler({ prefix, registry, context = {} }) {
         });
       }
     } catch (error) {
+      if (error instanceof SecurityAccessError) {
+        await message.reply(error.message);
+        return;
+      }
       if (error instanceof AbuseGuardError) {
         await message.reply(context.abuseGuard.messageFor(error));
         return;

@@ -13,6 +13,52 @@ function mapMintCounter(row) {
 }
 
 export const cardMintCounterRepository = Object.freeze({
+  async allocateSerialRanges(database, allocations) {
+    if (!Array.isArray(allocations) || allocations.length === 0) {
+      return Object.freeze([]);
+    }
+    const ordered = [...allocations].sort((left, right) =>
+      BigInt(left.cardTemplateId) < BigInt(right.cardTemplateId) ? -1 : 1
+    );
+    const result = await database.query(
+      `
+        WITH requested(card_template_id, quantity) AS (
+          SELECT card_template_id, quantity
+          FROM UNNEST($1::BIGINT[], $2::BIGINT[])
+            AS requested(card_template_id, quantity)
+          ORDER BY card_template_id
+        )
+        INSERT INTO card_mint_counters (
+          card_template_id,
+          last_serial_number,
+          total_minted,
+          current_circulation
+        )
+        SELECT card_template_id, quantity, quantity, quantity
+        FROM requested
+        ON CONFLICT (card_template_id) DO UPDATE SET
+          last_serial_number = card_mint_counters.last_serial_number +
+            EXCLUDED.last_serial_number,
+          total_minted = card_mint_counters.total_minted +
+            EXCLUDED.total_minted,
+          current_circulation = card_mint_counters.current_circulation +
+            EXCLUDED.current_circulation,
+          updated_at = CURRENT_TIMESTAMP
+        RETURNING
+          card_template_id,
+          last_serial_number,
+          total_minted,
+          current_circulation,
+          updated_at
+      `,
+      [
+        ordered.map((allocation) => allocation.cardTemplateId),
+        ordered.map((allocation) => allocation.quantity),
+      ],
+    );
+    return Object.freeze(result.rows.map(mapMintCounter));
+  },
+
   async allocateSerialRange(database, cardTemplateId, quantity) {
     const result = await database.query(
       `

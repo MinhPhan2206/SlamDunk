@@ -55,3 +55,63 @@ test("abuse guard serializes economy operations and caps heavy work", () => {
   );
 });
 
+test("abuse guard removes expired rate windows", () => {
+  let timestamp = 1_000;
+  const guard = createAbuseGuard({
+    now: () => timestamp,
+    policies: { command: { limit: 10, windowMs: 1_000 } },
+  });
+
+  for (let index = 0; index < 20; index += 1) {
+    guard.acquire({
+      userId: String(index),
+      guildId: "guild",
+      commandName: "profile",
+    }).release();
+  }
+  assert.equal(guard.snapshot().trackedRateWindows, 20);
+
+  timestamp += 1_001;
+  assert.equal(guard.cleanup(), 0);
+  assert.equal(guard.snapshot().cleanupRuns, 1);
+});
+
+test("abuse guard bounds tracked rate windows", () => {
+  const guard = createAbuseGuard({
+    maximumTrackedWindows: 3,
+    policies: { command: { limit: 10, windowMs: 60_000 } },
+  });
+
+  for (let index = 0; index < 5; index += 1) {
+    guard.acquire({
+      userId: String(index),
+      guildId: "guild",
+      commandName: "profile",
+    }).release();
+  }
+
+  assert.equal(guard.snapshot().trackedRateWindows, 3);
+  assert.equal(guard.snapshot().capacityEvictions, 2);
+});
+
+test("abuse guard starts and cancels its cleanup timer", () => {
+  let scheduled = null;
+  let cancelled = null;
+  const timer = { unref() {} };
+  const guard = createAbuseGuard({
+    scheduleRecurring(callback, interval) {
+      scheduled = { callback, interval };
+      return timer;
+    },
+    cancelRecurring(value) {
+      cancelled = value;
+    },
+  });
+
+  guard.start();
+  assert.equal(scheduled.interval, 60_000);
+  scheduled.callback();
+  assert.equal(guard.snapshot().cleanupRuns, 1);
+  guard.stop();
+  assert.equal(cancelled, timer);
+});

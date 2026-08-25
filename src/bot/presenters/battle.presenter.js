@@ -11,7 +11,7 @@ import { UI_COLORS } from "../ui/theme.js";
 const TEAM_ONE_COLOR = UI_COLORS.primary;
 const TEAM_TWO_COLOR = UI_COLORS.secondary;
 const TIE_COLOR = UI_COLORS.tie;
-const MATCHUP_IMAGE_NAME = "battle-matchup.png";
+const MATCHUP_IMAGE_NAME = "battle-matchup.webp";
 
 export function createBattleRewardSummary(result) {
   if (!result.reward) return null;

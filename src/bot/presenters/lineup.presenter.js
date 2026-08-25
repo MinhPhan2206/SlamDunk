@@ -2,7 +2,7 @@ import { createCardStripImage } from "../ui/card-strip-image.js";
 import { createUiEmbed } from "../ui/presentation.js";
 import { UI_COLORS } from "../ui/theme.js";
 
-const LINEUP_IMAGE_NAME = "lineup.png";
+const LINEUP_IMAGE_NAME = "lineup.webp";
 const STAT_GROUPS = Object.freeze([
   Object.freeze({
     name: "⚔️ Offense",

@@ -11,7 +11,7 @@ import {
 import { createUiEmbed } from "../ui/presentation.js";
 import { rarityColor } from "../ui/theme.js";
 
-const PACK_IMAGE_NAME = "pack-result.png";
+const PACK_IMAGE_NAME = "pack-result.webp";
 
 function cardLine({ template, instance }, index = null) {
   const prefix = index == null ? "•" : `**${index}.`;

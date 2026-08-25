@@ -230,6 +230,7 @@ export function createBattleService({
   traitService,
   playerService,
   economyService,
+  securityService,
   battleConfig,
   generateSeed = () => randomInt(1, 2_147_483_647),
   generateMatchId = () => randomBytes(16).toString("hex"),
@@ -404,6 +405,21 @@ export function createBattleService({
       const wager = await payDuelWinner(database, prepared, result.match.winnerTeam);
       return Object.freeze({ ...result, reward: null, duelWager: wager });
     }
+    const duelPlayerIds = [
+      prepared.challengerPlayerId,
+      prepared.challengedPlayerId,
+    ];
+    if (BigInt(prepared.challenge.betGold) > 0n) {
+      await securityService?.assertCanTrade(
+        { playerIds: duelPlayerIds },
+        { database },
+      );
+    } else {
+      await securityService?.assertPlayerActive(
+        { playerIds: duelPlayerIds },
+        { database },
+      );
+    }
     const challengerTeamId = await battleRepository.createTeam(database, {
       matchId: match.matchId,
       playerId: prepared.challengerPlayerId,
@@ -576,6 +592,8 @@ export function createBattleService({
       };
     }
 
+    await securityService?.assertCanEarn({ playerId }, { database });
+
     const rngSeed = generateSeed();
     const playerLineup = await snapshotPlayerLineup(database, playerId);
     const playerTeam = playerLineup.players;
@@ -708,6 +726,8 @@ export function createBattleService({
       };
     }
 
+    await securityService?.assertPlayerActive({ playerId }, { database });
+
     const rngSeed = generateSeed();
     const playerLineup = await snapshotPlayerLineup(database, playerId);
     const playerTeam = playerLineup.players;
@@ -825,6 +845,10 @@ export function createBattleService({
     if (match.status === "COMPLETED") {
       return battleRepository.loadResult(database, match);
     }
+    await securityService?.assertCanEarn(
+      { playerId: match.playerId },
+      { database },
+    );
 
     const playerTeamId = await battleRepository.createTeam(database, {
       matchId: match.matchId,
@@ -920,6 +944,10 @@ export function createBattleService({
     if (match.status === "COMPLETED") {
       return battleRepository.loadResult(database, match);
     }
+    await securityService?.assertPlayerActive(
+      { playerId: match.playerId },
+      { database },
+    );
 
     const playerTeamId = await battleRepository.createTeam(database, {
       matchId: match.matchId,
@@ -985,6 +1013,18 @@ export function createBattleService({
           normalizedInteractionId,
         );
         if (existing) return hydrateDuelChallenge(transactionDatabase, existing);
+        const duelPlayerIds = [challengerId, challengedId];
+        if (BigInt(normalizedBetGold) > 0n) {
+          await securityService?.assertCanTrade(
+            { playerIds: duelPlayerIds },
+            { database: transactionDatabase },
+          );
+        } else {
+          await securityService?.assertPlayerActive(
+            { playerIds: duelPlayerIds },
+            { database: transactionDatabase },
+          );
+        }
         await duelRepository.lockPlayers(transactionDatabase, [
           challengerId,
           challengedId,
@@ -1099,6 +1139,21 @@ export function createBattleService({
         }
         if (!["PENDING", "ACCEPTED"].includes(challenge.status)) {
           throw new BattleError("DUEL_CLOSED", "This Duel invitation is already closed.");
+        }
+        const duelPlayerIds = [
+          challenge.challengerPlayerId,
+          challenge.challengedPlayerId,
+        ];
+        if (BigInt(challenge.betGold) > 0n) {
+          await securityService?.assertCanTrade(
+            { playerIds: duelPlayerIds },
+            { database: transactionDatabase },
+          );
+        } else {
+          await securityService?.assertPlayerActive(
+            { playerIds: duelPlayerIds },
+            { database: transactionDatabase },
+          );
         }
         const [challenger, challenged] = await Promise.all([
           playerService.getPlayerById(challenge.challengerPlayerId, {

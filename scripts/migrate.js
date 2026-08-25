@@ -1,6 +1,9 @@
 import { fileURLToPath } from "node:url";
 
-import { getDatabaseConfig } from "../src/config/env.js";
+import {
+  getDatabaseConfig,
+  getTestDatabaseConfig,
+} from "../src/config/env.js";
 import { createPostgresPool } from "../src/database/connection/postgres.js";
 import { runMigrations } from "../src/database/migrations/migration-runner.js";
 
@@ -9,7 +12,9 @@ function getErrorMessage(error) {
 }
 
 async function migrate() {
-  const config = getDatabaseConfig();
+  const config = process.argv[2] === "test"
+    ? getTestDatabaseConfig()
+    : getDatabaseConfig();
   const pool = createPostgresPool({ connectionString: config.databaseUrl });
   const migrationsDirectory = fileURLToPath(
     new URL("../migrations/", import.meta.url),

@@ -51,6 +51,7 @@ function useTransaction(databasePool, database, operation) {
 export function createUpgradeService({
   databasePool,
   cardInstanceService,
+  securityService,
   upgradeConfig,
 }) {
   validateConfig(upgradeConfig);
@@ -155,6 +156,10 @@ export function createUpgradeService({
       }
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertPlayerActive(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const sourceCards = await upgradeRepository.findCardsForUpdate(
           transactionDatabase,
           sourceIds,
@@ -256,6 +261,10 @@ export function createUpgradeService({
       );
 
       return useTransaction(databasePool, database, async (transactionDatabase) => {
+        await securityService?.assertPlayerActive(
+          { playerId: normalizedPlayerId },
+          { database: transactionDatabase },
+        );
         const cards = await upgradeRepository.findCardsForUpdate(
           transactionDatabase,
           [normalizedCardInstanceId],

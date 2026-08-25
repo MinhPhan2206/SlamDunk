@@ -1,13 +1,14 @@
 import { getCardArtPath, readCardArt } from "./card-art.js";
+import { createImageBufferCache } from "./image-buffer-cache.js";
+import { renderImage } from "./image-runtime.js";
 
-let sharpModule;
-const RESIZED_ART_CACHE_LIMIT = 256;
-const resizedArtCache = new Map();
-
-async function getSharp() {
-  if (!sharpModule) sharpModule = import("sharp").then((module) => module.default);
-  return sharpModule;
-}
+const RESIZED_ART_CACHE_MAX_ENTRIES = 128;
+const RESIZED_ART_CACHE_MAX_BYTES = 64 * 1_048_576;
+const resizedArtCache = createImageBufferCache({
+  maxEntries: RESIZED_ART_CACHE_MAX_ENTRIES,
+  maxBytes: RESIZED_ART_CACHE_MAX_BYTES,
+});
+const inflightResizes = new Map();
 
 function dimensions(cardCount) {
   if (cardCount === 1) return { cardWidth: 400, cardHeight: 625, gap: 0 };
@@ -28,25 +29,30 @@ async function getResizedCardArt(card, width, height) {
   const cacheKey = `${getCardArtPath(card)}:${width}x${height}`;
   const cached = resizedArtCache.get(cacheKey);
   if (cached) return cached;
+  const inflight = inflightResizes.get(cacheKey);
+  if (inflight) return inflight;
 
-  if (resizedArtCache.size >= RESIZED_ART_CACHE_LIMIT) {
-    resizedArtCache.delete(resizedArtCache.keys().next().value);
-  }
-
-  const resized = Promise.all([getSharp(), readCardArt(card)]).then(
-    ([sharp, source]) => sharp(source)
+  const resized = renderImage((sharp) => sharp(getCardArtPath(card))
       .resize(width, height, {
         fit: "contain",
         background: { r: 0, g: 0, b: 0, alpha: 0 },
       })
-      .png({ compressionLevel: 6 })
-      .toBuffer(),
-  );
-  resizedArtCache.set(cacheKey, resized);
-  resized.catch(() => {
-    if (resizedArtCache.get(cacheKey) === resized) resizedArtCache.delete(cacheKey);
-  });
+      .webp({ quality: 85, effort: 4 })
+      .toBuffer())
+    .then((buffer) => {
+      resizedArtCache.set(cacheKey, buffer);
+      return buffer;
+    })
+    .finally(() => inflightResizes.delete(cacheKey));
+  inflightResizes.set(cacheKey, resized);
   return resized;
+}
+
+export function getCardStripCacheSnapshot() {
+  return Object.freeze({
+    ...resizedArtCache.snapshot(),
+    inflight: inflightResizes.size,
+  });
 }
 
 export async function createCardStripImage(cards, { labels = [] } = {}) {
@@ -81,14 +87,13 @@ export async function createCardStripImage(cards, { labels = [] } = {}) {
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
       ${overlayElements}
     </svg>`;
-  const sharp = await getSharp();
   const images = sources.map((input, index) => ({
     input,
     left: padding + index * (cardWidth + gap),
     top: padding,
   }));
-  return sharp(Buffer.from(background))
+  return renderImage((sharp) => sharp(Buffer.from(background))
     .composite([...images, { input: Buffer.from(overlay) }])
-    .png({ compressionLevel: 6 })
-    .toBuffer();
+    .webp({ quality: 85, effort: 4 })
+    .toBuffer());
 }

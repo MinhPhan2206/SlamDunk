@@ -53,7 +53,7 @@ test("compare command renders two Cards with actual stat differences", async () 
   assert.match(embed.description, /Jimmy Butler/);
   assert.match(embed.description, /A \+13/);
   assert.equal(payload.components[0].components.length, 3);
-  assert.equal(payload.files[0].name, "card-comparison.png");
+  assert.equal(payload.files[0].name, "card-comparison.webp");
 });
 
 test("compare autocomplete offers the shared Card catalog", async () => {

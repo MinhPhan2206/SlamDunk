@@ -1665,7 +1665,9 @@ Confirmed Direct Trade limits: 10 Card Instances and 20,000,000 Gold per
 participant. A Trade expires after 3 minutes and unlocks its Cards. The Discord
 interface uses one `/trade user:<user>` command followed by buttons and modals.
 Both participants must accept the invitation before the offer editor becomes
-available. Card and Gold modals require an `add` or `remove` action.
+available. Card, Gold, and Item modals require an `add` or `remove` action.
+Level Up, Alpha Contract, and All-Star Contract are tradeable through atomic
+escrow: add reserves the quantity, while remove/cancel/expiry returns it.
 
 ---
 

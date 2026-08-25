@@ -143,6 +143,17 @@ export const playerRepository = Object.freeze({
     return mapPlayer(result.rows[0]);
   },
 
+  async findByIds(database, playerIds) {
+    if (!Array.isArray(playerIds) || playerIds.length === 0) {
+      return Object.freeze([]);
+    }
+    const result = await database.query(
+      `SELECT ${PLAYER_COLUMNS} FROM players WHERE player_id = ANY($1::BIGINT[])`,
+      [playerIds],
+    );
+    return Object.freeze(result.rows.map(mapPlayer));
+  },
+
   async findByIdForUpdate(database, playerId) {
     const result = await database.query(
       `SELECT ${PLAYER_COLUMNS} FROM players WHERE player_id = $1 FOR UPDATE`,

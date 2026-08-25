@@ -71,8 +71,8 @@ test("/card resolves a public Card ID and renders Stats tabs", async () => {
     reply.components[0].components.map((button) => button.data.emoji.name),
     ["📊", "✨", "🏀", "🖼️"],
   );
-  assert.equal(embed.thumbnail.url, "attachment://card.png");
-  assert.equal(reply.files[0].name, "card.png");
+  assert.equal(embed.thumbnail.url, "attachment://card.webp");
+  assert.equal(reply.files[0].name, "card.webp");
   assert.deepEqual(reply.attachments, []);
 });
 
@@ -92,8 +92,8 @@ test("Card Image tab shows only the full Card artwork", async () => {
   const embed = reply.embeds[0].toJSON();
   assert.equal(embed.title, undefined);
   assert.equal(embed.description, undefined);
-  assert.equal(embed.image.url, "attachment://card.png");
-  assert.equal(reply.files[0].name, "card.png");
+  assert.equal(embed.image.url, "attachment://card.webp");
+  assert.equal(reply.files[0].name, "card.webp");
   assert.equal(reply.components[0].components[3].data.disabled, true);
 });
 

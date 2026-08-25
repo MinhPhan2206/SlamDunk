@@ -5,7 +5,7 @@ import { UI_EMOJIS } from "../ui/emojis.js";
 import { createUiEmbed } from "../ui/presentation.js";
 import { rarityColor } from "../ui/theme.js";
 
-const CONTRACT_IMAGE_NAME = "contract-result.png";
+const CONTRACT_IMAGE_NAME = "contract-result.webp";
 
 const CONTRACT_EMOJIS = Object.freeze({
   ALPHA_CONTRACT: UI_EMOJIS.alphaContract.mention,

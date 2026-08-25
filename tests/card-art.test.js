@@ -9,7 +9,7 @@ const catalogUrl = new URL("../data/card-templates.json", import.meta.url);
 test("official Card Templates resolve every available player image", async () => {
   const templates = JSON.parse(await readFile(catalogUrl, "utf8"));
   const fallbackNames = templates
-    .filter((template) => path.basename(getCardArtPath(template)) === "unknown-player.png")
+    .filter((template) => path.basename(getCardArtPath(template)) === "unknown-player.webp")
     .map((template) => template.playerName);
 
   assert.equal(templates.length, 275);

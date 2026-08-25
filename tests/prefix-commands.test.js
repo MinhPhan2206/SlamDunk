@@ -49,62 +49,62 @@ test("Prefix alias registry resolves approved shortcuts without collisions", () 
 });
 
 test("Prefix parser supports defaults, mentions, subcommands, choices, and names", async () => {
-  const battle = await parsePrefixMessage(fakeMessage("DUNK b"), {
-    prefix: "dunk",
+  const battle = await parsePrefixMessage(fakeMessage("SD b"), {
+    prefix: "sd",
     registry,
   });
   assert.equal(battle.commandName, "battle");
   assert.equal(battle.options.getString("opponent_bracket", true), "street");
 
   const card = await parsePrefixMessage(
-    fakeMessage('dunk card "Nikola Jokic"'),
-    { prefix: "dunk", registry },
+    fakeMessage('sd card "Nikola Jokic"'),
+    { prefix: "sd", registry },
   );
   assert.equal(card.options.getString("card", true), "Nikola Jokic");
 
   const collection = await parsePrefixMessage(
-    fakeMessage("dunk col <@997829444410544198>"),
-    { prefix: "dunk", registry },
+    fakeMessage("sd col <@997829444410544198>"),
+    { prefix: "sd", registry },
   );
   assert.equal(collection.options.getInteger("page"), null);
   assert.equal(collection.options.getUser("user").username, "Mentioned");
 
   const lineup = await parsePrefixMessage(
-    fakeMessage("dunk lu set pg !123456789"),
-    { prefix: "dunk", registry },
+    fakeMessage("sd lu set pg !123456789"),
+    { prefix: "sd", registry },
   );
   assert.equal(lineup.options.getSubcommand(), "set");
   assert.equal(lineup.options.getString("slot", true), "PG");
   assert.equal(lineup.options.getString("card_id", true), "!123456789");
 
   const rarity = await parsePrefixMessage(
-    fakeMessage("dunk r allstar pg 3point"),
-    { prefix: "dunk", registry },
+    fakeMessage("sd r allstar pg 3point"),
+    { prefix: "sd", registry },
   );
   assert.equal(rarity.options.getString("rarity", true), "ALL_STAR");
   assert.equal(rarity.options.getString("position"), "PG");
   assert.equal(rarity.options.getString("sort_by"), "three_point");
 
-  const pack = await parsePrefixMessage(fakeMessage("dunk pk"), {
-    prefix: "dunk",
+  const pack = await parsePrefixMessage(fakeMessage("sd pk"), {
+    prefix: "sd",
     registry,
   });
   assert.equal(pack.options.getString("pack_type", true), "standard");
 });
 
 test("Prefix tokenizer and parser reject malformed commands clearly", async () => {
-  assert.deepEqual(tokenizePrefixCommand('dunk card "LeBron James"'), [
-    "dunk",
+  assert.deepEqual(tokenizePrefixCommand('sd card "LeBron James"'), [
+    "sd",
     "card",
     "LeBron James",
   ]);
   assert.throws(
-    () => tokenizePrefixCommand('dunk card "LeBron James'),
+    () => tokenizePrefixCommand('sd card "LeBron James'),
     PrefixCommandParseError,
   );
   await assert.rejects(
-    parsePrefixMessage(fakeMessage("dunk unknown"), {
-      prefix: "dunk",
+    parsePrefixMessage(fakeMessage("sd unknown"), {
+      prefix: "sd",
       registry,
     }),
     PrefixCommandParseError,
@@ -113,14 +113,14 @@ test("Prefix tokenizer and parser reject malformed commands clearly", async () =
 
 test("Prefix parser ignores normal apostrophes outside commands", async () => {
   const normalMessage = await parsePrefixMessage(fakeMessage("it's goat time"), {
-    prefix: "dunk",
+    prefix: "sd",
     registry,
   });
   assert.equal(normalMessage, null);
 
   const card = await parsePrefixMessage(
-    fakeMessage("dunk card De'Aaron Fox"),
-    { prefix: "dunk", registry },
+    fakeMessage("sd card De'Aaron Fox"),
+    { prefix: "sd", registry },
   );
   assert.equal(card.options.getString("card", true), "De'Aaron Fox");
 });
@@ -138,7 +138,7 @@ test("MessageCreate routes a prefix alias through the existing command", async (
     },
   };
   const message = {
-    ...fakeMessage("dunk ping"),
+    ...fakeMessage("sd ping"),
     channel: { async send(payload) { replies.push(payload); return replyMessage; } },
     async reply(payload) {
       replies.push(payload);
@@ -146,7 +146,7 @@ test("MessageCreate routes a prefix alias through the existing command", async (
     },
   };
   const handler = createMessageCreateHandler({
-    prefix: "dunk",
+    prefix: "sd",
     registry,
   });
 
