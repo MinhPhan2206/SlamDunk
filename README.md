@@ -15,6 +15,7 @@ SlamDunk uses a Modular Monolith architecture. See the
 
 ## Documentation
 
+- [Current project handoff and release readiness](docs/project-handoff-and-release-readiness.md)
 - [Game requirements](docs/requirements/)
 - [Architecture](docs/architecture/)
 
